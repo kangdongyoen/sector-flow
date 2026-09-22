@@ -1,31 +1,30 @@
 {
- "updated": "2026-09-22 12:09",
- "updated_label": "09월 22일 12:09 기준",
+ "updated": "2026-09-22 17:15",
+ "updated_label": "09월 22일 17:15 기준",
  "date_label": "09월 22일",
  "weekday": "화",
- "market_status": "open",
- "market_label": "장중",
- "headline": "오늘 돈은 IT하드웨어 · IT대형주로 갔다",
+ "market_status": "after",
+ "market_label": "장 마감",
+ "headline": "오늘 돈은 IT하드웨어 · 운송로 갔다",
  "subline": "IT하드웨어 3일째 · 거래 크게 늘어남",
  "mood": {
   "mood": "좋음",
   "emoji": "🟢",
-  "score": 6,
+  "score": 3,
   "why": [
-   "미국 선물 강세",
    "미국 반도체 강세",
    "환율 안정"
   ]
  },
  "top_in": [
   "IT하드웨어",
-  "IT대형주",
-  "반도체"
+  "운송",
+  "건설"
  ],
  "top_out": [
-  "화장품",
   "바이오",
-  "은행"
+  "화장품",
+  "자동차"
  ],
  "calendar": [
   {
@@ -85,115 +84,22 @@
  ],
  "sectors": [
   {
-   "name": "IT대형주",
-   "ticker": "139260.KS",
-   "etf": "TIGER 200 IT",
-   "driver": "^SOX",
-   "chg": 3.51,
-   "chg5": 11.65,
-   "money": 0.67,
-   "streak_sign": 1,
-   "streak": 3,
-   "price": 146150,
-   "volume": 142417,
-   "spark": [
-    2.65,
-    -1.69,
-    4.0,
-    2.78,
-    3.51
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "미국 반도체 강세 (+4.29%)",
-   "driver_chg": 4.29,
-   "flow": 3.05,
-   "hot": false
-  },
-  {
-   "name": "IT하드웨어",
-   "ticker": "266370.KS",
-   "etf": "KODEX IT하드웨어",
-   "driver": "^SOX",
-   "chg": 3.24,
-   "chg5": 10.52,
-   "money": 2.04,
-   "streak_sign": 1,
-   "streak": 3,
-   "price": 72265,
-   "volume": 56981,
-   "spark": [
-    2.78,
-    -1.12,
-    2.86,
-    2.4,
-    3.24
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "미국 반도체 강세 (+4.29%)",
-   "driver_chg": 4.29,
-   "flow": 4.54,
-   "hot": true
-  },
-  {
-   "name": "반도체",
-   "ticker": "091160.KS",
-   "etf": "KODEX 반도체",
-   "driver": "^SOX",
-   "chg": 2.84,
-   "chg5": 13.37,
-   "money": 0.54,
-   "streak_sign": 1,
-   "streak": 3,
-   "price": 139095,
-   "volume": 751963,
-   "spark": [
-    4.08,
-    -0.04,
-    2.26,
-    3.6,
-    2.84
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "미국 반도체 강세 (+4.29%)",
-   "driver_chg": 4.29,
-   "flow": 2.32,
-   "hot": false
-  },
-  {
-   "name": "소비재",
-   "ticker": "266390.KS",
-   "etf": "KODEX 경기소비재",
-   "driver": "^KS11",
+   "name": "운송",
+   "ticker": "140710.KS",
+   "etf": "KODEX 운송",
+   "driver": "CL=F",
    "chg": 2.3,
-   "chg5": 1.04,
-   "money": 0.23,
+   "chg5": 2.3,
+   "money": 0.87,
    "streak_sign": 1,
    "streak": 1,
-   "price": 15110,
-   "volume": 751,
+   "price": 6670,
+   "volume": 34457,
    "spark": [
-    0.3,
-    -0.13,
-    -0.87,
-    -0.54,
+    -1.07,
+    1.86,
+    -0.23,
+    -0.53,
     2.3
    ],
    "spark_days": [
@@ -203,9 +109,164 @@
     "월",
     "화"
    ],
-   "driver_text": "코스피 강세 (+1.76%)",
-   "driver_chg": 1.76,
-   "flow": 1.75,
+   "driver_text": "유가(WTI) 하락 (-2.98%)",
+   "driver_chg": -2.98,
+   "flow": 2.18,
+   "hot": false
+  },
+  {
+   "name": "소비재",
+   "ticker": "266390.KS",
+   "etf": "KODEX 경기소비재",
+   "driver": "^KS11",
+   "chg": 2.13,
+   "chg5": 0.87,
+   "money": 0.41,
+   "streak_sign": 1,
+   "streak": 1,
+   "price": 15085,
+   "volume": 1346,
+   "spark": [
+    0.3,
+    -0.13,
+    -0.87,
+    -0.54,
+    2.13
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "코스피 보합 (+0.15%)",
+   "driver_chg": 0.15,
+   "flow": 1.63,
+   "hot": false
+  },
+  {
+   "name": "IT하드웨어",
+   "ticker": "266370.KS",
+   "etf": "KODEX IT하드웨어",
+   "driver": "^SOX",
+   "chg": 1.65,
+   "chg5": 8.82,
+   "money": 2.36,
+   "streak_sign": 1,
+   "streak": 3,
+   "price": 71150,
+   "volume": 67131,
+   "spark": [
+    2.78,
+    -1.12,
+    2.86,
+    2.4,
+    1.65
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "미국 반도체 강세 (+4.29%)",
+   "driver_chg": 4.29,
+   "flow": 2.31,
+   "hot": true
+  },
+  {
+   "name": "건설",
+   "ticker": "117700.KS",
+   "etf": "KODEX 건설",
+   "driver": "^TNX",
+   "chg": 1.46,
+   "chg5": -0.68,
+   "money": 1.71,
+   "streak_sign": 1,
+   "streak": 1,
+   "price": 7300,
+   "volume": 3537596,
+   "spark": [
+    -2.45,
+    0.28,
+    1.39,
+    -1.3,
+    1.46
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "미국 10년 금리 하락 (-0.7%)",
+   "driver_chg": -0.7,
+   "flow": 1.87,
+   "hot": true
+  },
+  {
+   "name": "반도체",
+   "ticker": "091160.KS",
+   "etf": "KODEX 반도체",
+   "driver": "^SOX",
+   "chg": 1.07,
+   "chg5": 11.41,
+   "money": 0.97,
+   "streak_sign": 1,
+   "streak": 3,
+   "price": 136695,
+   "volume": 1372461,
+   "spark": [
+    4.08,
+    -0.04,
+    2.26,
+    3.6,
+    1.07
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "미국 반도체 강세 (+4.29%)",
+   "driver_chg": 4.29,
+   "flow": 1.06,
+   "hot": false
+  },
+  {
+   "name": "IT대형주",
+   "ticker": "139260.KS",
+   "etf": "TIGER 200 IT",
+   "driver": "^SOX",
+   "chg": 1.01,
+   "chg5": 8.95,
+   "money": 0.99,
+   "streak_sign": 1,
+   "streak": 3,
+   "price": 142620,
+   "volume": 215779,
+   "spark": [
+    2.65,
+    -1.69,
+    4.0,
+    2.78,
+    1.01
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "미국 반도체 강세 (+4.29%)",
+   "driver_chg": 4.29,
+   "flow": 1.01,
    "hot": false
   },
   {
@@ -213,19 +274,19 @@
    "ticker": "102970.KS",
    "etf": "KODEX 증권",
    "driver": "^KS11",
-   "chg": 1.84,
-   "chg5": 1.18,
-   "money": 1.44,
+   "chg": 0.93,
+   "chg5": 0.28,
+   "money": 1.79,
    "streak_sign": 1,
    "streak": 2,
-   "price": 17995,
-   "volume": 568780,
+   "price": 17835,
+   "volume": 711105,
    "spark": [
     -1.38,
     -0.43,
     -0.37,
     1.55,
-    1.84
+    0.93
    ],
    "spark_days": [
     "수",
@@ -234,29 +295,29 @@
     "월",
     "화"
    ],
-   "driver_text": "코스피 강세 (+1.76%)",
-   "driver_chg": 1.76,
-   "flow": 2.16,
-   "hot": false
+   "driver_text": "코스피 보합 (+0.15%)",
+   "driver_chg": 0.15,
+   "flow": 1.22,
+   "hot": true
   },
   {
-   "name": "운송",
-   "ticker": "140710.KS",
-   "etf": "KODEX 운송",
-   "driver": "CL=F",
-   "chg": 1.61,
-   "chg5": 1.61,
-   "money": 0.09,
+   "name": "중공업",
+   "ticker": "139230.KS",
+   "etf": "TIGER 200 중공업",
+   "driver": "KRW=X",
+   "chg": 0.54,
+   "chg5": 1.78,
+   "money": 0.91,
    "streak_sign": 1,
    "streak": 1,
-   "price": 6625,
-   "volume": 3654,
+   "price": 13135,
+   "volume": 78377,
    "spark": [
-    -1.07,
-    1.86,
-    -0.23,
-    -0.53,
-    1.61
+    -0.74,
+    3.51,
+    -0.34,
+    -1.14,
+    0.54
    ],
    "spark_days": [
     "수",
@@ -265,9 +326,9 @@
     "월",
     "화"
    ],
-   "driver_text": "유가(WTI) 하락 (-7.16%)",
-   "driver_chg": -7.16,
-   "flow": 1.22,
+   "driver_text": "원달러 하락 (-1.59%)",
+   "driver_chg": -1.59,
+   "flow": 0.52,
    "hot": false
   },
   {
@@ -275,19 +336,19 @@
    "ticker": "102960.KS",
    "etf": "KODEX 조선",
    "driver": "KRW=X",
-   "chg": 1.6,
-   "chg5": 2.32,
-   "money": 0.21,
+   "chg": 0.41,
+   "chg5": 1.12,
+   "money": 0.51,
    "streak_sign": 1,
    "streak": 1,
-   "price": 13690,
-   "volume": 2030,
+   "price": 13530,
+   "volume": 4920,
    "spark": [
     -0.75,
     2.07,
     0.7,
     -1.28,
-    1.6
+    0.41
    ],
    "spark_days": [
     "수",
@@ -296,164 +357,9 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-1.78%)",
-   "driver_chg": -1.78,
-   "flow": 1.22,
-   "hot": false
-  },
-  {
-   "name": "건설",
-   "ticker": "117700.KS",
-   "etf": "KODEX 건설",
-   "driver": "^TNX",
-   "chg": 0.97,
-   "chg5": -1.16,
-   "money": 0.93,
-   "streak_sign": 1,
-   "streak": 1,
-   "price": 7265,
-   "volume": 1935197,
-   "spark": [
-    -2.45,
-    0.28,
-    1.39,
-    -1.3,
-    0.97
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "미국 10년 금리 하락 (-0.7%)",
-   "driver_chg": -0.7,
-   "flow": 0.94,
-   "hot": false
-  },
-  {
-   "name": "자동차",
-   "ticker": "091180.KS",
-   "etf": "KODEX 자동차",
-   "driver": "KRW=X",
-   "chg": 0.96,
-   "chg5": -1.0,
-   "money": 0.39,
-   "streak_sign": 1,
-   "streak": 1,
-   "price": 25860,
-   "volume": 51470,
-   "spark": [
-    -1.34,
-    0.31,
-    1.16,
-    -2.05,
-    0.96
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "원달러 하락 (-1.78%)",
-   "driver_chg": -1.78,
-   "flow": 0.73,
-   "hot": false
-  },
-  {
-   "name": "중공업",
-   "ticker": "139230.KS",
-   "etf": "TIGER 200 중공업",
-   "driver": "KRW=X",
-   "chg": 0.92,
-   "chg5": 2.17,
-   "money": 0.5,
-   "streak_sign": 1,
-   "streak": 1,
-   "price": 13185,
-   "volume": 43163,
-   "spark": [
-    -0.74,
-    3.51,
-    -0.34,
-    -1.14,
-    0.92
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "원달러 하락 (-1.78%)",
-   "driver_chg": -1.78,
-   "flow": 0.74,
-   "hot": false
-  },
-  {
-   "name": "2차전지",
-   "ticker": "305720.KS",
-   "etf": "KODEX 2차전지산업",
-   "driver": "NQ=F",
-   "chg": 0.14,
-   "chg5": -3.29,
-   "money": 0.35,
-   "streak_sign": 1,
-   "streak": 1,
-   "price": 14395,
-   "volume": 1257709,
-   "spark": [
-    -1.24,
-    -0.51,
-    0.31,
-    -2.01,
-    0.14
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "나스닥 선물 강세 (+4.32%)",
-   "driver_chg": 4.32,
-   "flow": 0.11,
-   "hot": false
-  },
-  {
-   "name": "에너지화학",
-   "ticker": "117460.KS",
-   "etf": "KODEX 에너지화학",
-   "driver": "CL=F",
-   "chg": -0.33,
-   "chg5": -2.29,
-   "money": 0.49,
-   "streak_sign": -1,
-   "streak": 3,
-   "price": 13470,
-   "volume": 20513,
-   "spark": [
-    -1.2,
-    1.1,
-    -0.94,
-    -0.92,
-    -0.33
-   ],
-   "spark_days": [
-    "수",
-    "목",
-    "금",
-    "월",
-    "화"
-   ],
-   "driver_text": "유가(WTI) 하락 (-7.16%)",
-   "driver_chg": -7.16,
-   "flow": -0.26,
+   "driver_text": "원달러 하락 (-1.59%)",
+   "driver_chg": -1.59,
+   "flow": 0.33,
    "hot": false
   },
   {
@@ -461,19 +367,19 @@
    "ticker": "091170.KS",
    "etf": "KODEX 은행",
    "driver": "^TNX",
-   "chg": -0.51,
-   "chg5": -1.04,
-   "money": 0.47,
+   "chg": -0.15,
+   "chg5": -0.68,
+   "money": 0.75,
    "streak_sign": -1,
    "streak": 1,
-   "price": 16650,
-   "volume": 397215,
+   "price": 16710,
+   "volume": 631123,
    "spark": [
     -0.27,
     0.39,
     -1.31,
     0.66,
-    -0.51
+    -0.15
    ],
    "spark_days": [
     "수",
@@ -484,27 +390,27 @@
    ],
    "driver_text": "미국 10년 금리 하락 (-0.7%)",
    "driver_chg": -0.7,
-   "flow": -0.4,
+   "flow": -0.14,
    "hot": false
   },
   {
-   "name": "바이오",
-   "ticker": "244580.KS",
-   "etf": "KODEX 바이오",
-   "driver": "^TNX",
-   "chg": -0.76,
-   "chg5": -1.08,
-   "money": 0.5,
+   "name": "에너지화학",
+   "ticker": "117460.KS",
+   "etf": "KODEX 에너지화학",
+   "driver": "CL=F",
+   "chg": -0.15,
+   "chg5": -2.1,
+   "money": 0.66,
    "streak_sign": -1,
-   "streak": 1,
-   "price": 7820,
-   "volume": 164466,
+   "streak": 3,
+   "price": 13495,
+   "volume": 27747,
    "spark": [
-    -1.08,
-    1.41,
-    -1.39,
-    0.77,
-    -0.76
+    -1.2,
+    1.1,
+    -0.94,
+    -0.92,
+    -0.15
    ],
    "spark_days": [
     "수",
@@ -513,9 +419,71 @@
     "월",
     "화"
    ],
-   "driver_text": "미국 10년 금리 하락 (-0.7%)",
-   "driver_chg": -0.7,
-   "flow": -0.61,
+   "driver_text": "유가(WTI) 하락 (-2.98%)",
+   "driver_chg": -2.98,
+   "flow": -0.13,
+   "hot": false
+  },
+  {
+   "name": "2차전지",
+   "ticker": "305720.KS",
+   "etf": "KODEX 2차전지산업",
+   "driver": "NQ=F",
+   "chg": -0.49,
+   "chg5": -3.9,
+   "money": 0.66,
+   "streak_sign": -1,
+   "streak": 2,
+   "price": 14305,
+   "volume": 2363007,
+   "spark": [
+    -1.24,
+    -0.51,
+    0.31,
+    -2.01,
+    -0.49
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "나스닥 선물 보합 (-0.16%)",
+   "driver_chg": -0.16,
+   "flow": -0.42,
+   "hot": false
+  },
+  {
+   "name": "자동차",
+   "ticker": "091180.KS",
+   "etf": "KODEX 자동차",
+   "driver": "KRW=X",
+   "chg": -0.7,
+   "chg5": -2.62,
+   "money": 0.79,
+   "streak_sign": -1,
+   "streak": 2,
+   "price": 25435,
+   "volume": 106444,
+   "spark": [
+    -1.34,
+    0.31,
+    1.16,
+    -2.05,
+    -0.7
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "원달러 하락 (-1.59%)",
+   "driver_chg": -1.59,
+   "flow": -0.64,
    "hot": false
   },
   {
@@ -523,19 +491,19 @@
    "ticker": "228790.KS",
    "etf": "TIGER 화장품",
    "driver": "^KS11",
-   "chg": -1.27,
-   "chg5": -1.05,
-   "money": 0.26,
+   "chg": -1.51,
+   "chg5": -1.28,
+   "money": 0.4,
    "streak_sign": -1,
    "streak": 2,
-   "price": 4260,
-   "volume": 2264421,
+   "price": 4250,
+   "volume": 3560608,
    "spark": [
     1.05,
     -1.26,
     0.7,
     -0.23,
-    -1.27
+    -1.51
    ],
    "spark_days": [
     "수",
@@ -544,9 +512,40 @@
     "월",
     "화"
    ],
-   "driver_text": "코스피 강세 (+1.76%)",
-   "driver_chg": 1.76,
-   "flow": -0.97,
+   "driver_text": "코스피 보합 (+0.15%)",
+   "driver_chg": 0.15,
+   "flow": -1.15,
+   "hot": false
+  },
+  {
+   "name": "바이오",
+   "ticker": "244580.KS",
+   "etf": "KODEX 바이오",
+   "driver": "^TNX",
+   "chg": -1.65,
+   "chg5": -1.96,
+   "money": 0.93,
+   "streak_sign": -1,
+   "streak": 1,
+   "price": 7750,
+   "volume": 308957,
+   "spark": [
+    -1.08,
+    1.41,
+    -1.39,
+    0.77,
+    -1.65
+   ],
+   "spark_days": [
+    "수",
+    "목",
+    "금",
+    "월",
+    "화"
+   ],
+   "driver_text": "미국 10년 금리 하락 (-0.7%)",
+   "driver_chg": -0.7,
+   "flow": -1.6,
    "hot": false
   }
  ],
@@ -556,16 +555,16 @@
    "kind": "idx",
    "ticker": "NQ=F",
    "unit": "",
-   "last": 30894.0,
-   "chg": 4.32
+   "last": 30736.0,
+   "chg": -0.16
   },
   {
    "name": "S&P500 선물",
    "kind": "idx",
    "ticker": "ES=F",
    "unit": "",
-   "last": 7835.0,
-   "chg": 2.32
+   "last": 7825.0,
+   "chg": -0.11
   },
   {
    "name": "미국 반도체",
@@ -580,31 +579,31 @@
    "kind": "kr",
    "ticker": "^KS11",
    "unit": "",
-   "last": 7131.0,
-   "chg": 1.76
+   "last": 7018.0,
+   "chg": 0.15
   },
   {
    "name": "코스닥",
    "kind": "kr",
    "ticker": "^KQ11",
    "unit": "",
-   "last": 842.99,
-   "chg": 0.8
+   "last": 834.38,
+   "chg": -0.23
   },
   {
    "name": "원달러",
    "kind": "fx",
    "ticker": "KRW=X",
    "unit": "원",
-   "last": 1360.0,
-   "chg": -1.78
+   "last": 1363.0,
+   "chg": -1.59
   },
   {
    "name": "달러인덱스",
    "kind": "fx",
    "ticker": "DX-Y.NYB",
    "unit": "",
-   "last": 100.39,
+   "last": 100.6,
    "chg": 0.17
   },
   {
@@ -612,16 +611,16 @@
    "kind": "cmd",
    "ticker": "CL=F",
    "unit": "$",
-   "last": 93.12,
-   "chg": -7.16
+   "last": 92.93,
+   "chg": -2.98
   },
   {
    "name": "금",
    "kind": "cmd",
    "ticker": "GC=F",
    "unit": "$",
-   "last": 4382.0,
-   "chg": -0.97
+   "last": 4343.0,
+   "chg": -0.93
   },
   {
    "name": "미국 10년 금리",
@@ -636,16 +635,16 @@
    "kind": "risk",
    "ticker": "^VIX",
    "unit": "",
-   "last": 14.87,
-   "chg": 0.41
+   "last": 14.81,
+   "chg": -0.4
   },
   {
    "name": "비트코인",
    "kind": "crypto",
    "ticker": "BTC-USD",
    "unit": "$",
-   "last": 85585.0,
-   "chg": 5.48
+   "last": 85443.0,
+   "chg": -1.34
   }
  ],
  "errors": []
