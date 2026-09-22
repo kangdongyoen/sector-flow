@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="종목이 아니라 업종 단위로 오늘 돈이 어디로 갔는지 보는 화면">
 <title>섹터 흐름판</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
@@ -87,6 +94,34 @@ button{font:inherit; color:inherit; background:none; border:0}
   display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .dd{font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:6px;
   background:var(--gold-soft); color:var(--gold)}
+/* ── 화면 크기 대응 ──
+   폰은 한 줄, 태블릿은 두 줄, 데스크톱은 세 줄로 편다.
+   폰에서 좁게 끼여 보이던 건 viewport 태그가 없어서였다. */
+@media (min-width:760px){
+  .inn{max-width:700px; padding-inline:28px}
+  .hero{padding:26px 24px 24px}
+  .hero h1{font-size:30px}
+  .tlist{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start}
+  .pair .card{margin-bottom:0}
+}
+@media (min-width:1120px){
+  .inn{max-width:1040px}
+  .tlist{grid-template-columns:repeat(3,1fr)}
+  .hero h1{font-size:34px; max-width:14em}
+  .sheet{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ── 오늘 한눈에 ── */
+.split{display:flex; height:9px; border-radius:999px; overflow:hidden; background:var(--track)}
+.split i{display:block; height:100%}
+.split .up{background:var(--up)} .split .dn{background:var(--down)}
+.split .fl{background:var(--t3); opacity:.3}
+.gl{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; font-weight:700; margin-top:11px}
+.gl2{font-size:13.5px; font-weight:600; margin-top:9px; color:var(--t2);
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.gl2 b{color:var(--t1); font-weight:700}
+
 .livedot{display:inline-block; width:7px; height:7px; border-radius:50%;
   background:var(--up); margin-right:5px; vertical-align:middle;
   animation:pulse 1.8s ease-in-out infinite}
@@ -253,6 +288,8 @@ button{font:inherit; color:inherit; background:none; border:0}
 .nav button:focus-visible{outline:2px solid var(--gold); outline-offset:-3px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+</head>
+<body>
 
 <div class="topbar" id="topbar"><div class="inn"><div class="tb" id="tb"></div></div></div>
 <div id="dzone"></div>
@@ -275,7 +312,7 @@ button{font:inherit; color:inherit; background:none; border:0}
 </div></nav>
 
 <script>
-const DATA = {"updated":"2026-09-22 23:54","updated_label":"09월 22일 23:54 기준","date_label":"09월 22일","weekday":"화","market_status":"after","market_label":"장 마감","headline":"오늘 돈은 IT하드웨어 · 운송로 갔다","subline":"IT하드웨어 3일째 · 거래 크게 늘어남","mood":{"mood":"좋음","emoji":"🟢","score":3,"why":["환율 안정","유가 급락"]},"top_in":["IT하드웨어","운송","건설"],"top_out":["바이오","화장품","자동차"],"calendar":[{"date":"2026-09-24","kind":"off","title":"추석 연휴 휴장","note":"24일·25일 이틀 휴장","dday":2,"label":"9월 24일 (목)","dtext":"D-2"},{"date":"2026-09-25","kind":"off","title":"추석 휴장","note":"다음 거래일 9월 28일(월)","dday":3,"label":"9월 25일 (금)","dtext":"D-3"},{"date":"2026-10-02","kind":"us","title":"미국 9월 고용보고서","note":"한국시간 밤 9시 30분","dday":10,"label":"10월 2일 (금)","dtext":"D-10"},{"date":"2026-10-05","kind":"off","title":"개천절 대체 휴장","note":"","dday":13,"label":"10월 5일 (월)","dtext":"D-13"},{"date":"2026-10-08","kind":"expiry","title":"옵션 만기일","note":"만기 전후 수급 출렁임","dday":16,"label":"10월 8일 (목)","dtext":"D-16"},{"date":"2026-10-09","kind":"off","title":"한글날 휴장","note":"","dday":17,"label":"10월 9일 (금)","dtext":"D-17"}],"sectors":[{"name":"운송","ticker":"140710.KS","etf":"KODEX 운송","driver":"CL=F","chg":2.3,"chg5":2.3,"money":0.85,"streak_sign":1,"streak":1,"price":6670,"volume":33688,"spark":[-1.07,1.86,-0.23,-0.53,2.3],"spark_days":["수","목","금","월","화"],"driver_text":"유가(WTI) 하락 (-4.72%)","driver_chg":-4.72,"flow":2.16,"hot":false},{"name":"소비재","ticker":"266390.KS","etf":"KODEX 경기소비재","driver":"^KS11","chg":2.13,"chg5":0.87,"money":0.41,"streak_sign":1,"streak":1,"price":15085,"volume":1346,"spark":[0.3,-0.13,-0.87,-0.54,2.13],"spark_days":["수","목","금","월","화"],"driver_text":"코스피 보합 (+0.15%)","driver_chg":0.15,"flow":1.63,"hot":false},{"name":"IT하드웨어","ticker":"266370.KS","etf":"KODEX IT하드웨어","driver":"^SOX","chg":1.65,"chg5":8.82,"money":2.36,"streak_sign":1,"streak":3,"price":71150,"volume":67131,"spark":[2.78,-1.12,2.86,2.4,1.65],"spark_days":["수","목","금","월","화"],"driver_text":"미국 반도체 강세 (+0.65%)","driver_chg":0.65,"flow":2.31,"hot":true},{"name":"건설","ticker":"117700.KS","etf":"KODEX 건설","driver":"^TNX","chg":1.46,"chg5":-0.68,"money":1.71,"streak_sign":1,"streak":1,"price":7300,"volume":3537596,"spark":[-2.45,0.28,1.39,-1.3,1.46],"spark_days":["수","목","금","월","화"],"driver_text":"미국 10년 금리 보합 (-0.24%)","driver_chg":-0.24,"flow":1.87,"hot":true},{"name":"반도체","ticker":"091160.KS","etf":"KODEX 반도체","driver":"^SOX","chg":1.07,"chg5":11.41,"money":0.97,"streak_sign":1,"streak":3,"price":136695,"volume":1372461,"spark":[4.08,-0.04,2.26,3.6,1.07],"spark_days":["수","목","금","월","화"],"driver_text":"미국 반도체 강세 (+0.65%)","driver_chg":0.65,"flow":1.06,"hot":false},{"name":"IT대형주","ticker":"139260.KS","etf":"TIGER 200 IT","driver":"^SOX","chg":1.01,"chg5":8.95,"money":0.99,"streak_sign":1,"streak":3,"price":142620,"volume":216047,"spark":[2.65,-1.69,4.0,2.78,1.01],"spark_days":["수","목","금","월","화"],"driver_text":"미국 반도체 강세 (+0.65%)","driver_chg":0.65,"flow":1.01,"hot":false},{"name":"증권","ticker":"102970.KS","etf":"KODEX 증권","driver":"^KS11","chg":0.93,"chg5":0.28,"money":1.79,"streak_sign":1,"streak":2,"price":17835,"volume":711105,"spark":[-1.38,-0.43,-0.37,1.55,0.93],"spark_days":["수","목","금","월","화"],"driver_text":"코스피 보합 (+0.15%)","driver_chg":0.15,"flow":1.22,"hot":true},{"name":"중공업","ticker":"139230.KS","etf":"TIGER 200 중공업","driver":"KRW=X","chg":0.54,"chg5":1.78,"money":0.91,"streak_sign":1,"streak":1,"price":13135,"volume":78378,"spark":[-0.74,3.51,-0.34,-1.14,0.54],"spark_days":["수","목","금","월","화"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":0.52,"hot":false},{"name":"조선","ticker":"102960.KS","etf":"KODEX 조선","driver":"KRW=X","chg":0.41,"chg5":1.12,"money":0.5,"streak_sign":1,"streak":1,"price":13530,"volume":4819,"spark":[-0.75,2.07,0.7,-1.28,0.41],"spark_days":["수","목","금","월","화"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":0.33,"hot":false},{"name":"은행","ticker":"091170.KS","etf":"KODEX 은행","driver":"^TNX","chg":-0.15,"chg5":-0.68,"money":0.75,"streak_sign":-1,"streak":1,"price":16710,"volume":631275,"spark":[-0.27,0.39,-1.31,0.66,-0.15],"spark_days":["수","목","금","월","화"],"driver_text":"미국 10년 금리 보합 (-0.24%)","driver_chg":-0.24,"flow":-0.14,"hot":false},{"name":"에너지화학","ticker":"117460.KS","etf":"KODEX 에너지화학","driver":"CL=F","chg":-0.15,"chg5":-2.1,"money":0.66,"streak_sign":-1,"streak":3,"price":13495,"volume":27747,"spark":[-1.2,1.1,-0.94,-0.92,-0.15],"spark_days":["수","목","금","월","화"],"driver_text":"유가(WTI) 하락 (-4.72%)","driver_chg":-4.72,"flow":-0.13,"hot":false},{"name":"2차전지","ticker":"305720.KS","etf":"KODEX 2차전지산업","driver":"NQ=F","chg":-0.49,"chg5":-3.9,"money":1.38,"streak_sign":-1,"streak":2,"price":14305,"volume":4981015,"spark":[-1.24,-0.51,0.31,-2.01,-0.49],"spark_days":["수","목","금","월","화"],"driver_text":"나스닥 선물 강세 (+0.44%)","driver_chg":0.44,"flow":-0.56,"hot":false},{"name":"자동차","ticker":"091180.KS","etf":"KODEX 자동차","driver":"KRW=X","chg":-0.7,"chg5":-2.62,"money":0.79,"streak_sign":-1,"streak":2,"price":25435,"volume":106542,"spark":[-1.34,0.31,1.16,-2.05,-0.7],"spark_days":["수","목","금","월","화"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":-0.64,"hot":false},{"name":"화장품","ticker":"228790.KS","etf":"TIGER 화장품","driver":"^KS11","chg":-1.51,"chg5":-1.28,"money":0.4,"streak_sign":-1,"streak":2,"price":4250,"volume":3560886,"spark":[1.05,-1.26,0.7,-0.23,-1.51],"spark_days":["수","목","금","월","화"],"driver_text":"코스피 보합 (+0.15%)","driver_chg":0.15,"flow":-1.15,"hot":false},{"name":"바이오","ticker":"244580.KS","etf":"KODEX 바이오","driver":"^TNX","chg":-1.65,"chg5":-1.96,"money":0.93,"streak_sign":-1,"streak":1,"price":7750,"volume":307931,"spark":[-1.08,1.41,-1.39,0.77,-1.65],"spark_days":["수","목","금","월","화"],"driver_text":"미국 10년 금리 보합 (-0.24%)","driver_chg":-0.24,"flow":-1.6,"hot":false}],"globals":[{"name":"나스닥 선물","kind":"idx","ticker":"NQ=F","unit":"","last":30921.0,"chg":0.44},{"name":"S&P500 선물","kind":"idx","ticker":"ES=F","unit":"","last":7831.0,"chg":-0.03},{"name":"미국 반도체","kind":"idx","ticker":"^SOX","unit":"","last":12514.0,"chg":0.65},{"name":"코스피","kind":"kr","ticker":"^KS11","unit":"","last":7018.0,"chg":0.15},{"name":"코스닥","kind":"kr","ticker":"^KQ11","unit":"","last":834.38,"chg":-0.23},{"name":"원달러","kind":"fx","ticker":"KRW=X","unit":"원","last":1358.0,"chg":-1.96},{"name":"달러인덱스","kind":"fx","ticker":"DX-Y.NYB","unit":"","last":100.58,"chg":0.15},{"name":"유가(WTI)","kind":"cmd","ticker":"CL=F","unit":"$","last":91.26,"chg":-4.72},{"name":"금","kind":"cmd","ticker":"GC=F","unit":"$","last":4357.0,"chg":-0.62},{"name":"미국 10년 금리","kind":"rate","ticker":"^TNX","unit":"%","last":4.95,"chg":-0.24},{"name":"공포지수(VIX)","kind":"risk","ticker":"^VIX","unit":"","last":14.43,"chg":-2.96},{"name":"비트코인","kind":"crypto","ticker":"BTC-USD","unit":"$","last":86040.0,"chg":-0.65}],"errors":[]};
+const DATA = {"updated":"2026-09-23 00:17","updated_label":"09월 23일 00:17 기준","date_label":"09월 23일","weekday":"수","market_status":"pre","market_label":"개장 전 · 어제 마감 기준","headline":"오늘 돈은 반도체 · IT대형주로 갔다","subline":"반도체 2일째","mood":{"mood":"좋음","emoji":"🟢","score":3,"why":["환율 안정","유가 급락"]},"top_in":["반도체","IT대형주","IT하드웨어"],"top_out":["2차전지","자동차","건설"],"calendar":[{"date":"2026-09-24","kind":"off","title":"추석 연휴 휴장","note":"24일·25일 이틀 휴장","dday":1,"label":"9월 24일 (목)","dtext":"내일"},{"date":"2026-09-25","kind":"off","title":"추석 휴장","note":"다음 거래일 9월 28일(월)","dday":2,"label":"9월 25일 (금)","dtext":"D-2"},{"date":"2026-10-02","kind":"us","title":"미국 9월 고용보고서","note":"한국시간 밤 9시 30분","dday":9,"label":"10월 2일 (금)","dtext":"D-9"},{"date":"2026-10-05","kind":"off","title":"개천절 대체 휴장","note":"","dday":12,"label":"10월 5일 (월)","dtext":"D-12"},{"date":"2026-10-08","kind":"expiry","title":"옵션 만기일","note":"만기 전후 수급 출렁임","dday":15,"label":"10월 8일 (목)","dtext":"D-15"},{"date":"2026-10-09","kind":"off","title":"한글날 휴장","note":"","dday":16,"label":"10월 9일 (금)","dtext":"D-16"}],"sectors":[{"name":"반도체","ticker":"091160.KS","etf":"KODEX 반도체","driver":"^SOX","chg":3.6,"chg5":9.51,"money":1.05,"streak_sign":1,"streak":2,"price":135250,"volume":1372461,"spark":[-0.65,4.08,-0.04,2.26,3.6],"spark_days":["화","수","목","금","월"],"driver_text":"미국 반도체 강세 (+0.91%)","driver_chg":0.91,"flow":3.67,"hot":false},{"name":"IT대형주","ticker":"139260.KS","etf":"TIGER 200 IT","driver":"^SOX","chg":2.78,"chg5":8.05,"money":1.06,"streak_sign":1,"streak":2,"price":141200,"volume":216047,"spark":[0.16,2.65,-1.69,4.0,2.78],"spark_days":["화","수","목","금","월"],"driver_text":"미국 반도체 강세 (+0.91%)","driver_chg":0.91,"flow":2.85,"hot":false},{"name":"IT하드웨어","ticker":"266370.KS","etf":"KODEX IT하드웨어","driver":"^SOX","chg":2.4,"chg5":6.17,"money":0.55,"streak_sign":1,"streak":2,"price":69995,"volume":67131,"spark":[-0.82,2.78,-1.12,2.86,2.4],"spark_days":["화","수","목","금","월"],"driver_text":"미국 반도체 강세 (+0.91%)","driver_chg":0.91,"flow":1.97,"hot":false},{"name":"증권","ticker":"102970.KS","etf":"KODEX 증권","driver":"^KS11","chg":1.55,"chg5":-2.56,"money":0.74,"streak_sign":1,"streak":1,"price":17670,"volume":711105,"spark":[-1.93,-1.38,-0.43,-0.37,1.55],"spark_days":["화","수","목","금","월"],"driver_text":"코스피 강세 (+1.65%)","driver_chg":1.65,"flow":1.39,"hot":false},{"name":"바이오","ticker":"244580.KS","etf":"KODEX 바이오","driver":"^TNX","chg":0.77,"chg5":0.7,"money":1.01,"streak_sign":1,"streak":1,"price":7880,"volume":307931,"spark":[1.02,-1.08,1.41,-1.39,0.77],"spark_days":["화","수","목","금","월"],"driver_text":"미국 10년 금리 보합 (-0.16%)","driver_chg":-0.16,"flow":0.77,"hot":false},{"name":"은행","ticker":"091170.KS","etf":"KODEX 은행","driver":"^TNX","chg":0.66,"chg5":-2.65,"money":0.7,"streak_sign":1,"streak":1,"price":16735,"volume":631275,"spark":[-2.12,-0.27,0.39,-1.31,0.66],"spark_days":["화","수","목","금","월"],"driver_text":"미국 10년 금리 보합 (-0.16%)","driver_chg":-0.16,"flow":0.58,"hot":false},{"name":"화장품","ticker":"228790.KS","etf":"TIGER 화장품","driver":"^KS11","chg":-0.23,"chg5":-1.6,"money":0.29,"streak_sign":-1,"streak":1,"price":4315,"volume":3560886,"spark":[-1.82,1.05,-1.26,0.7,-0.23],"spark_days":["화","수","목","금","월"],"driver_text":"코스피 강세 (+1.65%)","driver_chg":1.65,"flow":-0.17,"hot":false},{"name":"운송","ticker":"140710.KS","etf":"KODEX 운송","driver":"CL=F","chg":-0.53,"chg5":-2.4,"money":0.13,"streak_sign":-1,"streak":2,"price":6520,"volume":33688,"spark":[-2.4,-1.07,1.86,-0.23,-0.53],"spark_days":["화","수","목","금","월"],"driver_text":"유가(WTI) 하락 (-4.72%)","driver_chg":-4.72,"flow":-0.4,"hot":false},{"name":"소비재","ticker":"266390.KS","etf":"KODEX 경기소비재","driver":"^KS11","chg":-0.54,"chg5":-1.66,"money":0.65,"streak_sign":-1,"streak":3,"price":14770,"volume":1346,"spark":[-0.43,0.3,-0.13,-0.87,-0.54],"spark_days":["화","수","목","금","월"],"driver_text":"코스피 강세 (+1.65%)","driver_chg":1.65,"flow":-0.46,"hot":false},{"name":"에너지화학","ticker":"117460.KS","etf":"KODEX 에너지화학","driver":"CL=F","chg":-0.92,"chg5":-2.45,"money":0.91,"streak_sign":-1,"streak":2,"price":13515,"volume":27747,"spark":[-0.51,-1.2,1.1,-0.94,-0.92],"spark_days":["화","수","목","금","월"],"driver_text":"유가(WTI) 하락 (-4.72%)","driver_chg":-4.72,"flow":-0.89,"hot":false},{"name":"중공업","ticker":"139230.KS","etf":"TIGER 200 중공업","driver":"KRW=X","chg":-1.14,"chg5":-1.69,"money":0.62,"streak_sign":-1,"streak":2,"price":13065,"volume":78378,"spark":[-2.9,-0.74,3.51,-0.34,-1.14],"spark_days":["화","수","목","금","월"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":-0.97,"hot":false},{"name":"조선","ticker":"102960.KS","etf":"KODEX 조선","driver":"KRW=X","chg":-1.28,"chg5":-2.46,"money":0.76,"streak_sign":-1,"streak":1,"price":13475,"volume":4819,"spark":[-3.15,-0.75,2.07,0.7,-1.28],"spark_days":["화","수","목","금","월"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":-1.16,"hot":false},{"name":"건설","ticker":"117700.KS","etf":"KODEX 건설","driver":"^TNX","chg":-1.3,"chg5":-0.69,"money":0.87,"streak_sign":-1,"streak":1,"price":7195,"volume":3537596,"spark":[1.45,-2.45,0.28,1.39,-1.3],"spark_days":["화","수","목","금","월"],"driver_text":"미국 10년 금리 보합 (-0.16%)","driver_chg":-0.16,"flow":-1.23,"hot":false},{"name":"2차전지","ticker":"305720.KS","etf":"KODEX 2차전지산업","driver":"NQ=F","chg":-2.01,"chg5":-1.1,"money":1.34,"streak_sign":-1,"streak":1,"price":14375,"volume":4981015,"spark":[2.41,-1.24,-0.51,0.31,-2.01],"spark_days":["화","수","목","금","월"],"driver_text":"나스닥 선물 강세 (+0.43%)","driver_chg":0.43,"flow":-2.28,"hot":false},{"name":"자동차","ticker":"091180.KS","etf":"KODEX 자동차","driver":"KRW=X","chg":-2.05,"chg5":-3.01,"money":0.54,"streak_sign":-1,"streak":1,"price":25615,"volume":106542,"spark":[-1.1,-1.34,0.31,1.16,-2.05],"spark_days":["화","수","목","금","월"],"driver_text":"원달러 하락 (-1.96%)","driver_chg":-1.96,"flow":-1.67,"hot":false}],"globals":[{"name":"나스닥 선물","kind":"idx","ticker":"NQ=F","unit":"","last":30916.0,"chg":0.43},{"name":"S&P500 선물","kind":"idx","ticker":"ES=F","unit":"","last":7832.0,"chg":-0.02},{"name":"미국 반도체","kind":"idx","ticker":"^SOX","unit":"","last":12547.0,"chg":0.91},{"name":"코스피","kind":"kr","ticker":"^KS11","unit":"","last":7008.0,"chg":1.65},{"name":"코스닥","kind":"kr","ticker":"^KQ11","unit":"","last":836.27,"chg":1.11},{"name":"원달러","kind":"fx","ticker":"KRW=X","unit":"원","last":1358.0,"chg":-1.96},{"name":"달러인덱스","kind":"fx","ticker":"DX-Y.NYB","unit":"","last":100.59,"chg":0.16},{"name":"유가(WTI)","kind":"cmd","ticker":"CL=F","unit":"$","last":91.26,"chg":-4.72},{"name":"금","kind":"cmd","ticker":"GC=F","unit":"$","last":4370.0,"chg":-0.31},{"name":"미국 10년 금리","kind":"rate","ticker":"^TNX","unit":"%","last":4.95,"chg":-0.16},{"name":"공포지수(VIX)","kind":"risk","ticker":"^VIX","unit":"","last":14.42,"chg":-3.03},{"name":"비트코인","kind":"crypto","ticker":"BTC-USD","unit":"$","last":86211.0,"chg":-0.45}],"errors":[]};
 
 (function(){
   let d = DATA;
@@ -352,12 +389,12 @@ const DATA = {"updated":"2026-09-22 23:54","updated_label":"09월 22일 23:54 �
     const tabs=['자금흐름','전체섹터','글로벌'];
     let panel;
     if(route.tab===0){
-      panel=`<div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
+      panel=`<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
           <div class="cbody">${rankRows(d.top_in,max,'up')}</div></div>
         <div class="card tint-dn"><div class="chead"><span class="ctitle out">돈이 빠진 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
-          <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div>`;
+          <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div></div>`;
     } else if(route.tab===1){ panel=toneRows(d.sectors); }
     else { panel=globalCards(); }
     const on=!!d.is_live;
@@ -370,8 +407,34 @@ const DATA = {"updated":"2026-09-22 23:54","updated_label":"09월 22일 23:54 �
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
         <span class="chev">›</span></button>
+      ${glance()}
       <div class="seg" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${panel}`;
+  }
+
+  /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
+     막대 하나로 오른 업종과 빠진 업종의 비율을 보여준다. */
+  function glance(){
+    const S=(d.sectors||[]).filter(s=>s.chg!==null&&s.chg!==undefined);
+    if(!S.length) return '';
+    const tot=S.length;
+    const up=S.filter(s=>s.chg>0).length, dn=S.filter(s=>s.chg<0).length, fl=tot-up-dn;
+    const pc=n=>tot?(n/tot*100).toFixed(2):0;
+    const lead=(d.top_in&&d.top_in[0])?byName[d.top_in[0]]:null;
+    const G=n=>(d.globals||[]).find(g=>g.name===n);
+    const ks=G('코스피'), kq=G('코스닥');
+    const ix=[ks,kq].filter(Boolean).map(g=>
+      `<span>${esc(g.name)} <span class="num ${cls(g.chg)}">${fmt(g.chg)}</span></span>`).join('');
+    return `<div class="card"><div class="chead"><span class="ctitle">오늘 한눈에</span>
+        <span class="more" style="cursor:default">업종 ${tot}개</span></div>
+      <div class="cbody">
+        <div class="split"><i class="up" style="width:${pc(up)}%"></i><i class="fl" style="width:${pc(fl)}%"></i><i class="dn" style="width:${pc(dn)}%"></i></div>
+        <div class="gl"><span class="u">오른 업종 ${up}</span><span class="d">빠진 업종 ${dn}</span>${fl?`<span class="f">보합 ${fl}</span>`:''}</div>
+        ${lead?`<div class="gl2">가장 센 곳 <b>${esc(lead.name)}</b>
+          <span class="num ${cls(lead.chg)}">${fmt(lead.chg)}</span>
+          ${lead.total?`<span class="f">${lead.total}개 중 ${lead.rise}개 상승</span>`:''}</div>`:''}
+        ${ix?`<div class="gl">${ix}</div>`:''}
+      </div></div>`;
   }
 
   /* ── 전체 섹터 ── */
@@ -625,3 +688,5 @@ const DATA = {"updated":"2026-09-22 23:54","updated_label":"09월 22일 23:54 �
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pull(); });
 })();
 </script>
+</body>
+</html>
