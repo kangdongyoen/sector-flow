@@ -1,6 +1,6 @@
 {
- "updated": "2026-09-22 17:15",
- "updated_label": "09월 22일 17:15 기준",
+ "updated": "2026-09-22 20:28",
+ "updated_label": "09월 22일 20:28 기준",
  "date_label": "09월 22일",
  "weekday": "화",
  "market_status": "after",
@@ -10,10 +10,11 @@
  "mood": {
   "mood": "좋음",
   "emoji": "🟢",
-  "score": 3,
+  "score": 4,
   "why": [
    "미국 반도체 강세",
-   "환율 안정"
+   "환율 안정",
+   "유가 급락"
   ]
  },
  "top_in": [
@@ -90,11 +91,11 @@
    "driver": "CL=F",
    "chg": 2.3,
    "chg5": 2.3,
-   "money": 0.87,
+   "money": 0.85,
    "streak_sign": 1,
    "streak": 1,
    "price": 6670,
-   "volume": 34457,
+   "volume": 33688,
    "spark": [
     -1.07,
     1.86,
@@ -109,9 +110,9 @@
     "월",
     "화"
    ],
-   "driver_text": "유가(WTI) 하락 (-2.98%)",
-   "driver_chg": -2.98,
-   "flow": 2.18,
+   "driver_text": "유가(WTI) 하락 (-5.52%)",
+   "driver_chg": -5.52,
+   "flow": 2.16,
    "hot": false
   },
   {
@@ -125,7 +126,7 @@
    "streak_sign": 1,
    "streak": 1,
    "price": 15085,
-   "volume": 1346,
+   "volume": 1350,
    "spark": [
     0.3,
     -0.13,
@@ -156,7 +157,7 @@
    "streak_sign": 1,
    "streak": 3,
    "price": 71150,
-   "volume": 67131,
+   "volume": 67139,
    "spark": [
     2.78,
     -1.12,
@@ -187,7 +188,7 @@
    "streak_sign": 1,
    "streak": 1,
    "price": 7300,
-   "volume": 3537596,
+   "volume": 3546377,
    "spark": [
     -2.45,
     0.28,
@@ -218,7 +219,7 @@
    "streak_sign": 1,
    "streak": 3,
    "price": 136695,
-   "volume": 1372461,
+   "volume": 1374355,
    "spark": [
     4.08,
     -0.04,
@@ -245,11 +246,11 @@
    "driver": "^SOX",
    "chg": 1.01,
    "chg5": 8.95,
-   "money": 0.99,
+   "money": 1.0,
    "streak_sign": 1,
    "streak": 3,
    "price": 142620,
-   "volume": 215779,
+   "volume": 216641,
    "spark": [
     2.65,
     -1.69,
@@ -280,7 +281,7 @@
    "streak_sign": 1,
    "streak": 2,
    "price": 17835,
-   "volume": 711105,
+   "volume": 712260,
    "spark": [
     -1.38,
     -0.43,
@@ -307,11 +308,11 @@
    "driver": "KRW=X",
    "chg": 0.54,
    "chg5": 1.78,
-   "money": 0.91,
+   "money": 0.92,
    "streak_sign": 1,
    "streak": 1,
    "price": 13135,
-   "volume": 78377,
+   "volume": 78569,
    "spark": [
     -0.74,
     3.51,
@@ -326,8 +327,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-1.59%)",
-   "driver_chg": -1.59,
+   "driver_text": "원달러 하락 (-2.09%)",
+   "driver_chg": -2.09,
    "flow": 0.52,
    "hot": false
   },
@@ -338,11 +339,11 @@
    "driver": "KRW=X",
    "chg": 0.41,
    "chg5": 1.12,
-   "money": 0.51,
+   "money": 0.5,
    "streak_sign": 1,
    "streak": 1,
    "price": 13530,
-   "volume": 4920,
+   "volume": 4819,
    "spark": [
     -0.75,
     2.07,
@@ -357,8 +358,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-1.59%)",
-   "driver_chg": -1.59,
+   "driver_text": "원달러 하락 (-2.09%)",
+   "driver_chg": -2.09,
    "flow": 0.33,
    "hot": false
   },
@@ -373,7 +374,7 @@
    "streak_sign": -1,
    "streak": 1,
    "price": 16710,
-   "volume": 631123,
+   "volume": 634771,
    "spark": [
     -0.27,
     0.39,
@@ -404,7 +405,7 @@
    "streak_sign": -1,
    "streak": 3,
    "price": 13495,
-   "volume": 27747,
+   "volume": 27952,
    "spark": [
     -1.2,
     1.1,
@@ -419,8 +420,8 @@
     "월",
     "화"
    ],
-   "driver_text": "유가(WTI) 하락 (-2.98%)",
-   "driver_chg": -2.98,
+   "driver_text": "유가(WTI) 하락 (-5.52%)",
+   "driver_chg": -5.52,
    "flow": -0.13,
    "hot": false
   },
@@ -435,7 +436,7 @@
    "streak_sign": -1,
    "streak": 2,
    "price": 14305,
-   "volume": 2363007,
+   "volume": 2374053,
    "spark": [
     -1.24,
     -0.51,
@@ -450,8 +451,8 @@
     "월",
     "화"
    ],
-   "driver_text": "나스닥 선물 보합 (-0.16%)",
-   "driver_chg": -0.16,
+   "driver_text": "나스닥 선물 보합 (+0.01%)",
+   "driver_chg": 0.01,
    "flow": -0.42,
    "hot": false
   },
@@ -466,7 +467,7 @@
    "streak_sign": -1,
    "streak": 2,
    "price": 25435,
-   "volume": 106444,
+   "volume": 106722,
    "spark": [
     -1.34,
     0.31,
@@ -481,8 +482,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-1.59%)",
-   "driver_chg": -1.59,
+   "driver_text": "원달러 하락 (-2.09%)",
+   "driver_chg": -2.09,
    "flow": -0.64,
    "hot": false
   },
@@ -497,7 +498,7 @@
    "streak_sign": -1,
    "streak": 2,
    "price": 4250,
-   "volume": 3560608,
+   "volume": 3575131,
    "spark": [
     1.05,
     -1.26,
@@ -528,7 +529,7 @@
    "streak_sign": -1,
    "streak": 1,
    "price": 7750,
-   "volume": 308957,
+   "volume": 307931,
    "spark": [
     -1.08,
     1.41,
@@ -555,16 +556,16 @@
    "kind": "idx",
    "ticker": "NQ=F",
    "unit": "",
-   "last": 30736.0,
-   "chg": -0.16
+   "last": 30789.0,
+   "chg": 0.01
   },
   {
    "name": "S&P500 선물",
    "kind": "idx",
    "ticker": "ES=F",
    "unit": "",
-   "last": 7825.0,
-   "chg": -0.11
+   "last": 7834.0,
+   "chg": 0.01
   },
   {
    "name": "미국 반도체",
@@ -595,32 +596,32 @@
    "kind": "fx",
    "ticker": "KRW=X",
    "unit": "원",
-   "last": 1363.0,
-   "chg": -1.59
+   "last": 1356.0,
+   "chg": -2.09
   },
   {
    "name": "달러인덱스",
    "kind": "fx",
    "ticker": "DX-Y.NYB",
    "unit": "",
-   "last": 100.6,
-   "chg": 0.17
+   "last": 100.4,
+   "chg": -0.03
   },
   {
    "name": "유가(WTI)",
    "kind": "cmd",
    "ticker": "CL=F",
    "unit": "$",
-   "last": 92.93,
-   "chg": -2.98
+   "last": 90.49,
+   "chg": -5.52
   },
   {
    "name": "금",
    "kind": "cmd",
    "ticker": "GC=F",
    "unit": "$",
-   "last": 4343.0,
-   "chg": -0.93
+   "last": 4352.0,
+   "chg": -0.73
   },
   {
    "name": "미국 10년 금리",
@@ -635,16 +636,16 @@
    "kind": "risk",
    "ticker": "^VIX",
    "unit": "",
-   "last": 14.81,
-   "chg": -0.4
+   "last": 14.84,
+   "chg": -0.2
   },
   {
    "name": "비트코인",
    "kind": "crypto",
    "ticker": "BTC-USD",
    "unit": "$",
-   "last": 85443.0,
-   "chg": -1.34
+   "last": 85969.0,
+   "chg": -0.73
   }
  ],
  "errors": []
