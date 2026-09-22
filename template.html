@@ -87,6 +87,16 @@ button{font:inherit; color:inherit; background:none; border:0}
   display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .dd{font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:6px;
   background:var(--gold-soft); color:var(--gold)}
+/* ── 오늘 한눈에 ── */
+.split{display:flex; height:9px; border-radius:999px; overflow:hidden; background:var(--track)}
+.split i{display:block; height:100%}
+.split .up{background:var(--up)} .split .dn{background:var(--down)}
+.split .fl{background:var(--t3); opacity:.3}
+.gl{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; font-weight:700; margin-top:11px}
+.gl2{font-size:13.5px; font-weight:600; margin-top:9px; color:var(--t2);
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.gl2 b{color:var(--t1); font-weight:700}
+
 .livedot{display:inline-block; width:7px; height:7px; border-radius:50%;
   background:var(--up); margin-right:5px; vertical-align:middle;
   animation:pulse 1.8s ease-in-out infinite}
@@ -370,8 +380,34 @@ const DATA = null; /*__DATA__*/
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
         <span class="chev">›</span></button>
+      ${glance()}
       <div class="seg" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${panel}`;
+  }
+
+  /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
+     막대 하나로 오른 업종과 빠진 업종의 비율을 보여준다. */
+  function glance(){
+    const S=(d.sectors||[]).filter(s=>s.chg!==null&&s.chg!==undefined);
+    if(!S.length) return '';
+    const tot=S.length;
+    const up=S.filter(s=>s.chg>0).length, dn=S.filter(s=>s.chg<0).length, fl=tot-up-dn;
+    const pc=n=>tot?(n/tot*100).toFixed(2):0;
+    const lead=(d.top_in&&d.top_in[0])?byName[d.top_in[0]]:null;
+    const G=n=>(d.globals||[]).find(g=>g.name===n);
+    const ks=G('코스피'), kq=G('코스닥');
+    const ix=[ks,kq].filter(Boolean).map(g=>
+      `<span>${esc(g.name)} <span class="num ${cls(g.chg)}">${fmt(g.chg)}</span></span>`).join('');
+    return `<div class="card"><div class="chead"><span class="ctitle">오늘 한눈에</span>
+        <span class="more" style="cursor:default">업종 ${tot}개</span></div>
+      <div class="cbody">
+        <div class="split"><i class="up" style="width:${pc(up)}%"></i><i class="fl" style="width:${pc(fl)}%"></i><i class="dn" style="width:${pc(dn)}%"></i></div>
+        <div class="gl"><span class="u">오른 업종 ${up}</span><span class="d">빠진 업종 ${dn}</span>${fl?`<span class="f">보합 ${fl}</span>`:''}</div>
+        ${lead?`<div class="gl2">가장 센 곳 <b>${esc(lead.name)}</b>
+          <span class="num ${cls(lead.chg)}">${fmt(lead.chg)}</span>
+          ${lead.total?`<span class="f">${lead.total}개 중 ${lead.rise}개 상승</span>`:''}</div>`:''}
+        ${ix?`<div class="gl">${ix}</div>`:''}
+      </div></div>`;
   }
 
   /* ── 전체 섹터 ── */
