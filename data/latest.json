@@ -1,6 +1,6 @@
 {
- "updated": "2026-09-22 23:30",
- "updated_label": "09월 22일 23:30 기준",
+ "updated": "2026-09-22 23:54",
+ "updated_label": "09월 22일 23:54 기준",
  "date_label": "09월 22일",
  "weekday": "화",
  "market_status": "after",
@@ -10,11 +10,10 @@
  "mood": {
   "mood": "좋음",
   "emoji": "🟢",
-  "score": 6,
+  "score": 3,
   "why": [
-   "미국 선물 강세",
-   "미국 반도체 강세",
-   "환율 안정"
+   "환율 안정",
+   "유가 급락"
   ]
  },
  "top_in": [
@@ -110,8 +109,8 @@
     "월",
     "화"
    ],
-   "driver_text": "유가(WTI) 하락 (-5.19%)",
-   "driver_chg": -5.19,
+   "driver_text": "유가(WTI) 하락 (-4.72%)",
+   "driver_chg": -4.72,
    "flow": 2.16,
    "hot": false
   },
@@ -172,8 +171,8 @@
     "월",
     "화"
    ],
-   "driver_text": "미국 반도체 강세 (+1.06%)",
-   "driver_chg": 1.06,
+   "driver_text": "미국 반도체 강세 (+0.65%)",
+   "driver_chg": 0.65,
    "flow": 2.31,
    "hot": true
   },
@@ -234,8 +233,8 @@
     "월",
     "화"
    ],
-   "driver_text": "미국 반도체 강세 (+1.06%)",
-   "driver_chg": 1.06,
+   "driver_text": "미국 반도체 강세 (+0.65%)",
+   "driver_chg": 0.65,
    "flow": 1.06,
    "hot": false
   },
@@ -265,8 +264,8 @@
     "월",
     "화"
    ],
-   "driver_text": "미국 반도체 강세 (+1.06%)",
-   "driver_chg": 1.06,
+   "driver_text": "미국 반도체 강세 (+0.65%)",
+   "driver_chg": 0.65,
    "flow": 1.01,
    "hot": false
   },
@@ -327,8 +326,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-2.1%)",
-   "driver_chg": -2.1,
+   "driver_text": "원달러 하락 (-1.96%)",
+   "driver_chg": -1.96,
    "flow": 0.52,
    "hot": false
   },
@@ -358,8 +357,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-2.1%)",
-   "driver_chg": -2.1,
+   "driver_text": "원달러 하락 (-1.96%)",
+   "driver_chg": -1.96,
    "flow": 0.33,
    "hot": false
   },
@@ -420,8 +419,8 @@
     "월",
     "화"
    ],
-   "driver_text": "유가(WTI) 하락 (-5.19%)",
-   "driver_chg": -5.19,
+   "driver_text": "유가(WTI) 하락 (-4.72%)",
+   "driver_chg": -4.72,
    "flow": -0.13,
    "hot": false
   },
@@ -451,8 +450,8 @@
     "월",
     "화"
    ],
-   "driver_text": "나스닥 선물 강세 (+0.52%)",
-   "driver_chg": 0.52,
+   "driver_text": "나스닥 선물 강세 (+0.44%)",
+   "driver_chg": 0.44,
    "flow": -0.56,
    "hot": false
   },
@@ -482,8 +481,8 @@
     "월",
     "화"
    ],
-   "driver_text": "원달러 하락 (-2.1%)",
-   "driver_chg": -2.1,
+   "driver_text": "원달러 하락 (-1.96%)",
+   "driver_chg": -1.96,
    "flow": -0.64,
    "hot": false
   },
@@ -556,24 +555,24 @@
    "kind": "idx",
    "ticker": "NQ=F",
    "unit": "",
-   "last": 30946.0,
-   "chg": 0.52
+   "last": 30921.0,
+   "chg": 0.44
   },
   {
    "name": "S&P500 선물",
    "kind": "idx",
    "ticker": "ES=F",
    "unit": "",
-   "last": 7835.0,
-   "chg": 0.02
+   "last": 7831.0,
+   "chg": -0.03
   },
   {
    "name": "미국 반도체",
    "kind": "idx",
    "ticker": "^SOX",
    "unit": "",
-   "last": 12565.0,
-   "chg": 1.06
+   "last": 12514.0,
+   "chg": 0.65
   },
   {
    "name": "코스피",
@@ -596,32 +595,32 @@
    "kind": "fx",
    "ticker": "KRW=X",
    "unit": "원",
-   "last": 1356.0,
-   "chg": -2.1
+   "last": 1358.0,
+   "chg": -1.96
   },
   {
    "name": "달러인덱스",
    "kind": "fx",
    "ticker": "DX-Y.NYB",
    "unit": "",
-   "last": 100.52,
-   "chg": 0.09
+   "last": 100.58,
+   "chg": 0.15
   },
   {
    "name": "유가(WTI)",
    "kind": "cmd",
    "ticker": "CL=F",
    "unit": "$",
-   "last": 90.81,
-   "chg": -5.19
+   "last": 91.26,
+   "chg": -4.72
   },
   {
    "name": "금",
    "kind": "cmd",
    "ticker": "GC=F",
    "unit": "$",
-   "last": 4367.0,
-   "chg": -0.38
+   "last": 4357.0,
+   "chg": -0.62
   },
   {
    "name": "미국 10년 금리",
@@ -636,16 +635,16 @@
    "kind": "risk",
    "ticker": "^VIX",
    "unit": "",
-   "last": 14.41,
-   "chg": -3.09
+   "last": 14.43,
+   "chg": -2.96
   },
   {
    "name": "비트코인",
    "kind": "crypto",
    "ticker": "BTC-USD",
    "unit": "$",
-   "last": 85880.0,
-   "chg": -0.83
+   "last": 86040.0,
+   "chg": -0.65
   }
  ],
  "errors": []
