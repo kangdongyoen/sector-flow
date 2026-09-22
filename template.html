@@ -333,7 +333,9 @@ const DATA = null; /*__DATA__*/
           <div class="lrow"><span class="ln">${esc(g.name)}</span>
             <span class="ll num">${g.unit==='$'?'$':''}${g.last.toLocaleString()}${g.unit&&g.unit!=='$'?g.unit:''}</span>
             <span class="lc num ${cls(g.chg)}">${fmt(g.chg)}</span></div>`).join('')}</div></div></div>`;
-    }).join('');
+    }).join('')+`<p class="note"><b>무슨 기준인가.</b> 전부 <b>전일 종가 대비</b>입니다.
+      미국 지수는 미국 직전 마감 기준, 선물 · 환율 · 코인은 24시간 돌아가므로 지금 값과 전일 정산가를 비교합니다.
+      한국 장중에 보면 미국 지수는 아직 어젯밤 숫자 그대로입니다.</p>`;
   }
 
   /* ── 홈 ── */
@@ -350,7 +352,7 @@ const DATA = null; /*__DATA__*/
           <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div>`;
     } else if(route.tab===1){ panel=toneRows(d.sectors); }
     else { panel=globalCards(); }
-    return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])}
+    return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])} · ${esc((d.updated||'').slice(11))} 기준
         ${next?`<span class="dd">${esc(next.dtext)} ${esc(next.title)}</span>`:''}</div>
       <button class="hero" data-go="more">${WAVE}
         <div class="eyebrow">오늘의 시장 흐름</div>
@@ -479,8 +481,9 @@ const DATA = null; /*__DATA__*/
             <span class="m">${esc(e.label)}${e.note?' · '+esc(e.note):''}</span></div>`).join('')
           :'<div class="note">표시할 일정이 없습니다.</div>'}</div></div></div>
       <div class="panel"><b>이 화면이 하는 일</b><br>종목이 아니라 섹터 단위로, 오늘 돈이 어디로 들어가고 빠졌는지만 정리합니다. 내일을 맞히는 화면이 아닙니다.</div>
-      <div class="panel"><b>갱신 시각</b> — 평일 5회<br>08:30 개장 전 · 09:30 / 11:30 / 13:30 장중 · 15:40 마감 확정<br>개장 전과 마감 확정 때 휴대폰 알림이 갑니다.</div>
-      <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 — 사후 서사라 넣지 않았습니다<br>· 시가총액 — 섹터 ETF에는 맞지 않는 개념이라 5일 누적으로 대체했습니다<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
+      <div class="panel"><b>갱신 시각</b><br>평일 08:37 개장 전 · 09:07부터 15:37까지 30분마다 · 15:47 마감 확정<br>화면 맨 위에 늘 '몇 시 기준'인지 적혀 있습니다. 그 시각 이후 움직임은 아직 안 들어와 있습니다.</div>
+      <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 이 화면은 업종 대표 <b>ETF</b> 등락률입니다. 증권앱의 업종지수와는 구성이 달라 소수점이 어긋납니다.<br>· 갱신 시각 이후 장이 더 움직였으면 그만큼 차이가 납니다. 맨 위 '기준 시각'을 먼저 보세요.<br>· 마감 확정치는 15:47 갱신분입니다.</div>
+      <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 시가총액 (섹터 ETF에는 맞지 않는 개념이라 5일 누적으로 대체했습니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
       <div class="panel"><b>출처</b><br>시세 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
@@ -522,9 +525,9 @@ const DATA = null; /*__DATA__*/
   function render(){
     renderTop();
     sbar.className='sbar'+(search&&(route.name==='sectors'||route.name==='home')?' on':'');
-    const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} — 화면에서 빠져 있습니다.</div>`:'';
+    const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} · 화면에서 빠져 있습니다.</div>`:'';
     const bp=bell?`<div class="panel"><b>${esc(d.updated_label)}</b> · ${esc(d.market_label)}<br>
-      평일 5회 자동 갱신 — 08:30 · 09:30 · 11:30 · 13:30 · 15:40<br>개장 전과 마감 확정 때 휴대폰 알림이 갑니다.</div>`:'';
+      평일 자동 갱신 · 개장 전 08:37 · 장중 30분마다 · 마감 확정 15:47</div>`:'';
     const body = route.name==='home'?scHome() : route.name==='sectors'?scSectors() :
       route.name==='global'?scGlobal() : route.name==='watch'?scWatch() :
       route.name==='more'?scMore() : route.name==='flow'?scFlow() :
