@@ -3,9 +3,9 @@ name: 섹터 흐름판 갱신
 on:
   schedule:
     # 시각은 전부 UTC. 한국시간(KST) = UTC + 9시간
-    - cron: '30 23 * * 0-4'    # 08:30 KST  개장 전 (미국 마감 반영)
-    - cron: '30 0,2,4 * * 1-5' # 09:30 / 11:30 / 13:30 KST  장중
-    - cron: '40 6 * * 1-5'     # 15:40 KST  마감 확정
+    - cron: '37 23 * * 0-4'    # 08:37 KST  개장 전 (미국 마감 반영)
+    - cron: '7,37 0-6 * * 1-5' # 09:07 ~ 15:37 KST  장중 30분마다
+    - cron: '47 6 * * 1-5'     # 15:47 KST  마감 확정
   workflow_dispatch:           # 버튼으로 수동 실행
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html data/
           if git diff --staged --quiet; then
-            echo "변경 없음 — 커밋 건너뜀"
+            echo "변경 없음, 커밋 건너뜀"
           else
             git commit -m "갱신 $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M') KST"
             git push
