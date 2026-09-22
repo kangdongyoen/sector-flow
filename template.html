@@ -338,7 +338,7 @@ const DATA = null; /*__DATA__*/
       const items=d.globals.filter(g=>kinds.includes(g.kind)); if(!items.length) return '';
       return `<div class="card" id="g${i}"><div class="chead"><span class="ctitle">${label}</span></div>
         <div class="cbody"><div class="llist">${items.map(g=>`
-          <div class="lrow"><span class="ln">${esc(g.name)}</span>
+          <div class="lrow"><span class="ln">${esc(g.name)}${g.stale?`<span class="tag">${g.stale}분 전</span>`:''}</span>
             <span class="ll num">${g.unit==='$'?'$':''}${g.last.toLocaleString()}${g.unit&&g.unit!=='$'?g.unit:''}</span>
             <span class="lc num ${cls(g.chg)}">${fmt(g.chg)}</span></div>`).join('')}</div></div></div>`;
     }).join('')+`<p class="note"><b>무슨 기준인가.</b> 전부 <b>전일 종가 대비</b>입니다.
