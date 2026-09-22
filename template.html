@@ -307,7 +307,10 @@ const DATA = null; /*__DATA__*/
   const isW=n=>watch.includes(n);
 
   let route={name:'home',arg:null,tab:0}, search=false, term='', bell=false;
-  const tags=s=>(s.streak>=2?`<span class="tag">${s.streak}일째</span>`:'')+(s.hot?'<span class="tag hot">돈 몰림</span>':'');
+  const tags=s=>(s.streak>=2?`<span class="tag">${s.streak}일째</span>`:'')
+    +(s.hot?`<span class="tag hot">${s.chg>=0?'전 종목급 상승':'전 종목급 하락'}</span>`:'');
+  /* 업종 안에서 몇 개가 같이 움직였나. 이게 '돈 몰림'보다 정직하다. */
+  const breadth=s=>(s.total?`${s.total}개 중 ${s.chg>=0?s.rise+'개 상승':s.fall+'개 하락'}`:'');
 
   function rankRows(names,max,dir){
     if(!names.length) return '<div class="note">해당하는 섹터가 없습니다.</div>';
@@ -326,7 +329,7 @@ const DATA = null; /*__DATA__*/
         <span class="tn">${esc(s.name)}${tags(s)}</span>
         <span class="rt"><span class="tv num ${cls(s.chg)}">${fmt(s.chg)} <span style="font-size:12px">${arr(s.chg)}</span></span>
           <span class="tc">›</span></span>
-        <span class="tw">${s.driver_text?esc(s.driver_text):'5일 '+fmt(s.chg5)}</span>
+        <span class="tw">${s.total?esc(breadth(s)):(s.driver_text?esc(s.driver_text):'5일 '+fmt(s.chg5))}</span>
       </button>`).join('')+`</div>`;
   }
   const GG=[['한국 시장',['kr']],['미국 지수',['idx']],['환율 · 금리',['fx','rate']],['원자재 · 기타',['cmd','risk','crypto']]];
@@ -385,8 +388,8 @@ const DATA = null; /*__DATA__*/
              +(flat.length?L('','→ 중립 섹터',3)+toneRows(flat):'');
     return `<div class="chips" role="tablist">${names.map((t,i)=>`<button class="chip" role="tab" data-tab="${i}" aria-selected="${f===i}">${t}</button>`).join('')}</div>
       ${body}
-      <p class="note"><b>섹터란.</b> 개별 종목이 아니라 업종 묶음입니다. 업종 대표 ETF 값으로 셉니다.<br>
-        <b>근거 신호.</b> 뉴스가 아니라, 같은 날 움직인 해외 지표에서 계산한 값입니다.</p>`;
+      <p class="note"><b>섹터란.</b> 개별 종목이 아니라 업종 묶음입니다. 업종 안 종목들의 등락을 묶어서 봅니다.<br>
+        <b>'16개 중 8개 상승'이 왜 붙어 있나.</b> 같은 +3%라도 전 종목이 오른 것과 한두 개가 끌어올린 것은 다릅니다. 그 차이를 그대로 적어 둡니다.</p>`;
   }
 
   /* ── 자금 흐름 ── */
@@ -400,8 +403,8 @@ const DATA = null; /*__DATA__*/
         <div class="cbody">${rankRows(ups,max,'up')}</div></div>
       <div class="card"><div class="chead"><span class="ctitle out">상위 유출 섹터</span></div>
         <div class="cbody">${rankRows(dns,max,'dn')}</div></div>
-      <p class="note"><b>개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 한국거래소가 로그인을 요구해서 막혀 있습니다.
-        지금 보이는 값은 전체 기준 하나뿐입니다.</p>`;
+      <p class="note"><b>순위는 등락률과 참여율로 매깁니다.</b> 같은 등락률이면 업종 안에서 더 많은 종목이 같이 움직인 쪽을 위로 올립니다.<br>
+        <b>개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 한국거래소가 로그인을 요구해서 막혀 있습니다.</p>`;
   }
 
   /* ── 상세 ── */
@@ -421,43 +424,73 @@ const DATA = null; /*__DATA__*/
       </div><span class="lb">${labs[i]}</span></div>`;
     }).join('')+`</div>`;
   }
+  /* 업종 구성 종목. 상세의 '종목' 탭에서만 부르고, 한 번 받으면 기억해 둔다. */
+  const stocksBox={};
+  function loadStocks(no){
+    if(no==null || stocksBox[no]!==undefined) return;
+    stocksBox[no]='loading';
+    fetch('/api/industry/'+no).then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(j=>{ stocksBox[no]=j.stocks||[]; if(route.name==='detail') render(); })
+      .catch(()=>{ stocksBox[no]='error'; if(route.name==='detail') render(); });
+  }
+  function stockRows(no){
+    const v=stocksBox[no];
+    if(v===undefined||v==='loading') return '<div class="note">불러오는 중입니다.</div>';
+    if(v==='error') return '<div class="note">종목 목록을 불러오지 못했습니다.</div>';
+    if(!v.length) return '<div class="note">표시할 종목이 없습니다.</div>';
+    return `<div class="llist">`+v.map(t=>`
+      <div class="lrow"><span class="ln">${esc(t.name)}</span>
+        <span class="ll num">${t.price?t.price.toLocaleString():'–'}</span>
+        <span class="lc num ${cls(t.chg)}">${fmt(t.chg)}</span></div>`).join('')+`</div>`;
+  }
   function scDetail(name){
     const s=byName[name]; if(!s) return '<div class="empty">섹터를 찾을 수 없습니다.</div>';
     const tabs=['개요','차트','종목'];
+    const hasSpark=Array.isArray(s.spark)&&s.spark.length>=2;
     let panel;
     if(route.tab===1){
-      panel=`<div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span>
-          <span class="more" style="cursor:default">일간 등락률</span></div>
-          <div class="cbody">${candles(s,210)}</div></div>
-        <div class="card"><div class="chead"><span class="ctitle">기간 성과</span></div><div class="cbody"><div class="llist">
-          <div class="lrow"><span class="ln">오늘</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
-          <div class="lrow"><span class="ln">최근 5거래일</span><span class="lc num ${cls(s.chg5)}">${fmt(s.chg5)}</span></div>
-          <div class="lrow"><span class="ln">연속 흐름</span><span class="lc f">${s.streak>=2?s.streak+'일':'없음'}</span></div>
-        </div></div></div>`;
+      panel=hasSpark
+        ? `<div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span>
+            <span class="more" style="cursor:default">일간 등락률</span></div>
+            <div class="cbody">${candles(s,210)}</div></div>
+          <div class="card"><div class="chead"><span class="ctitle">기간 성과</span></div><div class="cbody"><div class="llist">
+            <div class="lrow"><span class="ln">오늘</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
+            <div class="lrow"><span class="ln">최근 5거래일</span><span class="lc num ${cls(s.chg5)}">${fmt(s.chg5)}</span></div>
+          </div></div></div>`
+        : `<div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span></div>
+            <div class="cbody"><div class="note"><b>아직 그릴 게 없습니다.</b><br>
+              업종 단위로 바꾸면서 과거 기록을 새로 쌓기 시작했습니다.
+              마감마다 하루치가 저장되고, 5거래일이 모이면 여기에 캔들이 그려집니다.</div></div></div>
+          <div class="card"><div class="chead"><span class="ctitle">오늘</span></div><div class="cbody"><div class="llist">
+            <div class="lrow"><span class="ln">등락률</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
+            <div class="lrow"><span class="ln">오른 종목</span><span class="ll num">${s.rise??'–'}</span><span class="lc u">/ ${s.total??'–'}개</span></div>
+            <div class="lrow"><span class="ln">내린 종목</span><span class="ll num">${s.fall??'–'}</span><span class="lc d">/ ${s.total??'–'}개</span></div>
+          </div></div></div>`;
     } else if(route.tab===2){
-      panel=`<div class="card"><div class="chead"><span class="ctitle">기준 데이터</span></div><div class="cbody"><div class="llist">
-          <div class="lrow"><span class="ln">${esc(s.etf)}</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
-          <div class="lrow"><span class="ln">종목 코드</span><span class="ll num">${esc(s.ticker.replace('.KS',''))}</span><span class="lc f">KRX</span></div>
-        </div></div></div>
-        <p class="note"><b>개별 종목은 다루지 않습니다.</b> 이 화면은 처음부터 섹터 단위로만 봅니다.
-          삼성전자가 올랐는지가 아니라, 반도체로 돈이 갔는지를 봅니다.</p>`;
+      loadStocks(s.no);
+      panel=`<div class="card"><div class="chead"><span class="ctitle">${esc(s.name)} 구성 종목</span>
+          <span class="more" style="cursor:default">${s.total?s.total+'개':''}</span></div>
+          <div class="cbody">${stockRows(s.no)}</div></div>
+        <p class="note"><b>이건 추천이 아닙니다.</b> 업종 등락률이 어떻게 나왔는지 보여주는 내역일 뿐입니다.
+          이 화면은 종목을 고르는 곳이 아니라, 돈이 어느 업종으로 갔는지 보는 곳입니다.</p>`;
     } else {
       panel=`<div class="stats">
-          <div class="stat"><div class="k">ETF 종가</div><div class="v num">${s.price?s.price.toLocaleString():'–'}</div>
-            <div class="s num ${cls(s.chg)}">${fmt(s.chg)}</div></div>
-          <div class="stat"><div class="k">거래량</div><div class="v num">${knum(s.volume)}</div>
-            <div class="s num ${s.money>=1.2?'u':s.money<=0.8?'d':'f'}">평소 ${s.money?s.money.toFixed(1)+'배':'–'}</div></div>
-          <div class="stat"><div class="k">5일 누적</div><div class="v num ${cls(s.chg5)}">${fmt(s.chg5)}</div>
-            <div class="s f">${s.streak>=2?s.streak+'일 연속':'연속 없음'}</div></div>
+          <div class="stat"><div class="k">오늘 등락률</div><div class="v num ${cls(s.chg)}">${fmt(s.chg)}</div>
+            <div class="s f">${esc(d.market_label||'')}</div></div>
+          <div class="stat"><div class="k">구성 종목</div><div class="v num">${s.total??'–'}</div>
+            <div class="s f">개</div></div>
+          <div class="stat"><div class="k">오른 종목</div><div class="v num u">${s.rise??'–'}</div>
+            <div class="s num ${s.total&&s.rise/s.total>=0.6?'u':s.total&&s.rise/s.total<=0.4?'d':'f'}">${s.total?Math.round(s.rise/s.total*100)+'%':'–'}</div></div>
         </div>
-        <div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span>
-          <button class="more" data-tab="1">더보기 ›</button></div>
-          <div class="cbody">${candles(s,150)}</div></div>
-        <div class="card"><div class="chead"><span class="ctitle">대표 ETF</span>
-          <button class="more" data-tab="2">더보기 ›</button></div>
+        <div class="card"><div class="chead"><span class="ctitle">업종 안에서 무슨 일이</span></div>
           <div class="cbody"><div class="llist">
-            <div class="lrow"><span class="ln">${esc(s.etf)}</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
-          </div></div></div>`;
+            <div class="lrow"><span class="ln">상승</span><span class="ll num">${s.rise??'–'}</span><span class="lc u">개</span></div>
+            <div class="lrow"><span class="ln">하락</span><span class="ll num">${s.fall??'–'}</span><span class="lc d">개</span></div>
+            <div class="lrow"><span class="ln">보합</span><span class="ll num">${s.steady??'–'}</span><span class="lc f">개</span></div>
+          </div></div></div>
+        <div class="card"><div class="chead"><span class="ctitle">구성 종목</span>
+          <button class="more" data-tab="2">더보기 ›</button></div>
+          <div class="cbody"><div class="note">${esc(breadth(s)||'집계 중')}</div></div></div>`;
     }
     return `<div class="seg" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${panel}
@@ -489,9 +522,9 @@ const DATA = null; /*__DATA__*/
           :'<div class="note">표시할 일정이 없습니다.</div>'}</div></div></div>
       <div class="panel"><b>이 화면이 하는 일</b><br>종목이 아니라 섹터 단위로, 오늘 돈이 어디로 들어가고 빠졌는지만 정리합니다. 내일을 맞히는 화면이 아닙니다.</div>
       <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
-      <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 이 화면은 업종 대표 <b>ETF</b> 등락률입니다. 증권앱의 업종지수와는 구성이 달라 소수점이 어긋납니다.<br>· 갱신 시각 이후 장이 더 움직였으면 그만큼 차이가 납니다. 맨 위 '기준 시각'을 먼저 보세요.<br>· 마감 확정치는 15:47 갱신분입니다.</div>
-      <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 시가총액 (섹터 ETF에는 맞지 않는 개념이라 5일 누적으로 대체했습니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
-      <div class="panel"><b>출처</b><br>시세 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
+      <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 업종 등락률은 <b>네이버 증권</b> 값을 그대로 씁니다. 증권앱과 업종 분류가 다르면 묶음이 달라 숫자도 달라집니다.<br>· 해외 지표는 야후 기준이고 전부 <b>전일 종가 대비</b>입니다.<br>· 맨 위에 '몇 시 기준'인지 늘 적혀 있습니다. 장중이면 빨간 점이 뜹니다.</div>
+      <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
+      <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 네이버 증권 · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
   const I_SEARCH=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.6 16.6 4.2 4.2"/></svg>`;
