@@ -196,6 +196,61 @@ async function readGlobals(ctx, origin) {
   return [fresh, errs];
 }
 
+/* ── 과거 기록 ──
+   업종 단위로 바꾸면서 과거가 없어졌다.
+   GitHub 가 마감마다 data/history.json 에 하루치를 쌓고, 여기서 그걸 읽어 붙인다.
+   5거래일이 모이면 상세 화면에 캔들이 그려진다. */
+
+async function readHistory(origin) {
+  try {
+    const r = await fetch(`${origin}/data/history.json`, { cf: { cacheTtl: 600 } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return Array.isArray(j?.days) ? j.days : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+const WDK = ['일', '월', '화', '수', '목', '금', '토'];
+
+/** 오늘을 뺀 지난 기록에 오늘 값을 얹어 5거래일을 만든다. */
+function attachHistory(sectors, days, todayISO) {
+  if (!days || !days.length) return;
+  const past = days.filter((x) => x.d < todayISO).slice(-4);
+  for (const s of sectors) {
+    const seq = [];
+    for (const day of past) {
+      const v = day.s ? day.s[s.name] : undefined;
+      if (typeof v === 'number') seq.push({ d: day.d, v });
+    }
+    seq.push({ d: todayISO, v: s.chg });
+    if (seq.length < 2) continue;
+
+    s.spark = seq.map((x) => x.v);
+    s.spark_days = seq.map((x) => WDK[new Date(x.d + 'T00:00:00+09:00').getUTCDay()]);
+
+    // 누적 등락률. 하루치를 곱해서 이어 붙인다.
+    let acc = 1;
+    for (const x of seq) acc *= 1 + x.v / 100;
+    s.chg5 = r2((acc - 1) * 100);
+
+    // 연속 흐름. 오늘부터 거꾸로 같은 부호가 몇 번 이어졌나.
+    const last = seq[seq.length - 1].v;
+    const sign = last > 0 ? 1 : last < 0 ? -1 : 0;
+    let n = 0;
+    if (sign) {
+      for (let i = seq.length - 1; i >= 0; i--) {
+        const v = seq[i].v;
+        if ((v > 0 && sign > 0) || (v < 0 && sign < 0)) n++;
+        else break;
+      }
+    }
+    s.streak_sign = sign;
+    s.streak = n;
+  }
+}
+
 /* ── 판정 ── */
 
 function judgeFlow(sectors) {
@@ -304,7 +359,9 @@ function stamp(now) {
 /* ── 조립 ── */
 
 async function build(ctx, origin) {
-  const [sectorsRes, globalsRes] = await Promise.allSettled([readSectors(), readGlobals(ctx, origin)]);
+  const [sectorsRes, globalsRes, histRes] = await Promise.allSettled([
+    readSectors(), readGlobals(ctx, origin), readHistory(origin),
+  ]);
 
   const errors = [];
   const sectors = sectorsRes.status === 'fulfilled' ? sectorsRes.value : [];
@@ -318,12 +375,18 @@ async function build(ctx, origin) {
     errors.push('해외 지표');
   }
 
-  const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
-  const mood = judgeMood(globals);
-
   const now = new Date();
   const [status, label] = marketStatus(now);
   const st = stamp(now);
+
+  // 개장 전이면 아직 어제 장의 마감치다. 그 날짜 자리에 놓는다.
+  const k = new Date(now.getTime() + 9 * 3600 * 1000);
+  if (k.getUTCHours() < 9) k.setUTCDate(k.getUTCDate() - 1);
+  const todayISO = k.toISOString().slice(0, 10);
+  if (histRes.status === 'fulfilled') attachHistory(sectors, histRes.value, todayISO);
+
+  const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
+  const mood = judgeMood(globals);
 
   return {
     source: 'naver+yahoo',
