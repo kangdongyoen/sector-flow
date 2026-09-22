@@ -87,6 +87,11 @@ button{font:inherit; color:inherit; background:none; border:0}
   display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .dd{font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:6px;
   background:var(--gold-soft); color:var(--gold)}
+.livedot{display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--up); margin-right:5px; vertical-align:middle;
+  animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.35; transform:scale(.8)}}
+@media (prefers-reduced-motion:reduce){.livedot{animation:none}}
 
 /* ── 히어로 ── */
 .hero{position:relative; overflow:hidden; border-radius:16px; padding:22px 20px 20px;
@@ -273,7 +278,7 @@ button{font:inherit; color:inherit; background:none; border:0}
 const DATA = null; /*__DATA__*/
 
 (function(){
-  const d = DATA;
+  let d = DATA;
   const view=document.getElementById('view'), tb=document.getElementById('tb'),
         topbar=document.getElementById('topbar'), sheet=document.getElementById('sheet'),
         dzone=document.getElementById('dzone'), sbar=document.getElementById('sbar'),
@@ -352,10 +357,12 @@ const DATA = null; /*__DATA__*/
           <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div>`;
     } else if(route.tab===1){ panel=toneRows(d.sectors); }
     else { panel=globalCards(); }
-    return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])} · ${esc((d.updated||'').slice(11))} 기준
+    const on=!!d.is_live;
+    const stamp = on ? `<span class="livedot"></span>실시간` : `${esc((d.updated||'').slice(11))} 기준`;
+    return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])} · ${stamp}
         ${next?`<span class="dd">${esc(next.dtext)} ${esc(next.title)}</span>`:''}</div>
       <button class="hero" data-go="more">${WAVE}
-        <div class="eyebrow">오늘의 시장 흐름</div>
+        <div class="eyebrow">${on?'지금 시장 흐름':'오늘의 기록'}</div>
         <h1>${esc(d.headline)}</h1>
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
@@ -481,7 +488,7 @@ const DATA = null; /*__DATA__*/
             <span class="m">${esc(e.label)}${e.note?' · '+esc(e.note):''}</span></div>`).join('')
           :'<div class="note">표시할 일정이 없습니다.</div>'}</div></div></div>
       <div class="panel"><b>이 화면이 하는 일</b><br>종목이 아니라 섹터 단위로, 오늘 돈이 어디로 들어가고 빠졌는지만 정리합니다. 내일을 맞히는 화면이 아닙니다.</div>
-      <div class="panel"><b>갱신 시각</b><br>평일 08:37 개장 전 · 09:07부터 15:37까지 30분마다 · 15:47 마감 확정<br>화면 맨 위에 늘 '몇 시 기준'인지 적혀 있습니다. 그 시각 이후 움직임은 아직 안 들어와 있습니다.</div>
+      <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
       <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 이 화면은 업종 대표 <b>ETF</b> 등락률입니다. 증권앱의 업종지수와는 구성이 달라 소수점이 어긋납니다.<br>· 갱신 시각 이후 장이 더 움직였으면 그만큼 차이가 납니다. 맨 위 '기준 시각'을 먼저 보세요.<br>· 마감 확정치는 15:47 갱신분입니다.</div>
       <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 시가총액 (섹터 ETF에는 맞지 않는 개념이라 5일 누적으로 대체했습니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
       <div class="panel"><b>출처</b><br>시세 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
@@ -558,5 +565,29 @@ const DATA = null; /*__DATA__*/
   });
   q.addEventListener('input',()=>{ term=q.value.trim(); if(route.name==='sectors') render(); });
   render();
+
+  /* ── 실시간 갱신 ──
+     화면이 열려 있는 동안 /api/live 를 직접 불러 온다.
+     미리 구워 둔 DATA 는 첫 화면과 통신 실패 때의 예비용으로 남는다.
+     일정(calendar)은 빌드할 때 계산한 값을 그대로 쓴다. */
+  let timer=null, fails=0;
+  function later(ms){ clearTimeout(timer); timer=setTimeout(pull,ms); }
+  async function pull(){
+    try{
+      const r=await fetch('/api/live');
+      if(!r.ok) throw new Error(r.status);
+      const j=await r.json();
+      if(!j || j.error || !Array.isArray(j.sectors) || !j.sectors.length) throw new Error('empty');
+      fails=0;
+      d=Object.assign({},DATA,j,{calendar:DATA.calendar});
+      render();
+      later(j.market_status==='open' ? 30000 : 300000);
+    }catch(e){
+      fails++;
+      later(fails>=3 ? 600000 : 60000);
+    }
+  }
+  pull();
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pull(); });
 })();
 </script>
