@@ -162,7 +162,8 @@ function judgeFlow(sectors) {
     else if (avg < -0.3) { line = '오늘은 다 같이 빠졌다'; sub = top_in.length ? '그나마 버틴 곳: ' + top_in[0].name : '전 업종 약세'; }
     else { line = '오늘은 특별한 흐름 없다'; sub = '업종 차이가 작음'; }
   } else if (top_in.length) {
-    line = `오늘 돈은 ${top_in.slice(0, 2).map((s) => s.name).join(' · ')}로 갔다`;
+    const names = top_in.slice(0, 2).map((s) => s.name);
+    line = `오늘 돈은 ${names.join(' · ')}${ro(names[names.length - 1])} 갔다`;
     const h = top_in[0];
     const bits = [`${h.name} ${h.total}개 중 ${h.rise}개 상승`];
     const wide = sectors.filter((s) => s.chg > 0).length;
@@ -172,6 +173,14 @@ function judgeFlow(sectors) {
     line = '오늘은 다 빠졌다'; sub = '오른 업종 없음';
   }
   return [top_in, top_out, [line, sub]];
+}
+
+/** 받침에 따라 '로' / '으로'. 받침 없거나 ㄹ이면 '로'. */
+function ro(word) {
+  const c = String(word).charCodeAt(String(word).length - 1);
+  if (!(c >= 0xac00 && c <= 0xd7a3)) return '로';
+  const jong = (c - 0xac00) % 28;
+  return jong === 0 || jong === 8 ? '로' : '으로';
 }
 
 const gg = (gl, t) => gl.find((x) => x.ticker === t);
