@@ -71,8 +71,10 @@ def main():
     now = datetime.now(KST)
     mins = now.hour * 60 + now.minute
     force = os.environ.get('FORCE_NOTIFY') == '1'
-    # 08:00~09:00 개장 전, 15:30~16:30 마감 뒤. 그 밖에는 보내지 않는다.
-    window = (8 * 60 <= mins < 9 * 60) or (15 * 60 + 30 <= mins < 16 * 60 + 30)
+    # 08:00~09:00 개장 전, 15:45~16:30 마감 뒤. 그 밖에는 보내지 않는다.
+    # 마감 창을 15시 45분부터로 잡은 이유는, 장중 갱신이 15시 37분에 한 번 더
+    # 돌기 때문이다. 그것까지 창에 들어오면 같은 알림이 두 번 온다.
+    window = (8 * 60 <= mins < 9 * 60) or (15 * 60 + 45 <= mins < 16 * 60 + 30)
     if not (window or force):
         print('알림 시간대가 아닙니다. 건너뜁니다.')
         return 0
