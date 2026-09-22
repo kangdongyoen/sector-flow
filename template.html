@@ -285,7 +285,7 @@ const DATA = null; /*__DATA__*/
         q=document.getElementById('q');
   if(!d){ view.innerHTML='<div class="empty">데이터를 불러오지 못했습니다.</div>'; return; }
 
-  const byName = Object.fromEntries(d.sectors.map(s=>[s.name,s]));
+  let byName = Object.fromEntries(d.sectors.map(s=>[s.name,s]));
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const fmt=v=>(v==null)?'–':(v>0?'+':'')+v.toFixed(2)+'%';
   const cls=v=>v>0?'u':(v<0?'d':'f');
@@ -613,6 +613,7 @@ const DATA = null; /*__DATA__*/
       if(!j || j.error || !Array.isArray(j.sectors) || !j.sectors.length) throw new Error('empty');
       fails=0;
       d=Object.assign({},DATA,j,{calendar:DATA.calendar});
+      byName=Object.fromEntries(d.sectors.map(s=>[s.name,s]));
       render();
       later(j.market_status==='open' ? 30000 : 300000);
     }catch(e){
