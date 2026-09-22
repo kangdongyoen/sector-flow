@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="종목이 아니라 업종 단위로 오늘 돈이 어디로 갔는지 보는 화면">
 <title>섹터 흐름판</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
@@ -87,6 +94,24 @@ button{font:inherit; color:inherit; background:none; border:0}
   display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .dd{font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:6px;
   background:var(--gold-soft); color:var(--gold)}
+/* ── 화면 크기 대응 ──
+   폰은 한 줄, 태블릿은 두 줄, 데스크톱은 세 줄로 편다.
+   폰에서 좁게 끼여 보이던 건 viewport 태그가 없어서였다. */
+@media (min-width:760px){
+  .inn{max-width:700px; padding-inline:28px}
+  .hero{padding:26px 24px 24px}
+  .hero h1{font-size:30px}
+  .tlist{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start}
+  .pair .card{margin-bottom:0}
+}
+@media (min-width:1120px){
+  .inn{max-width:1040px}
+  .tlist{grid-template-columns:repeat(3,1fr)}
+  .hero h1{font-size:34px; max-width:14em}
+  .sheet{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+}
+
 /* ── 오늘 한눈에 ── */
 .split{display:flex; height:9px; border-radius:999px; overflow:hidden; background:var(--track)}
 .split i{display:block; height:100%}
@@ -263,6 +288,8 @@ button{font:inherit; color:inherit; background:none; border:0}
 .nav button:focus-visible{outline:2px solid var(--gold); outline-offset:-3px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+</head>
+<body>
 
 <div class="topbar" id="topbar"><div class="inn"><div class="tb" id="tb"></div></div></div>
 <div id="dzone"></div>
@@ -362,12 +389,12 @@ const DATA = null; /*__DATA__*/
     const tabs=['자금흐름','전체섹터','글로벌'];
     let panel;
     if(route.tab===0){
-      panel=`<div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
+      panel=`<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
           <div class="cbody">${rankRows(d.top_in,max,'up')}</div></div>
         <div class="card tint-dn"><div class="chead"><span class="ctitle out">돈이 빠진 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
-          <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div>`;
+          <div class="cbody">${rankRows(d.top_out,max,'dn')}</div></div></div>`;
     } else if(route.tab===1){ panel=toneRows(d.sectors); }
     else { panel=globalCards(); }
     const on=!!d.is_live;
@@ -661,3 +688,5 @@ const DATA = null; /*__DATA__*/
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pull(); });
 })();
 </script>
+</body>
+</html>
