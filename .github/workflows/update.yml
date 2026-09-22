@@ -25,14 +25,17 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: 라이브러리 설치
-        run: pip install --quiet yfinance pandas
-
-      - name: 데이터 수집
+      - name: 데이터 보관
         run: python collect.py
 
       - name: 화면 생성
         run: python build.py
+
+      - name: 카카오톡 알림
+        env:
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+        run: python notify.py
 
       - name: 결과 커밋
         run: |
