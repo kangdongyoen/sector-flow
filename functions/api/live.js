@@ -84,15 +84,30 @@ async function readSectors() {
 
 /* ── 해외 지표: 야후 ── */
 
-async function yahoo(sym) {
-  const r = await fetch(
-    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
-    { headers: { 'user-agent': UA, accept: 'application/json' } }
-  );
-  if (!r.ok) throw new Error(sym + ' ' + r.status);
-  const m = (await r.json())?.chart?.result?.[0]?.meta;
-  if (!m) throw new Error(sym + ' empty');
-  return { pct: m.regularMarketChangePercent ?? null, price: m.regularMarketPrice ?? null };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * 야후 한 종목. 한 번 튕기면 잠깐 쉬고 다시 시도한다.
+ * 한꺼번에 열 개를 쏘면 야후가 일부를 거부하기 때문이다.
+ */
+async function yahoo(sym, tries = 3) {
+  let last = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`,
+        { headers: { 'user-agent': UA, accept: 'application/json' } }
+      );
+      if (!r.ok) throw new Error(sym + ' ' + r.status);
+      const m = (await r.json())?.chart?.result?.[0]?.meta;
+      if (!m || m.regularMarketPrice === undefined) throw new Error(sym + ' empty');
+      return { pct: m.regularMarketChangePercent ?? null, price: m.regularMarketPrice };
+    } catch (e) {
+      last = e;
+      if (i < tries - 1) await sleep(260 * (i + 1));
+    }
+  }
+  throw last;
 }
 
 async function naverIndex(code, name) {
@@ -109,31 +124,76 @@ async function naverIndex(code, name) {
   };
 }
 
-async function readGlobals() {
-  const errs = [];
+/**
+ * 마지막으로 성공한 해외 지표 값. Cloudflare 캐시에 따로 보관한다.
+ * 야후가 한 번 튕겼다고 화면에서 지표가 사라지면 안 된다.
+ * 30분까지는 직전 값을 쓰고, 몇 분 전 값인지 표시한다.
+ */
+const LKG_MAX_AGE = 30 * 60 * 1000;
+
+async function readLKG(origin) {
+  try {
+    const r = await caches.default.match(new Request(`${origin}/__lkg/globals`));
+    if (!r) return null;
+    const j = await r.json();
+    if (!j || !j.at || Date.now() - j.at > LKG_MAX_AGE) return null;
+    return j;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveLKG(ctx, origin, items) {
+  const body = JSON.stringify({ at: Date.now(), items });
+  const res = new Response(body, {
+    headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${LKG_MAX_AGE / 1000}` },
+  });
+  ctx.waitUntil(caches.default.put(new Request(`${origin}/__lkg/globals`), res));
+}
+
+async function readGlobals(ctx, origin) {
   const jobs = [
     naverIndex('KOSPI', '코스피'),
     naverIndex('KOSDAQ', '코스닥'),
-    ...GLOBALS.map(async ([t, name, kind, unit]) => {
+    ...GLOBALS.map(async ([t, name, kind, unit], i) => {
+      await sleep(i * 70); // 한꺼번에 쏘지 않고 살짝 흩는다
       const q = await yahoo(t);
       const v = q.price;
       return {
-        name,
-        kind,
-        ticker: t,
-        unit,
-        last: v === null ? null : Math.abs(v) >= 1000 ? Math.round(v) : r2(v),
+        name, kind, ticker: t, unit,
+        last: Math.abs(v) >= 1000 ? Math.round(v) : r2(v),
         chg: r2(q.pct),
       };
     }),
   ];
+
   const settled = await Promise.allSettled(jobs);
-  const out = [];
+  const fresh = [];
+  const failed = [];
   settled.forEach((s, i) => {
-    if (s.status === 'fulfilled' && s.value.last !== null) out.push(s.value);
-    else errs.push(i < 2 ? ['코스피', '코스닥'][i] : GLOBALS[i - 2][1]);
+    const name = i < 2 ? ['코스피', '코스닥'][i] : GLOBALS[i - 2][1];
+    if (s.status === 'fulfilled' && s.value.last !== null && s.value.last !== undefined) fresh.push(s.value);
+    else failed.push(name);
   });
-  return [out, errs];
+
+  if (fresh.length) saveLKG(ctx, origin, fresh);
+
+  // 실패한 것만 직전 값으로 메운다
+  const errs = [];
+  if (failed.length) {
+    const lkg = await readLKG(origin);
+    const mins = lkg ? Math.max(1, Math.round((Date.now() - lkg.at) / 60000)) : 0;
+    for (const name of failed) {
+      const old = lkg && lkg.items.find((x) => x.name === name);
+      if (old) fresh.push({ ...old, stale: mins });
+      else errs.push(name);
+    }
+  }
+
+  // 원래 순서대로 되돌린다
+  const order = ['코스피', '코스닥', ...GLOBALS.map((g) => g[1])];
+  fresh.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  return [fresh, errs];
 }
 
 /* ── 판정 ── */
@@ -243,8 +303,8 @@ function stamp(now) {
 
 /* ── 조립 ── */
 
-async function build() {
-  const [sectorsRes, globalsRes] = await Promise.allSettled([readSectors(), readGlobals()]);
+async function build(ctx, origin) {
+  const [sectorsRes, globalsRes] = await Promise.allSettled([readSectors(), readGlobals(ctx, origin)]);
 
   const errors = [];
   const sectors = sectorsRes.status === 'fulfilled' ? sectorsRes.value : [];
@@ -295,7 +355,7 @@ export async function onRequestGet(context) {
 
   let body;
   try {
-    body = await build();
+    body = await build(context, url.origin);
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 502,
