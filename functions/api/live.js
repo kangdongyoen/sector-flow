@@ -512,11 +512,70 @@ function stamp(now) {
   };
 }
 
+/* ── 시장 전체: 투자자별 순매수 · 오른 종목 수 ──
+   네이버 증권 지수 화면에 나오는 숫자 그대로다. 순매수 단위는 억원.
+   장중에는 거래소 잠정치라 마감 뒤 숫자와 다를 수 있다. */
+async function readMarket() {
+  const one = async (code, name) => {
+    const r = await fetch(`https://m.stock.naver.com/api/index/${code}/integration`, { headers: NAVER_H });
+    if (!r.ok) throw new Error(code + ' ' + r.status);
+    const j = await r.json();
+    const t = j.dealTrendInfo || {};
+    const u = j.upDownStockInfo || {};
+    const day = String(t.bizdate || '');
+    return {
+      name,
+      day: day.length === 8 ? `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}` : null,
+      inv: {
+        personal: numOf(t.personalValue),
+        foreign: numOf(t.foreignValue),
+        inst: numOf(t.institutionalValue),
+      },
+      breadth: {
+        rise: numOf(u.riseCount), fall: numOf(u.fallCount), steady: numOf(u.steadyCount),
+        upper: numOf(u.upperCount), lower: numOf(u.lowerCount),
+      },
+    };
+  };
+  const out = await Promise.allSettled([one('KOSPI', '코스피'), one('KOSDAQ', '코스닥')]);
+  return out.filter((x) => x.status === 'fulfilled').map((x) => x.value);
+}
+
+/* ── 장중 흐름: 지난 30분 ──
+   예약 실행기가 장중 10분마다 업종 등락률을 저장소에 찍어 둔다(intra:날짜).
+   지금 숫자에서 30분 전 숫자를 빼면, 그 사이 어느 업종에 속도가 붙었는지 보인다. */
+async function readIntraday(ctx, dayISO) {
+  try {
+    const kv = ctx && ctx.env && ctx.env.FLOW;
+    if (!kv) return null;
+    return await kv.get('intra:' + dayISO, 'json');
+  } catch (e) {
+    return null;
+  }
+}
+
+function attachIntraday(sectors, intra, nowMins) {
+  const snaps = intra && Array.isArray(intra.snaps) ? intra.snaps : [];
+  if (!snaps.length) return null;
+  const toMin = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+  // 30분 전과 가장 가까운 기록. 25분보다 가까우면 비교하지 않는다.
+  let base = null;
+  for (const sn of snaps) if (toMin(sn.t) <= nowMins - 25) base = sn;
+  if (!base) return null;
+  for (const s of sectors) {
+    const v = base.s ? base.s[s.name] : undefined;
+    if (typeof v === 'number' && typeof s.chg === 'number') s.d30 = r2(s.chg - v);
+  }
+  return { from: base.t, points: snaps.length };
+}
+
 /* ── 조립 ── */
 
 async function build(ctx, origin) {
-  const [sectorsRes, globalsRes, histRes] = await Promise.allSettled([
-    readSectors(), readGlobals(ctx, origin), readHistory(ctx, origin),
+  const kst = new Date(Date.now() + 9 * 3600 * 1000);
+  const calISO = kst.toISOString().slice(0, 10);
+  const [sectorsRes, globalsRes, histRes, marketRes, intraRes] = await Promise.allSettled([
+    readSectors(), readGlobals(ctx, origin), readHistory(ctx, origin), readMarket(), readIntraday(ctx, calISO),
   ]);
 
   const errors = [];
@@ -544,6 +603,13 @@ async function build(ctx, origin) {
   const hist = histRes.status === 'fulfilled' ? histRes.value : null;
   if (hist) attachHistory(sectors, hist.days, todayISO);
 
+  // 지난 30분 흐름은 장이 열려 있을 때만 뜻이 있다
+  let intraday = null;
+  if (status === 'open' && intraRes.status === 'fulfilled') {
+    intraday = attachIntraday(sectors, intraRes.value, kst.getUTCHours() * 60 + kst.getUTCMinutes());
+  }
+  const market = marketRes.status === 'fulfilled' ? marketRes.value : [];
+
   const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
   const mood = judgeMood(globals);
 
@@ -556,6 +622,8 @@ async function build(ctx, origin) {
     market_status: status,
     market_label: label,
     us: usState(now),
+    market,
+    intraday,
     is_live: status === 'open',
     headline,
     subline,
