@@ -395,7 +395,8 @@ const DATA = null; /*__DATA__*/
   const GG=[['한국',['kr']],['미국 · 어젯밤 마감',['us']],['미국 선물 · 지금',['fut','idx']],['아시아 · 지금',['asia']],
     ['환율 · 금리',['fx','rate']],['원자재 · 기타',['cmd','risk','crypto']]];
   function globalCards(){
-    return GG.map(([label,kinds],i)=>{
+    return GG.map(([label0,kinds],i)=>{
+      const label=(kinds[0]==='us'&&d.us&&d.us.label)?d.us.label.replace(/^미국 /,'미국 · '):label0;
       const items=d.globals.filter(g=>kinds.includes(g.kind)); if(!items.length) return '';
       return `<div class="card" id="g${i}"><div class="chead"><span class="ctitle">${label}</span></div>
         <div class="cbody"><div class="llist">${items.map(g=>`
@@ -457,7 +458,7 @@ const DATA = null; /*__DATA__*/
   }
   function indexCard(){
     const G=d.globals||[];
-    const rows=[['국내','kr','k3'],['미국 어젯밤 마감','us',''],['아시아 지금','asia','']]
+    const rows=[['국내','kr','k3'],[(d.us&&d.us.label)||'미국 어젯밤 마감','us',''],['아시아 지금','asia','']]
       .map(([label,kind,k])=>{ const it=G.filter(g=>g.kind===kind); if(!it.length) return '';
         return `<div class="ixg"><div class="ixh">${label}</div><div class="ixrow ${k}">${it.map(ixTile).join('')}</div></div>`; }).join('');
     if(!rows) return '';
@@ -629,7 +630,7 @@ const DATA = null; /*__DATA__*/
     return toneRows(list)+`<p class="note">관심 목록은 이 브라우저에만 저장됩니다. 다른 기기에는 따라가지 않습니다.</p>`;
   }
   function scMore(){
-    const cal=d.calendar||[], K={off:'휴장',fomc:'FOMC',kr:'한국',us:'미국',expiry:'만기'};
+    const cal=d.calendar||[], K={off:'휴장',usoff:'미국 휴장',fomc:'FOMC',kr:'한국',us:'미국',expiry:'만기'};
     return `<div class="quote"><b>LUCENT</b>복잡한 시장 속,<br>가장 중요한 흐름만<br>간결하게 전달합니다.</div>
       <div class="card"><div class="chead"><span class="ctitle">다가오는 일정</span>
         <span class="more" style="cursor:default">미리 공표된 날짜만</span></div>
