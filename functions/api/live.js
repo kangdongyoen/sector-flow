@@ -208,6 +208,8 @@ async function naverIndex(code, name) {
     unit: '',
     last: numOf(j.closePrice),
     chg: numOf(j.fluctuationsRatio),
+    // 마지막 체결 시각. 예약 실행기가 이걸 보고 어느 거래일 숫자인지 정한다.
+    at: j.localTradedAt || null,
   };
 }
 
@@ -289,7 +291,15 @@ async function readGlobals(ctx, origin) {
    GitHub 가 마감마다 data/history.json 에 하루치를 쌓고, 여기서 그걸 읽어 붙인다.
    5거래일이 모이면 상세 화면에 캔들이 그려진다. */
 
-async function readHistory(origin) {
+async function readHistory(ctx, origin) {
+  // 예약 실행기가 쌓는 저장소(KV)가 먼저다. 비어 있으면 GitHub 에 남은 파일을 본다.
+  try {
+    const kv = ctx && ctx.env && ctx.env.FLOW;
+    if (kv) {
+      const j = await kv.get('history', 'json');
+      if (j && Array.isArray(j.days) && j.days.length) return j.days;
+    }
+  } catch (e) {}
   try {
     const r = await fetch(`${origin}/data/history.json`, { cf: { cacheTtl: 600 } });
     if (!r.ok) return null;
@@ -422,11 +432,17 @@ function judgeMood(gl) {
 
 const WD = ['일', '월', '화', '수', '목', '금', '토'];
 
+/** 한국거래소 휴장일. 주말은 따로 거른다. 예약 실행기(worker/cron.js)와 같은 목록이다. */
+const HOLIDAYS = new Set([
+  '2026-09-24', '2026-09-25', '2026-10-05', '2026-10-09', '2026-12-25', '2026-12-31',
+]);
+
 function marketStatus(now) {
   const k = new Date(now.getTime() + 9 * 3600 * 1000);
   const dow = k.getUTCDay();
   const mins = k.getUTCHours() * 60 + k.getUTCMinutes();
   if (dow === 0 || dow === 6) return ['closed', '주말 휴장'];
+  if (HOLIDAYS.has(k.toISOString().slice(0, 10))) return ['closed', '휴장일'];
   if (mins < 9 * 60) return ['pre', '개장 전'];
   if (mins < 15 * 60 + 30) return ['open', '장중'];
   if (mins < 18 * 60) return ['after', '장 마감'];
@@ -448,7 +464,7 @@ function stamp(now) {
 
 async function build(ctx, origin) {
   const [sectorsRes, globalsRes, histRes] = await Promise.allSettled([
-    readSectors(), readGlobals(ctx, origin), readHistory(origin),
+    readSectors(), readGlobals(ctx, origin), readHistory(ctx, origin),
   ]);
 
   const errors = [];
