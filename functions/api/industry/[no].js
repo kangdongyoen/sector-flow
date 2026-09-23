@@ -42,7 +42,10 @@ export async function onRequestGet(context) {
       name: s.stockName,
       price: numOf(s.closePrice),
       chg: numOf(s.fluctuationsRatio),
+      cap: numOf(s.marketValue),
     }));
+    // 하루 가격제한폭(±30%) 밖이면 상장 첫날이나 거래 재개 종목이다. 업종 계산에서 뺀다.
+    for (const s of stocks) if (s.chg !== null && Math.abs(s.chg) > 30) s.out = true;
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e).slice(0, 120) }), {
       status: 502,
