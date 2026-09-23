@@ -26,11 +26,28 @@ const NAVER_H = {
 /** 종목 수가 이보다 적은 업종은 흐름으로 읽기 어렵다. */
 const MIN_STOCKS = 3;
 
-/** 해외 지표. [티커, 이름, 분류, 단위] */
+/** 국내 지수. 네이버. [코드, 이름] */
+const KR_INDEX = [
+  ['KOSPI', '코스피'],
+  ['KOSDAQ', '코스닥'],
+  ['KPI200', '코스피200'],
+];
+
+/** 해외 지표. [티커, 이름, 분류, 단위]
+ *  us    미국 현물 지수. 한국 낮에는 어젯밤 마감치 그대로다.
+ *  fut   미국 선물. 24시간 돈다. 한국 장중의 미국 분위기는 여기서 본다.
+ *  asia  한국과 같은 시간에 열려 있는 아시아 시장. */
 const GLOBALS = [
-  ['NQ=F', '나스닥 선물', 'idx', ''],
-  ['ES=F', 'S&P500 선물', 'idx', ''],
-  ['^SOX', '미국 반도체', 'idx', ''],
+  ['^DJI', '다우', 'us', ''],
+  ['^GSPC', 'S&P500', 'us', ''],
+  ['^IXIC', '나스닥', 'us', ''],
+  ['^SOX', '필라델피아 반도체', 'us', ''],
+  ['NQ=F', '나스닥 선물', 'fut', ''],
+  ['ES=F', 'S&P500 선물', 'fut', ''],
+  ['^N225', '닛케이', 'asia', ''],
+  ['000001.SS', '상하이종합', 'asia', ''],
+  ['^HSI', '항셍', 'asia', ''],
+  ['^TWII', '대만 가권', 'asia', ''],
   ['KRW=X', '원달러', 'fx', '원'],
   ['DX-Y.NYB', '달러인덱스', 'fx', ''],
   ['CL=F', '유가(WTI)', 'cmd', '$'],
@@ -82,6 +99,76 @@ async function readSectors() {
   return out;
 }
 
+/* ── 업종 숫자 검증 ──
+   한국 주식은 하루에 ±30% 넘게 못 움직인다. 가격제한폭이다.
+   그 밖의 숫자가 찍힌 종목은 상장 첫날이거나 거래가 재개된 종목이다.
+   어제 가격이 없으니 '오늘 돈이 움직인 폭'이 아니다.
+   그런데 네이버 업종 등락률은 이런 종목도 시가총액 비중대로 섞는다.
+   그래서 공모주 하나가 업종 전체를 +140% 로 만드는 일이 생긴다.
+
+   업종 숫자가 수상하면 구성 종목을 열어 보고, 제한폭 밖 종목만 빼고 다시 계산한다.
+   수상한 기준: 업종이 통째로 8% 넘게 움직였거나,
+   3% 넘게 움직였는데 같은 방향 종목이 절반도 안 될 때. */
+const PRICE_LIMIT = 30;
+const MAX_CHECK = 4;
+
+async function readMembers(no) {
+  const r = await fetch(`https://m.stock.naver.com/api/stocks/industry/${no}`, { headers: NAVER_H });
+  if (!r.ok) throw new Error('members ' + r.status);
+  const j = await r.json();
+  return (j.stocks || []).map((s) => ({
+    name: s.stockName,
+    chg: numOf(s.fluctuationsRatio),
+    cap: numOf(s.marketValue),
+  }));
+}
+
+function recompute(members) {
+  const valid = members.filter((m) => m.chg !== null);
+  const keep = valid.filter((m) => Math.abs(m.chg) <= PRICE_LIMIT);
+  const out = valid.filter((m) => Math.abs(m.chg) > PRICE_LIMIT);
+  if (!out.length || !keep.length) return null;
+
+  // 어제 시가총액 비중으로 묶는다. 지수 계산과 같은 방식이다.
+  // 어제 시총 = 오늘 시총 / (1 + 오늘 등락률)
+  const byCap = keep.every((m) => m.cap && m.cap > 0);
+  let chg;
+  if (byCap) {
+    let w = 0, t = 0;
+    for (const m of keep) {
+      const prev = m.cap / (1 + m.chg / 100);
+      w += prev;
+      t += prev * m.chg;
+    }
+    chg = t / w;
+  } else {
+    chg = keep.reduce((a, m) => a + m.chg, 0) / keep.length;
+  }
+  return { chg: r2(chg), keep, out, byCap };
+}
+
+async function verifySectors(sectors) {
+  const suspect = sectors
+    .filter((s) => Math.abs(s.chg) >= 8 || (Math.abs(s.chg) >= 3 && (s.part || 0) < 0.5))
+    .sort((a, b) => Math.abs(b.chg) - Math.abs(a.chg))
+    .slice(0, MAX_CHECK);
+
+  await Promise.allSettled(suspect.map(async (s) => {
+    const fix = recompute(await readMembers(s.no));
+    if (!fix) return;
+    const rise = fix.keep.filter((m) => m.chg > 0).length;
+    const fall = fix.keep.filter((m) => m.chg < 0).length;
+    s.naver_chg = s.chg;
+    s.chg = fix.chg;
+    s.total = fix.keep.length;
+    s.rise = rise;
+    s.fall = fall;
+    s.steady = fix.keep.length - rise - fall;
+    s.part = r2(s.total ? (s.chg >= 0 ? rise : fall) / s.total : 0);
+    s.excluded = fix.out.map((m) => m.name);
+  }));
+}
+
 /* ── 해외 지표: 야후 ── */
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -90,7 +177,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * 야후 한 종목. 한 번 튕기면 잠깐 쉬고 다시 시도한다.
  * 한꺼번에 열 개를 쏘면 야후가 일부를 거부하기 때문이다.
  */
-async function yahoo(sym, tries = 3) {
+async function yahoo(sym, tries = 2) {
   let last = null;
   for (let i = 0; i < tries; i++) {
     try {
@@ -152,16 +239,17 @@ function saveLKG(ctx, origin, items) {
 }
 
 async function readGlobals(ctx, origin) {
+  const INDEX_KINDS = ['us', 'asia'];
   const jobs = [
-    naverIndex('KOSPI', '코스피'),
-    naverIndex('KOSDAQ', '코스닥'),
+    ...KR_INDEX.map(([code, name]) => naverIndex(code, name)),
     ...GLOBALS.map(async ([t, name, kind, unit], i) => {
-      await sleep(i * 70); // 한꺼번에 쏘지 않고 살짝 흩는다
+      // 야후는 한꺼번에 많이 쏘면 일부를 거부한다. 5개씩 묶어 간격을 둔다.
+      await sleep(Math.floor(i / 5) * 320 + (i % 5) * 60);
       const q = await yahoo(t);
       const v = q.price;
       return {
         name, kind, ticker: t, unit,
-        last: Math.abs(v) >= 1000 ? Math.round(v) : r2(v),
+        last: INDEX_KINDS.includes(kind) ? r2(v) : Math.abs(v) >= 1000 ? Math.round(v) : r2(v),
         chg: r2(q.pct),
       };
     }),
@@ -170,8 +258,9 @@ async function readGlobals(ctx, origin) {
   const settled = await Promise.allSettled(jobs);
   const fresh = [];
   const failed = [];
+  const names = [...KR_INDEX.map((x) => x[1]), ...GLOBALS.map((g) => g[1])];
   settled.forEach((s, i) => {
-    const name = i < 2 ? ['코스피', '코스닥'][i] : GLOBALS[i - 2][1];
+    const name = names[i];
     if (s.status === 'fulfilled' && s.value.last !== null && s.value.last !== undefined) fresh.push(s.value);
     else failed.push(name);
   });
@@ -191,8 +280,7 @@ async function readGlobals(ctx, origin) {
   }
 
   // 원래 순서대로 되돌린다
-  const order = ['코스피', '코스닥', ...GLOBALS.map((g) => g[1])];
-  fresh.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  fresh.sort((a, b) => names.indexOf(a.name) - names.indexOf(b.name));
   return [fresh, errs];
 }
 
@@ -228,7 +316,7 @@ function attachHistory(sectors, days, todayISO) {
     if (seq.length < 2) continue;
 
     s.spark = seq.map((x) => x.v);
-    s.spark_days = seq.map((x) => WDK[new Date(x.d + 'T00:00:00+09:00').getUTCDay()]);
+    s.spark_days = seq.map((x) => WDK[new Date(x.d + 'T00:00:00Z').getUTCDay()]);
 
     // 누적 등락률. 하루치를 곱해서 이어 붙인다.
     let acc = 1;
@@ -383,6 +471,8 @@ async function build(ctx, origin) {
   const k = new Date(now.getTime() + 9 * 3600 * 1000);
   if (k.getUTCHours() < 9) k.setUTCDate(k.getUTCDate() - 1);
   const todayISO = k.toISOString().slice(0, 10);
+  // 판정 전에 숫자부터 바로잡는다. 기록에도 바로잡힌 숫자가 남는다.
+  await verifySectors(sectors);
   if (histRes.status === 'fulfilled') attachHistory(sectors, histRes.value, todayISO);
 
   const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
