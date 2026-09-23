@@ -432,10 +432,62 @@ function judgeMood(gl) {
 
 const WD = ['일', '월', '화', '수', '목', '금', '토'];
 
-/** 한국거래소 휴장일. 주말은 따로 거른다. 예약 실행기(worker/cron.js)와 같은 목록이다. */
+/** 한국거래소 휴장일 (2026년, 증권사 공지 기준). 주말은 따로 거른다. 예약 실행기(worker/cron.js)와 같은 목록이다. */
 const HOLIDAYS = new Set([
+  '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-02', '2026-05-01',
+  '2026-05-05', '2026-05-25', '2026-06-03', '2026-07-17', '2026-08-17',
   '2026-09-24', '2026-09-25', '2026-10-05', '2026-10-09', '2026-12-25', '2026-12-31',
 ]);
+
+/** 미국 주식시장 휴장일 · 조기 폐장일 (현지 날짜). 증권사 공지 기준.
+ *  미결제일(콜럼버스데이 · 재향군인의날)은 장이 정상으로 열려 여기에 넣지 않는다. */
+const US_HOLIDAYS = {
+  '2026-01-01': '새해', '2026-01-19': '마틴루서킹 데이', '2026-02-16': '대통령의 날',
+  '2026-04-03': '성금요일', '2026-05-25': '메모리얼 데이', '2026-06-19': '준틴스',
+  '2026-07-03': '독립기념일 대체', '2026-09-07': '노동절', '2026-11-26': '추수감사절',
+  '2026-12-25': '성탄절',
+};
+const US_HALF = new Set(['2026-11-27', '2026-12-24']);
+
+function nyNow(now) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(now).map((x) => [x.type, x.value]));
+  return { day: `${p.year}-${p.month}-${p.day}`, mins: (Number(p.hour) % 24) * 60 + Number(p.minute) };
+}
+const dayShift = (iso, n) => {
+  const t = new Date(iso + 'T00:00:00Z');
+  t.setUTCDate(t.getUTCDate() + n);
+  return t.toISOString().slice(0, 10);
+};
+const isWeekend = (iso) => [0, 6].includes(new Date(iso + 'T00:00:00Z').getUTCDay());
+const usSession = (iso) => !isWeekend(iso) && !US_HOLIDAYS[iso];
+const dd = (iso) => `${Number(iso.slice(8))}일(${'일월화수목금토'[new Date(iso + 'T00:00:00Z').getUTCDay()]})`;
+
+/** 미국 지수 칸 제목. 지금 장중인지, 마지막 마감이 언제였는지, 그 사이에 휴장이 있었는지. */
+function usState(now) {
+  const { day, mins } = nyNow(now);
+  const close = US_HALF.has(day) ? 13 * 60 : 16 * 60;
+  if (usSession(day) && mins >= 9 * 60 + 30 && mins < close) {
+    return { state: 'open', last: day, half: US_HALF.has(day), holiday: null,
+      label: '미국 지금 장중' + (US_HALF.has(day) ? ' · 조기 폐장일' : '') };
+  }
+  let last = usSession(day) && mins >= close ? day : dayShift(day, -1);
+  let holiday = null;
+  for (let i = 0; i < 10 && !usSession(last); i++) {
+    if (!holiday && US_HOLIDAYS[last]) holiday = { day: last, name: US_HOLIDAYS[last] };
+    last = dayShift(last, -1);
+  }
+  // 오늘(현지)이 휴장일이면 그것도 알려 준다. 한국 아침에 보면 '어젯밤'이 바로 그 휴장일이다.
+  if (!holiday && US_HOLIDAYS[day]) holiday = { day, name: US_HOLIDAYS[day] };
+  const half = US_HALF.has(last);
+  const recent = last === day || last === dayShift(day, -1);
+  const parts = [];
+  if (holiday) parts.push(`${dd(holiday.day)} 휴장(${holiday.name})`);
+  parts.push((recent && !holiday ? '어젯밤 마감' : `${dd(last)} 마감`) + (half ? ' · 조기 폐장' : ''));
+  return { state: holiday ? 'holiday' : 'closed', last, half, holiday, label: '미국 ' + parts.join(' · ') };
+}
 
 function marketStatus(now) {
   const k = new Date(now.getTime() + 9 * 3600 * 1000);
@@ -503,6 +555,7 @@ async function build(ctx, origin) {
     weekday: st.weekday,
     market_status: status,
     market_label: label,
+    us: usState(now),
     is_live: status === 'open',
     headline,
     subline,
