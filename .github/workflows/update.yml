@@ -1,11 +1,12 @@
 name: 섹터 흐름판 갱신
 
 on:
+  # 실시간 화면과 기록 · 카톡은 전부 Cloudflare 가 맡는다.
+  # 여기서는 하루 한 번, 첫 화면에 박아 둘 예비 데이터와 일정표만 새로 만든다.
+  # 커밋 한 번이 Cloudflare 빌드 한 번이라, 자주 돌리면 무료 빌드 한도(월 500회)를 다 쓴다.
   schedule:
-    # 시각은 전부 UTC. 한국시간(KST) = UTC + 9시간
-    - cron: '37 23 * * 0-4'    # 08:37 KST  개장 전 (미국 마감 반영)
-    - cron: '7,37 0-6 * * 1-5' # 09:07 ~ 15:37 KST  장중 30분마다
-    - cron: '47 6 * * 1-5'     # 15:47 KST  마감 확정
+    # 시각은 UTC. 한국시간(KST) = UTC + 9시간
+    - cron: '17 8 * * 1-5'     # 17:17 KST  마감 뒤 하루 한 번
   workflow_dispatch:           # 버튼으로 수동 실행
 
 permissions:
@@ -30,12 +31,6 @@ jobs:
 
       - name: 화면 생성
         run: python build.py
-
-      - name: 카카오톡 알림
-        env:
-          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
-          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
-        run: python notify.py
 
       - name: 결과 커밋
         run: |
