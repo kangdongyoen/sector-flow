@@ -1,0 +1,25 @@
+{
+ "name": "LUCENT 섹터 흐름판",
+ "short_name": "섹터 흐름",
+ "description": "오늘 돈이 어느 업종으로 들어가고 빠졌는지 한눈에",
+ "start_url": "/",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#FAF9F6",
+ "theme_color": "#121211",
+ "lang": "ko",
+ "icons": [
+  {
+   "src": "/assets/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/assets/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
