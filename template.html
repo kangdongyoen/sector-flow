@@ -126,7 +126,9 @@ button{font:inherit; color:inherit; background:none; border:0}
 .ixrow.k3 .v{font-size:15px}
 @media (min-width:760px){ .ix{padding:11px 12px 10px} .ix .v{font-size:15.5px} }
 /* 넓은 화면에서는 세 묶음을 한 줄에 편다. 지수 칸이 화면을 다 먹지 않게. */
+.ix .vi{display:none}
 @media (min-width:1120px){
+  .ix .vf{display:none} .ix .vi{display:inline}
   .ixwrap{display:grid; grid-template-columns:3fr 4fr 4fr; gap:18px}
   .ixg + .ixg{margin-top:0}
   .ix{padding:10px 10px 9px} .ix .v{font-size:14.5px}
@@ -439,8 +441,17 @@ const DATA = null; /*__DATA__*/
   /* 지수 칸. 업종 숫자는 지수와 나란히 봐야 뜻이 생긴다.
      업종 +2% 도 코스피가 +3% 면 오히려 덜 오른 것이다. */
   const SHORT={'필라델피아 반도체':'반도체','상하이종합':'상하이','대만 가권':'대만'};
+  /* 칸이 좁아도 숫자가 잘리면 안 된다. 1,000 이 넘는 지수는 칸에서는 정수로 줄이고,
+     소수점까지는 글로벌 화면에서 본다. 국내 지수는 칸이 넓은 폰 · 태블릿에서는 소수점까지 보인다. */
+  const dec2=v=>v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const short=v=>Math.abs(v)>=1000?Math.round(v).toLocaleString():dec2(v);
   function ixTile(g){
-    const v=g.last==null?'–':Math.abs(g.last)>=10000?Math.round(g.last).toLocaleString():g.last.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    let v='–';
+    if(g.last!=null){
+      v = g.kind==='kr' && Math.abs(g.last)>=1000
+        ? `<span class="vf">${dec2(g.last)}</span><span class="vi">${short(g.last)}</span>`
+        : short(g.last);
+    }
     return `<div class="ix"><div class="n">${esc(SHORT[g.name]||g.name)}${g.stale?` <span class="s">${g.stale}분 전</span>`:''}</div>
       <div class="v num">${v}</div><div class="c num ${cls(g.chg)}">${fmt(g.chg)}</div></div>`;
   }
