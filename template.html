@@ -496,7 +496,7 @@ const DATA = null; /*__DATA__*/
     return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])} · ${stamp}
         ${next?`<span class="dd">${esc(next.dtext)} ${esc(next.title)}</span>`:''}</div>
       <button class="hero" data-go="more">${WAVE}
-        <div class="eyebrow">${on?'지금 시장 흐름':'오늘의 기록'}</div>
+        <div class="eyebrow">${on?'지금 시장 흐름':(d.is_today===false&&d.trade_label?`${esc(d.trade_label)} 기록`:'오늘의 기록')}</div>
         <h1>${esc(d.headline)}</h1>
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
@@ -526,7 +526,8 @@ const DATA = null; /*__DATA__*/
   }
   function indexCard(){
     const G=d.globals||[];
-    const rows=[['국내','kr','k3'],[(d.us&&d.us.label)||'미국 어젯밤 마감','us',''],['아시아 지금','asia','']]
+    const krh=d.is_today===false&&d.trade_day?`국내 ${Number(d.trade_day.slice(5,7))}월 ${Number(d.trade_day.slice(8))}일 마감`:'국내';
+    const rows=[[krh,'kr','k3'],[(d.us&&d.us.label)||'미국 어젯밤 마감','us',''],['아시아 지금','asia','']]
       .map(([label,kind,k])=>{ const it=G.filter(g=>g.kind===kind); if(!it.length) return '';
         return `<div class="ixg"><div class="ixh">${label}</div><div class="ixrow ${k}">${it.map(ixTile).join('')}</div></div>`; }).join('');
     if(!rows) return '';
@@ -572,7 +573,7 @@ const DATA = null; /*__DATA__*/
     const up=S.filter(s=>s.chg>0).length, dn=S.filter(s=>s.chg<0).length, fl=tot-up-dn;
     const pc=n=>tot?(n/tot*100).toFixed(2):0;
     const lead=(d.top_in&&d.top_in[0])?byName[d.top_in[0]]:null;
-    return `<div class="card"><div class="chead"><span class="ctitle">오늘 한눈에</span>
+    return `<div class="card"><div class="chead"><span class="ctitle">${d.is_today===false&&d.trade_day?`${Number(d.trade_day.slice(5,7))}월 ${Number(d.trade_day.slice(8))}일`:'오늘'} 한눈에</span>
         <span class="more" style="cursor:default">업종 ${tot}개</span></div>
       <div class="cbody">
         <div class="split"><i class="up" style="width:${pc(up)}%"></i><i class="fl" style="width:${pc(fl)}%"></i><i class="dn" style="width:${pc(dn)}%"></i></div>
@@ -614,7 +615,7 @@ const DATA = null; /*__DATA__*/
       <div class="card"><div class="chead"><span class="ctitle out">상위 유출 섹터</span></div>
         <div class="cbody">${rankRows(dns,max,'dn')}</div></div>
       <p class="note"><b>순위는 등락률과 참여율로 매깁니다.</b> 같은 등락률이면 업종 안에서 더 많은 종목이 같이 움직인 쪽을 위로 올립니다.<br>
-        <b>업종별 개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 시장 전체 수급은 홈 '오늘 한눈에'에서 봅니다.</p>`;
+        <b>업종별 개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 시장 전체 수급은 홈 '한눈에' 칸에서 봅니다.</p>`;
   }
 
   /* ── 상세 ── */
@@ -770,7 +771,7 @@ const DATA = null; /*__DATA__*/
       <div class="panel"><b>이 화면이 하는 일</b><br>종목이 아니라 섹터 단위로, 오늘 돈이 어디로 들어가고 빠졌는지만 정리합니다. 내일을 맞히는 화면이 아닙니다.</div>
       <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
       <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 업종 등락률은 <b>네이버 증권</b> 값을 그대로 씁니다. 증권앱과 업종 분류가 다르면 묶음이 달라 숫자도 달라집니다.<br>· 해외 지표는 야후 기준이고 전부 <b>전일 종가 대비</b>입니다.<br>· 맨 위에 '몇 시 기준'인지 늘 적혀 있습니다. 장중이면 빨간 점이 뜹니다.</div>
-      <div class="panel"><b>데이터가 없는 것</b><br>· 업종별 개인 · 기관 · 외국인 수급 (시장 전체 수급은 홈 '오늘 한눈에'에 있습니다)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
+      <div class="panel"><b>데이터가 없는 것</b><br>· 업종별 개인 · 기관 · 외국인 수급 (시장 전체 수급은 홈 '한눈에' 칸에 있습니다)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
       <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 네이버 증권 · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
