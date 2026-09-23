@@ -23,8 +23,10 @@
 const SITE = 'https://lucent-sector.pages.dev';
 const KEEP_DAYS = 60;
 
-/** 한국거래소 휴장일. 주말은 따로 거른다. 해가 바뀌면 여기에 더한다. */
+/** 한국거래소 휴장일 (2026년, 증권사 공지 기준). 주말은 따로 거른다. 해가 바뀌면 여기에 더한다. */
 const HOLIDAYS = new Set([
+  '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-02', '2026-05-01',
+  '2026-05-05', '2026-05-25', '2026-06-03', '2026-07-17', '2026-08-17',
   '2026-09-24', '2026-09-25', '2026-10-05', '2026-10-09', '2026-12-25', '2026-12-31',
 ]);
 
@@ -165,7 +167,10 @@ function textAM(d, now) {
   const us = [['다우', '다우'], ['나스닥', '나스닥'], ['필라델피아 반도체', '반도체']]
     .map(([n, s]) => [G(d, n), s])
     .filter(([g]) => g && typeof g.chg === 'number');
-  if (us.length) L.push('미국 마감 ' + us.map(([g, s]) => `${s} ${pct(g.chg)}`).join(' · '));
+  // 미국 휴장 · 조기 폐장은 /api/live 가 계산해 준 제목을 그대로 쓴다. 휴장 다음날 숫자를 어젯밤 것으로 오해하지 않게.
+  const head = (d.us && d.us.label) || '미국 마감';
+  if (us.length) L.push(head);
+  if (us.length) L.push(us.map(([g, s]) => `${s} ${pct(g.chg)}`).join(' · '));
   const nq = G(d, '나스닥 선물');
   if (nq && typeof nq.chg === 'number') L.push(`나스닥 선물 ${pct(nq.chg)}`);
   const m = d.mood || {};
