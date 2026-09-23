@@ -351,7 +351,8 @@ function attachHistory(sectors, days, todayISO) {
 
 /* ── 판정 ── */
 
-function judgeFlow(sectors) {
+/** when: 숫자가 속한 날. 오늘 장이면 '오늘', 휴장일 · 개장 전이면 '9월 23일' 처럼 그 거래일. */
+function judgeFlow(sectors, when = '오늘') {
   if (!sectors.length) return [[], [], ['데이터를 못 받았습니다', '']];
 
   for (const s of sectors) {
@@ -371,19 +372,19 @@ function judgeFlow(sectors) {
 
   let line, sub;
   if (spread < 1.0) {
-    if (avg > 0.3) { line = '오늘은 다 같이 올랐다'; sub = '특별히 몰린 곳 없음'; }
-    else if (avg < -0.3) { line = '오늘은 다 같이 빠졌다'; sub = top_in.length ? '그나마 버틴 곳: ' + top_in[0].name : '전 업종 약세'; }
-    else { line = '오늘은 특별한 흐름 없다'; sub = '업종 차이가 작음'; }
+    if (avg > 0.3) { line = `${when}은 다 같이 올랐다`; sub = '특별히 몰린 곳 없음'; }
+    else if (avg < -0.3) { line = `${when}은 다 같이 빠졌다`; sub = top_in.length ? '그나마 버틴 곳: ' + top_in[0].name : '전 업종 약세'; }
+    else { line = `${when}은 특별한 흐름 없다`; sub = '업종 차이가 작음'; }
   } else if (top_in.length) {
     const names = top_in.slice(0, 2).map((s) => s.name);
-    line = `오늘 돈은 ${names.join(' · ')}${ro(names[names.length - 1])} 갔다`;
+    line = `${when} 돈은 ${names.join(' · ')}${ro(names[names.length - 1])} 갔다`;
     const h = top_in[0];
     const bits = [`${h.name} ${h.total}개 중 ${h.rise}개 상승`];
     const wide = sectors.filter((s) => s.chg > 0).length;
     bits.push(`오른 업종 ${wide}개 · 빠진 업종 ${sectors.length - wide}개`);
     sub = bits.join(' · ');
   } else {
-    line = '오늘은 다 빠졌다'; sub = '오른 업종 없음';
+    line = `${when}은 다 빠졌다`; sub = '오른 업종 없음';
   }
   return [top_in, top_out, [line, sub]];
 }
@@ -610,7 +611,15 @@ async function build(ctx, origin) {
   }
   const market = marketRes.status === 'fulfilled' ? marketRes.value : [];
 
-  const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
+  // 숫자가 어느 거래일 것인가. 휴장일 · 개장 전에는 지난 거래일 마감치다. 제목의 '오늘'을 그 날짜로 바꾼다.
+  const krAt = globals.find((g) => g.kind === 'kr' && g.at);
+  const trade_day = (krAt && String(krAt.at).slice(0, 10)) || (market[0] && market[0].day) || null;
+  const is_today = !trade_day || trade_day === calISO;
+  const td = trade_day ? new Date(trade_day + 'T00:00:00Z') : null;
+  const trade_label = td ? `${td.getUTCMonth() + 1}월 ${td.getUTCDate()}일 (${WD[td.getUTCDay()]})` : null;
+  const when = is_today ? '오늘' : `${td.getUTCMonth() + 1}월 ${td.getUTCDate()}일`;
+
+  const [top_in, top_out, [headline, subline]] = judgeFlow(sectors, when);
   const mood = judgeMood(globals);
 
   return {
@@ -625,6 +634,9 @@ async function build(ctx, origin) {
     market,
     intraday,
     is_live: status === 'open',
+    trade_day,
+    trade_label,
+    is_today,
     headline,
     subline,
     mood,
