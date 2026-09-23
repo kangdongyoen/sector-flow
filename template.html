@@ -6,6 +6,22 @@
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="종목이 아니라 업종 단위로 오늘 돈이 어디로 갔는지 보는 화면">
 <title>섹터 흐름판</title>
+<meta name="theme-color" content="#121211">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LUCENT">
+<meta property="og:title" content="LUCENT 섹터 흐름판">
+<meta property="og:description" content="오늘 돈이 어느 업종으로 들어가고 빠졌는지 한눈에. 장중 실시간.">
+<meta property="og:url" content="https://lucent-sector.pages.dev/">
+<meta property="og:image" content="https://lucent-sector.pages.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="섹터 흐름">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
 :root{
@@ -133,6 +149,33 @@ button{font:inherit; color:inherit; background:none; border:0}
   .ixg + .ixg{margin-top:0}
   .ix{padding:10px 10px 9px} .ix .v{font-size:14.5px}
 }
+
+/* ── 수급 · 종목 폭 ── */
+.mk{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
+.mkh{display:flex; align-items:baseline; gap:8px; font-size:13px; font-weight:700}
+.mkh .f{font-weight:600; font-size:11.5px; margin-left:auto}
+.inv{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:8px}
+.inv>div{background:var(--surface); border-radius:10px; padding:8px 9px}
+.inv .k{font-size:11.5px; color:var(--t2)}
+.inv .v{font-size:14px; font-weight:700; margin-top:1px; white-space:nowrap}
+.brd{display:flex; height:6px; border-radius:999px; overflow:hidden; background:var(--track); margin-top:9px}
+.brd i{display:block; height:100%}
+.brd .up{background:var(--up)} .brd .dn{background:var(--down)} .brd .fl{background:var(--t3); opacity:.3}
+.brdl{display:flex; gap:12px; flex-wrap:wrap; font-size:12px; font-weight:600; margin-top:6px; color:var(--t2)}
+.insight{font-size:12.5px; color:var(--t2); margin-top:7px; line-height:1.6}
+.insight b{color:var(--t1)}
+/* ── 지난 30분 ── */
+.fast{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px}
+.fast .col{min-width:0}
+@media (max-width:519px){ .fast{grid-template-columns:minmax(0,1fr); gap:6px} .fast .col + .col h4{margin-top:10px} }
+.fast .col h4{margin:0 0 4px; font-size:12px; color:var(--t3); font-weight:700}
+.frow{display:flex; align-items:baseline; gap:8px; padding:9px 0; border-top:1px solid var(--line); cursor:pointer; width:100%; text-align:left}
+.frow .n{font-size:14px; font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.frow .v{font-size:13px; font-weight:700; flex-shrink:0}
+/* ── 오늘 흐름 선 ── */
+.iline{width:100%; height:150px; display:block}
+.iline .zero{stroke:var(--line-2); stroke-dasharray:3 3}
+.iaxis{display:flex; justify-content:space-between; font-size:11px; color:var(--t3); margin-top:4px}
 
 /* ── 오늘 한눈에 ── */
 .split{display:flex; height:9px; border-radius:999px; overflow:hidden; background:var(--track)}
@@ -409,13 +452,38 @@ const DATA = null; /*__DATA__*/
       선물 · 환율 · 코인은 24시간 돌아가므로 지금 값과 전일 정산가를 비교합니다.</p>`;
   }
 
+  /* 일정 D-day 는 보는 순간 한국 날짜로 다시 센다. 지난 일정은 뺀다. */
+  function calNow(){
+    const k=new Date(Date.now()+9*3600*1000), t=Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate());
+    return (d.calendar||[]).map(e=>{
+      const [y,mo,dd]=e.date.split('-').map(Number), n=Math.round((Date.UTC(y,mo-1,dd)-t)/86400000);
+      return Object.assign({},e,{dday:n,dtext:n===0?'오늘':n===1?'내일':'D-'+n});
+    }).filter(e=>e.dday>=0);
+  }
+
+  /* 지난 30분 사이 속도가 붙은 업종과 식는 업종. 장중에만 보인다. */
+  function fastCard(){
+    if(!d.intraday||!d.is_live) return '';
+    const S=d.sectors.filter(s=>typeof s.d30==='number');
+    if(!S.length) return '';
+    const up=S.filter(s=>s.d30>=0.2).sort((a,b)=>b.d30-a.d30).slice(0,3);
+    const dn=S.filter(s=>s.d30<=-0.2).sort((a,b)=>a.d30-b.d30).slice(0,3);
+    const row=s=>`<button class="frow" data-open="${esc(s.name)}"><span class="n">${esc(s.name)}</span>
+      <span class="v num ${cls(s.d30)}">${s.d30>0?'+':''}${s.d30.toFixed(2)}%p</span></button>`;
+    const col=(h,l)=>`<div class="col"><h4>${h}</h4>${l.length?l.map(row).join(''):'<div class="note">뚜렷한 곳 없음</div>'}</div>`;
+    return `<div class="card"><div class="chead"><span class="ctitle">지난 30분</span>
+        <span class="more" style="cursor:default">${esc(d.intraday.from)} 대비</span></div>
+      <div class="cbody"><div class="fast">${col('속도 붙는 곳',up)}${col('식는 곳',dn)}</div>
+        <div class="note">하루 등락률이 30분 전보다 얼마나 더 올랐는지(%p)입니다. 지금 돈이 어디로 움직이는지 보는 칸입니다.</div></div></div>`;
+  }
+
   /* ── 홈 ── */
   function scHome(){
-    const m=d.mood, max=Math.max(1,...d.sectors.map(s=>Math.abs(s.chg))), next=(d.calendar||[])[0];
+    const m=d.mood, max=Math.max(1,...d.sectors.map(s=>Math.abs(s.chg))), next=calNow()[0];
     const tabs=['자금흐름','전체섹터','글로벌'];
     let panel;
     if(route.tab===0){
-      panel=`<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
+      panel=`${fastCard()}<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
           <div class="cbody">${rankRows(d.top_in,max,'up')}</div></div>
         <div class="card tint-dn"><div class="chead"><span class="ctitle out">돈이 빠진 곳</span>
@@ -467,6 +535,34 @@ const DATA = null; /*__DATA__*/
       <div class="cbody"><div class="ixwrap">${rows}</div></div></div>`;
   }
 
+  /* 시장 전체 수급과 종목 폭. 네이버 증권 지수 화면 숫자 그대로. */
+  const eok=v=>(v>0?'+':'')+Math.round(v).toLocaleString()+'억';
+  function marketBlock(){
+    const M=(d.market||[]).filter(x=>x&&x.inv);
+    if(!M.length) return '';
+    const G=n=>(d.globals||[]).find(g=>g.name===n);
+    return M.map(x=>{
+      const i=x.inv, b=x.breadth||{}, idx=G(x.name);
+      const ok=['foreign','inst','personal'].every(k=>typeof i[k]==='number');
+      const tot=(b.rise||0)+(b.fall||0)+(b.steady||0);
+      const pc=n=>tot?(n/tot*100).toFixed(2):0;
+      // 지수 방향과 종목 방향이 엇갈리면 그대로 적는다. 소수 대형주가 끌어올린 장인지 보이게.
+      let note='';
+      if(idx&&typeof idx.chg==='number'&&tot){
+        if(idx.chg>0.2&&b.fall>b.rise) note=`지수는 올랐는데 내린 종목이 더 많습니다. <b>일부 큰 종목이 끌어올린 장</b>입니다.`;
+        else if(idx.chg<-0.2&&b.rise>b.fall) note=`지수는 빠졌는데 오른 종목이 더 많습니다. <b>일부 큰 종목이 끌어내린 장</b>입니다.`;
+      }
+      return `<div class="mk"><div class="mkh">${esc(x.name)} 수급<span class="f">${d.is_live?'장중 잠정 · ':''}억원</span></div>
+        ${ok?`<div class="inv">
+          <div><div class="k">외국인</div><div class="v num ${cls(i.foreign)}">${eok(i.foreign)}</div></div>
+          <div><div class="k">기관</div><div class="v num ${cls(i.inst)}">${eok(i.inst)}</div></div>
+          <div><div class="k">개인</div><div class="v num ${cls(i.personal)}">${eok(i.personal)}</div></div></div>`:''}
+        ${tot?`<div class="brd"><i class="up" style="width:${pc(b.rise)}%"></i><i class="fl" style="width:${pc(b.steady)}%"></i><i class="dn" style="width:${pc(b.fall)}%"></i></div>
+          <div class="brdl"><span class="u">오른 종목 ${b.rise}</span><span class="d">내린 종목 ${b.fall}</span><span>보합 ${b.steady}</span>${b.upper?`<span class="u">상한가 ${b.upper}</span>`:''}${b.lower?`<span class="d">하한가 ${b.lower}</span>`:''}</div>`:''}
+        ${note?`<div class="insight">${note}</div>`:''}</div>`;
+    }).join('');
+  }
+
   /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
      막대 하나로 오른 업종과 빠진 업종의 비율을 보여준다. */
   function glance(){
@@ -484,6 +580,7 @@ const DATA = null; /*__DATA__*/
         ${lead?`<div class="gl2">가장 센 곳 <b>${esc(lead.name)}</b>
           <span class="num ${cls(lead.chg)}">${fmt(lead.chg)}</span>
           ${lead.total?`<span class="f">${lead.total}개 중 ${lead.rise}개 상승</span>`:''}</div>`:''}
+        ${marketBlock()}
       </div></div>`;
   }
 
@@ -517,7 +614,7 @@ const DATA = null; /*__DATA__*/
       <div class="card"><div class="chead"><span class="ctitle out">상위 유출 섹터</span></div>
         <div class="cbody">${rankRows(dns,max,'dn')}</div></div>
       <p class="note"><b>순위는 등락률과 참여율로 매깁니다.</b> 같은 등락률이면 업종 안에서 더 많은 종목이 같이 움직인 쪽을 위로 올립니다.<br>
-        <b>개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 한국거래소가 로그인을 요구해서 막혀 있습니다.</p>`;
+        <b>업종별 개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 시장 전체 수급은 홈 '오늘 한눈에'에서 봅니다.</p>`;
   }
 
   /* ── 상세 ── */
@@ -537,6 +634,34 @@ const DATA = null; /*__DATA__*/
       </div><span class="lb">${labs[i]}</span></div>`;
     }).join('')+`</div>`;
   }
+  /* 업종 하루 흐름. 예약 실행기가 10분마다 찍어 둔 등락률을 선으로 잇는다. */
+  const intraBox={};
+  function loadIntra(name){
+    const hit=intraBox[name];
+    if(hit&&(hit==='loading'||(hit.at&&Date.now()-hit.at<60000))) return;
+    intraBox[name]='loading';
+    fetch('/api/intraday?name='+encodeURIComponent(name)).then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(j=>{ intraBox[name]={at:Date.now(),day:j.day,points:j.points||[]}; if(route.name==='detail') render(); })
+      .catch(()=>{ intraBox[name]={at:Date.now(),points:[]}; if(route.name==='detail') render(); });
+  }
+  function intraLine(name){
+    const v=intraBox[name];
+    if(!v||v==='loading') return '<div class="note">불러오는 중입니다.</div>';
+    const P=v.points||[];
+    if(P.length<2) return '<div class="note"><b>아직 그릴 게 없습니다.</b><br>장중 10분마다 한 점씩 쌓입니다. 개장하고 20분쯤 지나면 선이 생깁니다.</div>';
+    const W=320,H=150,pad=10, vals=P.map(p=>p.v);
+    const lo=Math.min(0,...vals), hi=Math.max(0,...vals), span=(hi-lo)||1;
+    const x=i=>pad+(W-2*pad)*i/(P.length-1), y=v=>pad+(H-2*pad)*(1-(v-lo)/span);
+    const last=vals[vals.length-1], c=col(last);
+    const pts=P.map((p,i)=>`${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+    const day=v.day?`${Number(v.day.slice(5,7))}월 ${Number(v.day.slice(8))}일`:'';
+    return `<svg class="iline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(name)} 하루 등락률 흐름">
+        <line class="zero" x1="${pad}" x2="${W-pad}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>
+        <polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="iaxis"><span>${esc(P[0].t)}</span><span>${esc(day)} · 점선이 전일 종가</span><span>${esc(P[P.length-1].t)} <b class="num ${cls(last)}">${fmt(last)}</b></span></div>`;
+  }
+
   /* 업종 구성 종목. 상세의 '종목' 탭에서만 부르고, 한 번 받으면 기억해 둔다. */
   const stocksBox={};
   function loadStocks(no){
@@ -562,23 +687,26 @@ const DATA = null; /*__DATA__*/
     const hasSpark=Array.isArray(s.spark)&&s.spark.length>=2;
     let panel;
     if(route.tab===1){
-      panel=hasSpark
-        ? `<div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span>
+      loadIntra(s.name);
+      const today=`<div class="card"><div class="chead"><span class="ctitle">오늘 흐름</span>
+          <span class="more" style="cursor:default">10분 간격</span></div>
+          <div class="cbody">${intraLine(s.name)}</div></div>`;
+      panel=today+(hasSpark
+        ? `<div class="card"><div class="chead"><span class="ctitle">최근 ${s.spark.length}거래일 흐름</span>
             <span class="more" style="cursor:default">일간 등락률</span></div>
             <div class="cbody">${candles(s,210)}</div></div>
           <div class="card"><div class="chead"><span class="ctitle">기간 성과</span></div><div class="cbody"><div class="llist">
             <div class="lrow"><span class="ln">오늘</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
-            <div class="lrow"><span class="ln">최근 5거래일</span><span class="lc num ${cls(s.chg5)}">${fmt(s.chg5)}</span></div>
+            <div class="lrow"><span class="ln">최근 ${s.spark.length}거래일 누적</span><span class="lc num ${cls(s.chg5)}">${fmt(s.chg5)}</span></div>
           </div></div></div>`
-        : `<div class="card"><div class="chead"><span class="ctitle">최근 5거래일 흐름</span></div>
+        : `<div class="card"><div class="chead"><span class="ctitle">최근 거래일 흐름</span></div>
             <div class="cbody"><div class="note"><b>아직 그릴 게 없습니다.</b><br>
-              업종 단위로 바꾸면서 과거 기록을 새로 쌓기 시작했습니다.
-              마감마다 하루치가 저장되고, 5거래일이 모이면 여기에 캔들이 그려집니다.</div></div></div>
+              마감마다 하루치가 저장됩니다. 이틀치가 모이면 여기에 캔들이 생기고, 5거래일까지 늘어납니다.</div></div></div>
           <div class="card"><div class="chead"><span class="ctitle">오늘</span></div><div class="cbody"><div class="llist">
             <div class="lrow"><span class="ln">등락률</span><span class="lc num ${cls(s.chg)}">${fmt(s.chg)}</span></div>
             <div class="lrow"><span class="ln">오른 종목</span><span class="ll num">${s.rise??'–'}</span><span class="lc u">/ ${s.total??'–'}개</span></div>
             <div class="lrow"><span class="ln">내린 종목</span><span class="ll num">${s.fall??'–'}</span><span class="lc d">/ ${s.total??'–'}개</span></div>
-          </div></div></div>`;
+          </div></div></div>`);
     } else if(route.tab===2){
       loadStocks(s.no);
       panel=`<div class="card"><div class="chead"><span class="ctitle">${esc(s.name)} 구성 종목</span>
@@ -630,7 +758,7 @@ const DATA = null; /*__DATA__*/
     return toneRows(list)+`<p class="note">관심 목록은 이 브라우저에만 저장됩니다. 다른 기기에는 따라가지 않습니다.</p>`;
   }
   function scMore(){
-    const cal=d.calendar||[], K={off:'휴장',usoff:'미국 휴장',fomc:'FOMC',kr:'한국',us:'미국',expiry:'만기'};
+    const cal=calNow(), K={off:'휴장',usoff:'미국 휴장',fomc:'FOMC',kr:'한국',us:'미국',expiry:'만기'};
     return `<div class="quote"><b>LUCENT</b>복잡한 시장 속,<br>가장 중요한 흐름만<br>간결하게 전달합니다.</div>
       <div class="card"><div class="chead"><span class="ctitle">다가오는 일정</span>
         <span class="more" style="cursor:default">미리 공표된 날짜만</span></div>
@@ -642,7 +770,7 @@ const DATA = null; /*__DATA__*/
       <div class="panel"><b>이 화면이 하는 일</b><br>종목이 아니라 섹터 단위로, 오늘 돈이 어디로 들어가고 빠졌는지만 정리합니다. 내일을 맞히는 화면이 아닙니다.</div>
       <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
       <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 업종 등락률은 <b>네이버 증권</b> 값을 그대로 씁니다. 증권앱과 업종 분류가 다르면 묶음이 달라 숫자도 달라집니다.<br>· 해외 지표는 야후 기준이고 전부 <b>전일 종가 대비</b>입니다.<br>· 맨 위에 '몇 시 기준'인지 늘 적혀 있습니다. 장중이면 빨간 점이 뜹니다.</div>
-      <div class="panel"><b>데이터가 없는 것</b><br>· 개인 · 기관 · 외국인 수급 (한국거래소 로그인 제한)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
+      <div class="panel"><b>데이터가 없는 것</b><br>· 업종별 개인 · 기관 · 외국인 수급 (시장 전체 수급은 홈 '오늘 한눈에'에 있습니다)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
       <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 네이버 증권 · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
@@ -675,10 +803,22 @@ const DATA = null; /*__DATA__*/
       dzone.innerHTML = s ? `<div class="dwrap"><section class="dhero">${CIRCUIT}<div class="inn"><div class="pad">
         <div class="dn">${esc(s.name)}</div>
         <div class="dv num" style="color:${col(s.chg)}">${fmt(s.chg)}<small>${arr(s.chg)}</small></div>
-        <div class="dw">${s.driver_text?esc(s.driver_text):'근거 신호 없음'}</div>
+        <div class="dw">${esc(heroLine(s))}</div>
       </div></div></section></div>` : '';
       sheet.className='sheet lift';
     } else dzone.innerHTML='';
+  }
+
+  /* 상세 머리글 한 줄: 업종 안 몇 개가 같이 움직였나, 코스피보다 얼마나 더 갔나, 30분 새 속도 */
+  function heroLine(s){
+    const k=(d.globals||[]).find(g=>g.name==='코스피'), bits=[];
+    if(s.total) bits.push(breadth(s));
+    if(k&&typeof k.chg==='number'&&typeof s.chg==='number'){
+      const g=Math.round((s.chg-k.chg)*100)/100;
+      bits.push(`코스피보다 ${g>0?'+':''}${g.toFixed(2)}%p`);
+    }
+    if(d.is_live&&typeof s.d30==='number') bits.push(`30분 새 ${s.d30>0?'+':''}${s.d30.toFixed(2)}%p`);
+    return bits.join(' · ');
   }
 
   function render(){
