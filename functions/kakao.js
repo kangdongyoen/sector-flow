@@ -168,6 +168,19 @@ export async function onRequestPost(context) {
   const { code, key, secret, redirect } = body || {};
   if (!code || !key || !redirect) return json({ error: 'missing_params' }, 400);
 
+  // 한 번 연결되면 같은 카카오 앱(같은 REST 키)으로만 다시 연결할 수 있다.
+  // 이 주소를 아는 다른 사람이 자기 카카오로 덮어써서 알림을 가로채지 못하게 막는다.
+  const kv0 = context.env && context.env.FLOW;
+  if (kv0) {
+    const cur = await kv0.get('kakao', 'json');
+    if (cur && cur.key && cur.key !== key) {
+      return json({
+        error: 'locked',
+        error_description: '이미 다른 카카오 앱으로 연결돼 있습니다. 처음 연결할 때 쓴 REST API 키로만 다시 연결할 수 있습니다.',
+      }, 409);
+    }
+  }
+
   const fields = {
     grant_type: 'authorization_code',
     client_id: key,
