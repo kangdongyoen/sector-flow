@@ -297,14 +297,14 @@ async function readHistory(ctx, origin) {
     const kv = ctx && ctx.env && ctx.env.FLOW;
     if (kv) {
       const j = await kv.get('history', 'json');
-      if (j && Array.isArray(j.days) && j.days.length) return j.days;
+      if (j && Array.isArray(j.days) && j.days.length) return { days: j.days, src: 'kv' };
     }
   } catch (e) {}
   try {
     const r = await fetch(`${origin}/data/history.json`, { cf: { cacheTtl: 600 } });
     if (!r.ok) return null;
     const j = await r.json();
-    return Array.isArray(j?.days) ? j.days : null;
+    return Array.isArray(j?.days) ? { days: j.days, src: 'file' } : null;
   } catch (e) {
     return null;
   }
@@ -489,7 +489,8 @@ async function build(ctx, origin) {
   const todayISO = k.toISOString().slice(0, 10);
   // 판정 전에 숫자부터 바로잡는다. 기록에도 바로잡힌 숫자가 남는다.
   await verifySectors(sectors);
-  if (histRes.status === 'fulfilled') attachHistory(sectors, histRes.value, todayISO);
+  const hist = histRes.status === 'fulfilled' ? histRes.value : null;
+  if (hist) attachHistory(sectors, hist.days, todayISO);
 
   const [top_in, top_out, [headline, subline]] = judgeFlow(sectors);
   const mood = judgeMood(globals);
@@ -511,6 +512,8 @@ async function build(ctx, origin) {
     sectors,
     globals,
     errors,
+    // 과거 기록을 어디서 읽었나. kv 면 예약 실행기가 쌓은 것, file 이면 GitHub 예비 파일.
+    history: hist ? { src: hist.src, days: hist.days.length, last: hist.days[hist.days.length - 1]?.d || null } : null,
   };
 }
 
