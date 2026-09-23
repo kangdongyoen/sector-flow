@@ -2,20 +2,21 @@
  * 섹터 흐름판 · 예약 실행기  (Cloudflare Worker)
  *
  * GitHub 예약 실행은 제때 돌지 않았다. 그래서 시계를 Cloudflare 로 옮겼다.
- * 이 실행기가 하는 일은 두 가지다.
+ * 이 실행기가 하는 일은 세 가지다.
  *
- *   1. 하루치 업종 등락률을 저장소(KV)에 쌓는다. 상세 화면의 캔들이 여기서 나온다.
- *   2. 개장 전 · 마감 뒤에 카카오톡 '나에게 보내기'로 요약을 보낸다.
+ *   1. 장중 10분마다 업종 등락률을 찍어 둔다(intra:날짜). '지난 30분' 과 '오늘 흐름' 선이 여기서 나온다.
+ *   2. 마감 뒤 하루치 업종 등락률을 쌓는다(history). 상세 화면의 캔들이 여기서 나온다.
+ *   3. 개장 전 · 마감 뒤에 카카오톡 '나에게 보내기'로 요약을 보낸다.
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
+ *   *\/10 0-6 * * MON-FRI  09:00 ~ 15:50  10분마다. 15:40 · 15:50 은 마감 뒤 기록과 알림
  *   37,47 23 * * SUN-THU   08:37 · 08:47  개장 전 (한국 월~금 아침)
- *   37,47 6 * * MON-FRI    15:37 · 15:47  마감 뒤
- *   17 7 * * MON-FRI       16:17          마감 뒤 한 번 더
  * 같은 알림은 하루에 한 번만 간다. 앞 순번이 성공하면 뒤 순번은 건너뛴다.
  *
  * 저장소(KV) 키
  *   history   하루치 업종 등락률 60일
  *   kakao     카카오 REST 키 · 리프레시 토큰. /kakao 페이지가 넣는다. 밖으로 보여주지 않는다.
+ *   intra:날짜  장중 10분 간격 업종 등락률. 나흘 뒤 저절로 지워진다.
  *   runs      최근 실행 기록 20개
  *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  */
@@ -113,6 +114,19 @@ async function record(env, d, day) {
   return hist.days.length;
 }
 
+/** 장중 한 장. 같은 시각이 이미 있으면 넘어간다. */
+async function snapshot(env, d, day, t) {
+  const key = 'intra:' + day;
+  const cur = (await env.FLOW.get(key, 'json')) || { snaps: [] };
+  const last = cur.snaps[cur.snaps.length - 1];
+  if (last && last.t >= t) return cur.snaps.length;
+  const s = {};
+  for (const x of d.sectors || []) if (typeof x.chg === 'number') s[x.name] = x.chg;
+  cur.snaps.push({ t, s });
+  await env.FLOW.put(key, JSON.stringify(cur), { expirationTtl: 4 * 86400 });
+  return cur.snaps.length;
+}
+
 /* ── 2. 카카오톡 ── */
 
 async function kakaoAccess(env) {
@@ -175,7 +189,19 @@ function textAM(d, now) {
   if (nq && typeof nq.chg === 'number') L.push(`나스닥 선물 ${pct(nq.chg)}`);
   const m = d.mood || {};
   if (m.mood) L.push(`분위기 ${m.mood}` + ((m.why || []).length ? ' · ' + m.why.slice(0, 2).join(' · ') : ''));
-  return L.join('\n').slice(0, 200);
+  return fit(L);
+}
+
+const eok = (v) => (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US') + '억';
+
+/** 카카오 글자 한도(200자)를 넘기면 뒤쪽 줄부터 통째로 뺀다. 줄 중간이 잘리지 않게. */
+function fit(lines, max = 200) {
+  const out = [];
+  for (const l of lines.filter(Boolean)) {
+    if ([...out, l].join('\n').length > max) break;
+    out.push(l);
+  }
+  return out.join('\n');
 }
 
 /** 마감 뒤: 오늘 돈이 어디로 갔나 */
@@ -185,17 +211,22 @@ function textPM(d) {
   if (ks && kq && typeof ks.chg === 'number' && typeof kq.chg === 'number') {
     L.push(`코스피 ${pct(ks.chg)} · 코스닥 ${pct(kq.chg)}`);
   }
-  const S = (d.sectors || []).filter((s) => typeof s.chg === 'number');
-  if (S.length) {
-    const up = S.filter((s) => s.chg > 0).length;
-    const dn = S.filter((s) => s.chg < 0).length;
-    L.push(`오른 업종 ${up} · 빠진 업종 ${dn} (전체 ${S.length})`);
+  // 누가 샀고 누가 팔았나. 코스피 기준, 네이버 증권 숫자 그대로(억원).
+  const m = (d.market || []).find((x) => x.name === '코스피');
+  if (m && m.inv && [m.inv.foreign, m.inv.inst, m.inv.personal].every((v) => typeof v === 'number')) {
+    L.push(`외국인 ${eok(m.inv.foreign)} · 기관 ${eok(m.inv.inst)} · 개인 ${eok(m.inv.personal)}`);
   }
+  const S = (d.sectors || []).filter((s) => typeof s.chg === 'number');
   const top = (d.top_in || [])[0] && S.find((s) => s.name === d.top_in[0]);
   if (top) {
     L.push(`가장 센 곳 ${top.name} ${pct(top.chg)}` + (top.total ? ` (${top.total}개 중 ${top.rise}개 상승)` : ''));
   }
-  return L.filter(Boolean).join('\n').slice(0, 200);
+  if (S.length) {
+    const up = S.filter((s) => s.chg > 0).length;
+    const dn = S.filter((s) => s.chg < 0).length;
+    L.push(`오른 업종 ${up} · 빠진 업종 ${dn}`);
+  }
+  return fit(L);
 }
 
 /* ── 한 번 돌기 ── */
@@ -217,10 +248,21 @@ async function run(env, why) {
   if (d) {
     // 1. 기록. 장중 숫자는 아직 확정이 아니라 쌓지 않는다.
     const td = tradeDate(d);
+    const hm = now.toISOString().slice(11, 16);
     if (d.market_status === 'open' && (!td || td === today)) {
       const [n, fresh] = await seed(env);
-      log.steps.push('장중이라 기록 안 함' + (fresh ? ` · 기존 기록 ${n}일 옮김` : ''));
+      let snap = '';
+      try {
+        snap = ` ${await snapshot(env, d, today, hm)}번째 찍음`;
+      } catch (e) {
+        snap = ' · 장중 기록 실패';
+      }
+      log.steps.push('장중' + snap + (fresh ? ` · 기존 기록 ${n}일 옮김` : ''));
     } else {
+      // 마감 직후 한 장을 더 찍어 '오늘 흐름' 선이 종가에서 끝나게 한다
+      if (td === today && mins >= 15 * 60 + 30 && mins < 16 * 60 + 30) {
+        try { await snapshot(env, d, today, '15:30'); } catch (e) {}
+      }
       try {
         const day = td || fallbackDay(now);
         const n = await record(env, d, day);
