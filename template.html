@@ -112,6 +112,26 @@ button{font:inherit; color:inherit; background:none; border:0}
   .sheet{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 }
 
+/* ── 지수 ──
+   숫자를 먼저 보고, 그 아래 등락률. 폰에서 네 칸이 한 줄에 들어가게 짰다. */
+.ixh{font-size:11.5px; font-weight:700; color:var(--t3); letter-spacing:.02em; margin:0 0 7px}
+.ixg + .ixg{margin-top:14px}
+.ixrow{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px}
+.ixrow.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ix{background:var(--surface); border-radius:11px; padding:9px 9px 8px; min-width:0}
+.ix .n{font-size:11.5px; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ix .v{font-size:14px; font-weight:700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ix .c{font-size:12px; font-weight:700; margin-top:1px}
+.ix .s{font-size:10px; color:var(--t3); font-weight:600}
+.ixrow.k3 .v{font-size:15px}
+@media (min-width:760px){ .ix{padding:11px 12px 10px} .ix .v{font-size:15.5px} }
+/* 넓은 화면에서는 세 묶음을 한 줄에 편다. 지수 칸이 화면을 다 먹지 않게. */
+@media (min-width:1120px){
+  .ixwrap{display:grid; grid-template-columns:3fr 4fr 4fr; gap:18px}
+  .ixg + .ixg{margin-top:0}
+  .ix{padding:10px 10px 9px} .ix .v{font-size:14.5px}
+}
+
 /* ── 오늘 한눈에 ── */
 .split{display:flex; height:9px; border-radius:999px; overflow:hidden; background:var(--track)}
 .split i{display:block; height:100%}
@@ -345,7 +365,8 @@ const DATA = null; /*__DATA__*/
 
   let route={name:'home',arg:null,tab:0}, search=false, term='', bell=false;
   const tags=s=>(s.streak>=2?`<span class="tag">${s.streak}일째</span>`:'')
-    +(s.hot?`<span class="tag hot">${s.chg>=0?'전 종목급 상승':'전 종목급 하락'}</span>`:'');
+    +(s.hot?`<span class="tag hot">${s.chg>=0?'전 종목급 상승':'전 종목급 하락'}</span>`:'')
+    +(s.excluded&&s.excluded.length?`<span class="tag">숫자 보정</span>`:'');
   /* 업종 안에서 몇 개가 같이 움직였나. 이게 '돈 몰림'보다 정직하다. */
   const breadth=s=>(s.total?`${s.total}개 중 ${s.chg>=0?s.rise+'개 상승':s.fall+'개 하락'}`:'');
 
@@ -369,18 +390,20 @@ const DATA = null; /*__DATA__*/
         <span class="tw">${s.total?esc(breadth(s)):(s.driver_text?esc(s.driver_text):'5일 '+fmt(s.chg5))}</span>
       </button>`).join('')+`</div>`;
   }
-  const GG=[['한국 시장',['kr']],['미국 지수',['idx']],['환율 · 금리',['fx','rate']],['원자재 · 기타',['cmd','risk','crypto']]];
+  const GG=[['한국',['kr']],['미국 · 어젯밤 마감',['us']],['미국 선물 · 지금',['fut','idx']],['아시아 · 지금',['asia']],
+    ['환율 · 금리',['fx','rate']],['원자재 · 기타',['cmd','risk','crypto']]];
   function globalCards(){
     return GG.map(([label,kinds],i)=>{
       const items=d.globals.filter(g=>kinds.includes(g.kind)); if(!items.length) return '';
       return `<div class="card" id="g${i}"><div class="chead"><span class="ctitle">${label}</span></div>
         <div class="cbody"><div class="llist">${items.map(g=>`
           <div class="lrow"><span class="ln">${esc(g.name)}${g.stale?`<span class="tag">${g.stale}분 전</span>`:''}</span>
-            <span class="ll num">${g.unit==='$'?'$':''}${g.last.toLocaleString()}${g.unit&&g.unit!=='$'?g.unit:''}</span>
+            <span class="ll num">${g.unit==='$'?'$':''}${['kr','us','asia'].includes(g.kind)?g.last.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):g.last.toLocaleString()}${g.unit&&g.unit!=='$'?g.unit:''}</span>
             <span class="lc num ${cls(g.chg)}">${fmt(g.chg)}</span></div>`).join('')}</div></div></div>`;
-    }).join('')+`<p class="note"><b>무슨 기준인가.</b> 전부 <b>전일 종가 대비</b>입니다.
-      미국 지수는 미국 직전 마감 기준, 선물 · 환율 · 코인은 24시간 돌아가므로 지금 값과 전일 정산가를 비교합니다.
-      한국 장중에 보면 미국 지수는 아직 어젯밤 숫자 그대로입니다.</p>`;
+    }).join('')+`<p class="note"><b>무슨 기준인가.</b> 전부 <b>전일 종가 대비</b>입니다.<br>
+      <b>미국 지수</b>는 한국 낮 동안 어젯밤 마감 숫자 그대로입니다. 지금 미국 분위기는 <b>선물</b>로 봅니다.<br>
+      <b>아시아 지수</b>는 한국과 같은 시간에 열려 있어 지금 움직입니다. 거래소에 따라 몇 분에서 15분쯤 늦게 들어올 수 있습니다.<br>
+      선물 · 환율 · 코인은 24시간 돌아가므로 지금 값과 전일 정산가를 비교합니다.</p>`;
   }
 
   /* ── 홈 ── */
@@ -407,9 +430,29 @@ const DATA = null; /*__DATA__*/
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
         <span class="chev">›</span></button>
+      ${indexCard()}
       ${glance()}
       <div class="seg" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${panel}`;
+  }
+
+  /* 지수 칸. 업종 숫자는 지수와 나란히 봐야 뜻이 생긴다.
+     업종 +2% 도 코스피가 +3% 면 오히려 덜 오른 것이다. */
+  const SHORT={'필라델피아 반도체':'반도체','상하이종합':'상하이','대만 가권':'대만'};
+  function ixTile(g){
+    const v=g.last==null?'–':Math.abs(g.last)>=10000?Math.round(g.last).toLocaleString():g.last.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    return `<div class="ix"><div class="n">${esc(SHORT[g.name]||g.name)}${g.stale?` <span class="s">${g.stale}분 전</span>`:''}</div>
+      <div class="v num">${v}</div><div class="c num ${cls(g.chg)}">${fmt(g.chg)}</div></div>`;
+  }
+  function indexCard(){
+    const G=d.globals||[];
+    const rows=[['국내','kr','k3'],['미국 어젯밤 마감','us',''],['아시아 지금','asia','']]
+      .map(([label,kind,k])=>{ const it=G.filter(g=>g.kind===kind); if(!it.length) return '';
+        return `<div class="ixg"><div class="ixh">${label}</div><div class="ixrow ${k}">${it.map(ixTile).join('')}</div></div>`; }).join('');
+    if(!rows) return '';
+    return `<div class="card"><div class="chead"><span class="ctitle">지수</span>
+        <button class="more" data-go="global">환율 · 선물 ›</button></div>
+      <div class="cbody"><div class="ixwrap">${rows}</div></div></div>`;
   }
 
   /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
@@ -421,10 +464,6 @@ const DATA = null; /*__DATA__*/
     const up=S.filter(s=>s.chg>0).length, dn=S.filter(s=>s.chg<0).length, fl=tot-up-dn;
     const pc=n=>tot?(n/tot*100).toFixed(2):0;
     const lead=(d.top_in&&d.top_in[0])?byName[d.top_in[0]]:null;
-    const G=n=>(d.globals||[]).find(g=>g.name===n);
-    const ks=G('코스피'), kq=G('코스닥');
-    const ix=[ks,kq].filter(Boolean).map(g=>
-      `<span>${esc(g.name)} <span class="num ${cls(g.chg)}">${fmt(g.chg)}</span></span>`).join('');
     return `<div class="card"><div class="chead"><span class="ctitle">오늘 한눈에</span>
         <span class="more" style="cursor:default">업종 ${tot}개</span></div>
       <div class="cbody">
@@ -433,7 +472,6 @@ const DATA = null; /*__DATA__*/
         ${lead?`<div class="gl2">가장 센 곳 <b>${esc(lead.name)}</b>
           <span class="num ${cls(lead.chg)}">${fmt(lead.chg)}</span>
           ${lead.total?`<span class="f">${lead.total}개 중 ${lead.rise}개 상승</span>`:''}</div>`:''}
-        ${ix?`<div class="gl">${ix}</div>`:''}
       </div></div>`;
   }
 
@@ -502,7 +540,7 @@ const DATA = null; /*__DATA__*/
     if(v==='error') return '<div class="note">종목 목록을 불러오지 못했습니다.</div>';
     if(!v.length) return '<div class="note">표시할 종목이 없습니다.</div>';
     return `<div class="llist">`+v.map(t=>`
-      <div class="lrow"><span class="ln">${esc(t.name)}</span>
+      <div class="lrow"><span class="ln">${esc(t.name)}${t.out?'<span class="tag">계산 제외</span>':''}</span>
         <span class="ll num">${t.price?t.price.toLocaleString():'–'}</span>
         <span class="lc num ${cls(t.chg)}">${fmt(t.chg)}</span></div>`).join('')+`</div>`;
   }
@@ -545,6 +583,11 @@ const DATA = null; /*__DATA__*/
           <div class="stat"><div class="k">오른 종목</div><div class="v num u">${s.rise??'–'}</div>
             <div class="s num ${s.total&&s.rise/s.total>=0.6?'u':s.total&&s.rise/s.total<=0.4?'d':'f'}">${s.total?Math.round(s.rise/s.total*100)+'%':'–'}</div></div>
         </div>
+        ${s.excluded&&s.excluded.length?`<div class="card"><div class="chead"><span class="ctitle">숫자를 바로잡았습니다</span></div>
+          <div class="cbody"><div class="note"><b>${esc(s.excluded.join(', '))}</b> 종목을 계산에서 뺐습니다.<br>
+            하루 가격제한폭(±30%)을 넘은 종목입니다. 상장 첫날이거나 거래가 다시 열린 종목이라 어제 가격이 없습니다.
+            이런 종목이 섞이면 업종 숫자가 부풀어서, 빼고 다시 계산했습니다.<br>
+            네이버 원래 숫자 <b class="num">${fmt(s.naver_chg)}</b> → 바로잡은 숫자 <b class="num">${fmt(s.chg)}</b></div></div></div>`:''}
         <div class="card"><div class="chead"><span class="ctitle">업종 안에서 무슨 일이</span></div>
           <div class="cbody"><div class="llist">
             <div class="lrow"><span class="ln">상승</span><span class="ll num">${s.rise??'–'}</span><span class="lc u">개</span></div>
@@ -563,10 +606,11 @@ const DATA = null; /*__DATA__*/
   }
 
   function scGlobal(){
-    const names=['한국','미국','환율 · 금리','원자재'];
+    const names=['한국','미국','선물','아시아','환율 · 금리','원자재'];
     return `<div class="chips" role="tablist">${names.map((t,i)=>`<button class="chip" role="tab" data-jump="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${globalCards()}
-      <p class="note"><b>왜 보는가.</b> 한국 장은 미국 밤장을 따라 여는 경우가 많습니다. 내일 아침 방향을 가늠하는 용도입니다.</p>`;
+      <p class="note"><b>왜 보는가.</b> 한국 장은 미국 밤장을 따라 여는 경우가 많습니다. 아침에는 미국 마감과 선물을, 장중에는 선물과 아시아를 봅니다.<br>
+        <b>업종 숫자는 지수와 나란히 봐야 합니다.</b> 업종이 +2% 여도 코스피가 +3% 면 시장보다 덜 오른 것입니다.</p>`;
   }
   function scWatch(){
     const list=watch.map(n=>byName[n]).filter(Boolean);
