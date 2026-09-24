@@ -27,17 +27,24 @@ export async function onRequestGet(context) {
 
   let stocks = [];
   try {
-    const r = await fetch(`https://m.stock.naver.com/api/stocks/industry/${no}`, {
-      headers: {
-        'user-agent': UA,
-        'accept-language': 'ko-KR,ko;q=0.9',
-        accept: 'application/json,*/*;q=0.8',
-        referer: 'https://m.stock.naver.com/',
-      },
-    });
-    if (!r.ok) throw new Error('upstream ' + r.status);
-    const j = await r.json();
-    stocks = (j.stocks || []).map((s) => ({
+    // 네이버는 한 번에 20개(최대 100개)씩만 준다. 끝까지 넘겨 받아야 업종 종목이 다 나온다.
+    const all = [];
+    for (let page = 1; page <= 5; page++) {
+      const r = await fetch(`https://m.stock.naver.com/api/stocks/industry/${no}?page=${page}&pageSize=100`, {
+        headers: {
+          'user-agent': UA,
+          'accept-language': 'ko-KR,ko;q=0.9',
+          accept: 'application/json,*/*;q=0.8',
+          referer: 'https://m.stock.naver.com/',
+        },
+      });
+      if (!r.ok) throw new Error('upstream ' + r.status);
+      const j = await r.json();
+      const got = j.stocks || [];
+      all.push(...got);
+      if (got.length < 100 || all.length >= (Number(j.totalCount) || 0)) break;
+    }
+    stocks = all.map((s) => ({
       code: s.itemCode,
       name: s.stockName,
       price: numOf(s.closePrice),
