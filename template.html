@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="종목이 아니라 업종 단위로 오늘 돈이 어디로 갔는지 보는 화면">
+<meta name="description" content="예측이 아니라 실제 체결 숫자. 종목이 아니라 업종 단위로 오늘 돈이 어디로 갔는지 보는 화면">
 <title>섹터 흐름판</title>
 <meta name="theme-color" content="#121211">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LUCENT">
 <meta property="og:title" content="LUCENT 섹터 흐름판">
-<meta property="og:description" content="오늘 돈이 어느 업종으로 들어가고 빠졌는지 한눈에. 장중 실시간.">
+<meta property="og:description" content="예측이 아니라 실제 체결 숫자. 오늘 돈이 어느 업종으로 들어가고 빠졌는지 한눈에. 장중 30초마다 갱신.">
 <meta property="og:url" content="https://lucent-sector.pages.dev/">
-<meta property="og:image" content="https://lucent-sector.pages.dev/assets/og.png">
+<meta property="og:image" content="https://lucent-sector.pages.dev/assets/og.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -216,7 +216,9 @@ button{font:inherit; color:inherit; background:none; border:0}
   color:var(--on-dark); box-shadow:var(--shadow); display:block; width:100%; text-align:left;
   cursor:pointer}
 .hero .eyebrow{font-size:11px; color:var(--on-dark-2); letter-spacing:.06em; margin-bottom:14px;
-  position:relative}
+  position:relative; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.hero .fact{margin-left:auto; font-size:10.5px; font-weight:700; letter-spacing:0; color:var(--gold);
+  background:rgba(212,175,124,.14); padding:3px 9px; border-radius:999px; white-space:nowrap}
 .hero h1{font-size:26px; line-height:1.36; font-weight:700; letter-spacing:-.025em;
   margin:0 0 18px; position:relative; max-width:11em; text-wrap:balance}
 .hero .mood{display:flex; align-items:center; gap:9px; font-size:14.5px; font-weight:700; position:relative}
@@ -513,7 +515,7 @@ const DATA = null; /*__DATA__*/
     return `<div class="dateline">${esc(d.date_label||'')} (${d.weekday}) · ${esc(d.market_label.split(' · ')[0])} · ${stamp}
         ${next?`<span class="dd">${esc(next.dtext)} ${esc(next.title)}</span>`:''}</div>
       <button class="hero" data-go="more">${WAVE}
-        <div class="eyebrow">${on?'지금 시장 흐름':(d.is_today===false&&d.trade_label?`${esc(d.trade_label)} 기록`:'오늘의 기록')}</div>
+        <div class="eyebrow"><span>${on?'지금 시장 흐름':(d.is_today===false&&d.trade_label?`${esc(d.trade_label)} 기록`:'오늘의 기록')}</span><span class="fact">예측 아님 · 실제 체결 숫자</span></div>
         <h1>${esc(d.headline)}</h1>
         <div class="mood"><span class="pip ${m.mood==='좋음'?'good':m.mood==='나쁨'?'bad':'warn'}"></span>분위기 ${esc(m.mood)}</div>
         <div class="why">${m.why.length?esc(m.why.join(' · ')):esc(d.subline)}</div>
