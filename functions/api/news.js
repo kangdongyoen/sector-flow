@@ -121,8 +121,15 @@ async function headlines() {
 }
 
 async function sectorHeadlines(no, name) {
-  const j = await getJSON(`${BASE}/api/stocks/industry/${no}`);
-  const stocks = (j.stocks || [])
+  // 구성 종목 전부 받아서 시가총액 순으로 줄 세운다. 네이버는 한 번에 최대 100개씩 준다.
+  const all = [];
+  for (let page = 1; page <= 5; page++) {
+    const j = await getJSON(`${BASE}/api/stocks/industry/${no}?page=${page}&pageSize=100`);
+    const got = j.stocks || [];
+    all.push(...got);
+    if (got.length < 100 || all.length >= (Number(j.totalCount) || 0)) break;
+  }
+  const stocks = all
     .map((s) => ({ code: s.itemCode, name: s.stockName, cap: numOf(s.marketValue) || 0 }))
     .filter((s) => s.code && s.name)
     .sort((a, b) => b.cap - a.cap);
