@@ -1,21 +1,66 @@
 {
  "source": "naver+yahoo",
- "updated": "2026-09-23 21:15",
- "updated_label": "09월 23일 21:15 기준",
- "date_label": "09월 23일",
- "weekday": "수",
+ "updated": "2026-09-24 22:33",
+ "updated_label": "09월 24일 22:33 기준",
+ "date_label": "09월 24일",
+ "weekday": "목",
  "market_status": "closed",
- "market_label": "장 마감",
+ "market_label": "휴장일",
+ "us": {
+  "state": "open",
+  "last": "2026-09-24",
+  "half": false,
+  "holiday": null,
+  "label": "미국 지금 장중"
+ },
+ "market": [
+  {
+   "name": "코스피",
+   "day": "2026-09-23",
+   "inv": {
+    "personal": -14649,
+    "foreign": -4942,
+    "inst": 3189
+   },
+   "breadth": {
+    "rise": 311,
+    "fall": 548,
+    "steady": 55,
+    "upper": 0,
+    "lower": 0
+   }
+  },
+  {
+   "name": "코스닥",
+   "day": "2026-09-23",
+   "inv": {
+    "personal": 275,
+    "foreign": -462,
+    "inst": 76
+   },
+   "breadth": {
+    "rise": 856,
+    "fall": 786,
+    "steady": 94,
+    "upper": 4,
+    "lower": 0
+   }
+  }
+ ],
+ "intraday": null,
  "is_live": false,
- "headline": "오늘 돈은 반도체와반도체장비 · 석유와가스로 갔다",
+ "trade_day": "2026-09-23",
+ "trade_label": "9월 23일 (수)",
+ "is_today": false,
+ "headline": "9월 23일 돈은 반도체와반도체장비 · 석유와가스로 갔다",
  "subline": "반도체와반도체장비 171개 중 137개 상승 · 오른 업종 36개 · 빠진 업종 37개",
  "mood": {
-  "mood": "보통",
-  "emoji": "🟡",
-  "score": 1,
+  "mood": "나쁨",
+  "emoji": "🔴",
+  "score": -2,
   "why": [
-   "미국 반도체 강세",
-   "환율 급등"
+   "미국 선물 약세",
+   "미국 반도체 약세"
   ]
  },
  "top_in": [
@@ -44,15 +89,17 @@
    ],
    "spark": [
     -0.15,
+    0.07,
     0.07
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.08,
+   "chg5": -0.01,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.06,
    "hot": false
   },
@@ -67,15 +114,17 @@
    "part": 0.58,
    "spark": [
     0.7,
+    3.13,
     3.13
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 3.85,
+   "chg5": 7.1,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 3.33,
    "hot": false
   },
@@ -90,15 +139,17 @@
    "part": 0.8,
    "spark": [
     0.24,
+    2.79,
     2.79
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 3.04,
+   "chg5": 5.91,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 3.46,
    "hot": false
   },
@@ -113,15 +164,17 @@
    "part": 0.31,
    "spark": [
     -0.2,
+    1.93,
     1.93
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 1.73,
+   "chg5": 3.69,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 1.64,
    "hot": false
   },
@@ -136,15 +189,17 @@
    "part": 0.75,
    "spark": [
     -1.05,
+    1.83,
     1.83
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.76,
+   "chg5": 2.6,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 2.2,
    "hot": false
   },
@@ -159,15 +214,17 @@
    "part": 0.53,
    "spark": [
     -1.46,
+    1.41,
     1.41
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.07,
+   "chg5": 1.34,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 1.44,
    "hot": false
   },
@@ -182,15 +239,17 @@
    "part": 0.38,
    "spark": [
     1.16,
+    1.21,
     1.21
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 2.38,
+   "chg5": 3.62,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 1.09,
    "hot": false
   },
@@ -205,15 +264,17 @@
    "part": 0.67,
    "spark": [
     -0.24,
+    1.2,
     1.2
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.96,
+   "chg5": 2.17,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 1.36,
    "hot": false
   },
@@ -228,15 +289,17 @@
    "part": 0.56,
    "spark": [
     -2.88,
+    1.09,
     1.09
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.82,
+   "chg5": -0.75,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 1.14,
    "hot": false
   },
@@ -251,15 +314,17 @@
    "part": 0.64,
    "spark": [
     4.37,
+    1.06,
     1.06
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 5.48,
+   "chg5": 6.59,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 1.18,
    "hot": false
   },
@@ -274,15 +339,17 @@
    "part": 0.32,
    "spark": [
     0.77,
+    1.05,
     1.05
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 1.83,
+   "chg5": 2.9,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.9,
    "hot": false
   },
@@ -297,15 +364,17 @@
    "part": 0.67,
    "spark": [
     1.89,
+    0.97,
     0.97
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 2.88,
+   "chg5": 3.88,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 1.1,
    "hot": false
   },
@@ -320,15 +389,17 @@
    "part": 0.43,
    "spark": [
     0,
+    0.93,
     0.93
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.93,
+   "chg5": 1.87,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.88,
    "hot": false
   },
@@ -343,15 +414,17 @@
    "part": 0.46,
    "spark": [
     -2.01,
+    0.88,
     0.88
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.15,
+   "chg5": -0.28,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.85,
    "hot": false
   },
@@ -366,15 +439,17 @@
    "part": 0.46,
    "spark": [
     -2.05,
+    0.85,
     0.85
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.22,
+   "chg5": -0.38,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.82,
    "hot": false
   },
@@ -389,15 +464,17 @@
    "part": 0.6,
    "spark": [
     0.5,
+    0.82,
     0.82
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 1.32,
+   "chg5": 2.15,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.89,
    "hot": false
   },
@@ -412,15 +489,17 @@
    "part": 0.58,
    "spark": [
     -1.33,
+    0.8,
     0.8
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.54,
+   "chg5": 0.26,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.85,
    "hot": false
   },
@@ -435,15 +514,17 @@
    "part": 0.48,
    "spark": [
     -0.27,
+    0.77,
     0.77
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.5,
+   "chg5": 1.27,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.76,
    "hot": false
   },
@@ -458,15 +539,17 @@
    "part": 0.54,
    "spark": [
     0.01,
+    0.75,
     0.75
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.76,
+   "chg5": 1.52,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.77,
    "hot": false
   },
@@ -481,15 +564,17 @@
    "part": 0.52,
    "spark": [
     -0.29,
+    0.73,
     0.73
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.44,
+   "chg5": 1.17,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.74,
    "hot": false
   },
@@ -504,15 +589,17 @@
    "part": 0.47,
    "spark": [
     -0.36,
+    0.69,
     0.69
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.33,
+   "chg5": 1.02,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.67,
    "hot": false
   },
@@ -527,15 +614,17 @@
    "part": 0.77,
    "spark": [
     -1.94,
+    0.67,
     0.67
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.28,
+   "chg5": -0.62,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.81,
    "hot": false
   },
@@ -550,15 +639,17 @@
    "part": 0.52,
    "spark": [
     0.42,
+    0.59,
     0.59
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 1.01,
+   "chg5": 1.61,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.6,
    "hot": false
   },
@@ -573,15 +664,17 @@
    "part": 0.67,
    "spark": [
     -0.27,
+    0.59,
     0.59
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.32,
+   "chg5": 0.91,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.67,
    "hot": false
   },
@@ -596,15 +689,17 @@
    "part": 0.68,
    "spark": [
     -1.54,
+    0.53,
     0.53
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.02,
+   "chg5": -0.49,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.61,
    "hot": false
   },
@@ -619,15 +714,17 @@
    "part": 0.5,
    "spark": [
     -0.5,
+    0.52,
     0.52
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.02,
+   "chg5": 0.54,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.52,
    "hot": false
   },
@@ -642,15 +739,17 @@
    "part": 0.43,
    "spark": [
     -0.86,
+    0.49,
     0.49
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.37,
+   "chg5": 0.11,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.46,
    "hot": false
   },
@@ -665,15 +764,17 @@
    "part": 0.53,
    "spark": [
     0.52,
+    0.46,
     0.46
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.98,
+   "chg5": 1.45,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.47,
    "hot": false
   },
@@ -688,15 +789,17 @@
    "part": 0.46,
    "spark": [
     0.91,
+    0.28,
     0.28
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 1.19,
+   "chg5": 1.48,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.27,
    "hot": false
   },
@@ -711,15 +814,17 @@
    "part": 0.56,
    "spark": [
     0.52,
+    0.27,
     0.27
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.79,
+   "chg5": 1.06,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.28,
    "hot": false
   },
@@ -734,15 +839,17 @@
    "part": 0.33,
    "spark": [
     -0.02,
+    0.2,
     0.2
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.18,
+   "chg5": 0.38,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.17,
    "hot": false
   },
@@ -757,15 +864,17 @@
    "part": 0.31,
    "spark": [
     0.05,
+    0.19,
     0.19
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.24,
+   "chg5": 0.43,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.16,
    "hot": false
   },
@@ -780,15 +889,17 @@
    "part": 0.59,
    "spark": [
     -0.87,
+    0.17,
     0.17
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.7,
+   "chg5": -0.53,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.18,
    "hot": false
   },
@@ -803,15 +914,17 @@
    "part": 0.5,
    "spark": [
     0.16,
+    0.09,
     0.09
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.25,
+   "chg5": 0.34,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.09,
    "hot": false
   },
@@ -826,15 +939,17 @@
    "part": 0.53,
    "spark": [
     -0.02,
+    0.08,
     0.08
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.06,
+   "chg5": 0.14,
    "streak_sign": 1,
-   "streak": 1,
+   "streak": 2,
    "flow": 0.08,
    "hot": false
   },
@@ -849,15 +964,17 @@
    "part": 0.48,
    "spark": [
     0.02,
+    0.01,
     0.01
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.03,
+   "chg5": 0.04,
    "streak_sign": 1,
-   "streak": 2,
+   "streak": 3,
    "flow": 0.01,
    "hot": false
   },
@@ -872,15 +989,17 @@
    "part": 0.13,
    "spark": [
     0.38,
+    -0.01,
     -0.01
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.37,
+   "chg5": 0.36,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.01,
    "hot": false
   },
@@ -895,15 +1014,17 @@
    "part": 0.33,
    "spark": [
     0.84,
+    -0.04,
     -0.04
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.8,
+   "chg5": 0.76,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.03,
    "hot": false
   },
@@ -918,15 +1039,17 @@
    "part": 0.32,
    "spark": [
     0.07,
+    -0.14,
     -0.14
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.07,
+   "chg5": -0.21,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.12,
    "hot": false
   },
@@ -941,15 +1064,17 @@
    "part": 0.75,
    "spark": [
     0.28,
+    -0.16,
     -0.16
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.12,
+   "chg5": -0.04,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.19,
    "hot": false
   },
@@ -964,15 +1089,17 @@
    "part": 0.75,
    "spark": [
     0.15,
+    -0.17,
     -0.17
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.02,
+   "chg5": -0.19,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.2,
    "hot": false
   },
@@ -987,15 +1114,17 @@
    "part": 0.37,
    "spark": [
     -0.8,
+    -0.22,
     -0.22
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.02,
+   "chg5": -1.24,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -0.2,
    "hot": false
   },
@@ -1010,15 +1139,17 @@
    "part": 0.71,
    "spark": [
     0.51,
+    -0.24,
     -0.24
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.27,
+   "chg5": 0.03,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.28,
    "hot": false
   },
@@ -1033,15 +1164,17 @@
    "part": 0.43,
    "spark": [
     -0.74,
+    -0.28,
     -0.28
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.02,
+   "chg5": -1.3,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -0.26,
    "hot": false
   },
@@ -1056,15 +1189,17 @@
    "part": 0.4,
    "spark": [
     1.16,
+    -0.36,
     -0.36
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.8,
+   "chg5": 0.43,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.33,
    "hot": false
   },
@@ -1079,15 +1214,17 @@
    "part": 1,
    "spark": [
     0.19,
+    -0.39,
     -0.39
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.2,
+   "chg5": -0.59,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.55,
    "hot": false
   },
@@ -1102,15 +1239,17 @@
    "part": 0.36,
    "spark": [
     0.77,
+    -0.47,
     -0.47
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.3,
+   "chg5": -0.18,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.42,
    "hot": false
   },
@@ -1125,15 +1264,17 @@
    "part": 0.49,
    "spark": [
     1.09,
+    -0.48,
     -0.48
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.6,
+   "chg5": 0.12,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.48,
    "hot": false
   },
@@ -1148,15 +1289,17 @@
    "part": 0.32,
    "spark": [
     0.12,
+    -0.58,
     -0.58
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.46,
+   "chg5": -1.04,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.5,
    "hot": false
   },
@@ -1171,15 +1314,17 @@
    "part": 0.58,
    "spark": [
     -0.35,
+    -0.58,
     -0.58
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.93,
+   "chg5": -1.5,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -0.62,
    "hot": false
   },
@@ -1194,15 +1339,17 @@
    "part": 0.33,
    "spark": [
     6.33,
+    -0.64,
     -0.64
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 5.65,
+   "chg5": 4.97,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.55,
    "hot": false
   },
@@ -1217,15 +1364,17 @@
    "part": 0.54,
    "spark": [
     0.56,
+    -0.85,
     -0.85
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.29,
+   "chg5": -1.14,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -0.88,
    "hot": false
   },
@@ -1240,15 +1389,17 @@
    "part": 0.58,
    "spark": [
     -0.78,
+    -0.89,
     -0.89
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.66,
+   "chg5": -2.54,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -0.95,
    "hot": false
   },
@@ -1263,15 +1414,17 @@
    "part": 0.64,
    "spark": [
     0.24,
+    -0.9,
     -0.9
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.66,
+   "chg5": -1.56,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1,
    "hot": false
   },
@@ -1286,15 +1439,17 @@
    "part": 0.46,
    "spark": [
     -0.22,
+    -0.95,
     -0.95
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.17,
+   "chg5": -2.11,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -0.92,
    "hot": false
   },
@@ -1309,15 +1464,17 @@
    "part": 0.5,
    "spark": [
     0.29,
+    -1.13,
     -1.13
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.84,
+   "chg5": -1.96,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.13,
    "hot": false
   },
@@ -1332,15 +1489,17 @@
    "part": 0.73,
    "spark": [
     -0.62,
+    -1.13,
     -1.13
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.74,
+   "chg5": -2.85,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -1.34,
    "hot": false
   },
@@ -1355,15 +1514,17 @@
    "part": 0.73,
    "spark": [
     -0.47,
+    -1.17,
     -1.17
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.63,
+   "chg5": -2.79,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -1.39,
    "hot": false
   },
@@ -1378,15 +1539,17 @@
    "part": 0.43,
    "spark": [
     2.24,
+    -1.23,
     -1.23
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.98,
+   "chg5": -0.26,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.16,
    "hot": false
   },
@@ -1401,15 +1564,17 @@
    "part": 0.38,
    "spark": [
     1.58,
+    -1.27,
     -1.27
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.29,
+   "chg5": -0.98,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.15,
    "hot": false
   },
@@ -1424,15 +1589,17 @@
    "part": 0.8,
    "spark": [
     0.49,
+    -1.46,
     -1.46
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.98,
+   "chg5": -2.42,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.81,
    "hot": false
   },
@@ -1447,15 +1614,17 @@
    "part": 0.73,
    "spark": [
     0.54,
+    -1.6,
     -1.6
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.07,
+   "chg5": -2.65,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.89,
    "hot": false
   },
@@ -1470,15 +1639,17 @@
    "part": 0.5,
    "spark": [
     -2.18,
+    -1.82,
     -1.82
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -3.96,
+   "chg5": -5.71,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -1.82,
    "hot": false
   },
@@ -1493,15 +1664,17 @@
    "part": 0.44,
    "spark": [
     1.91,
+    -1.84,
     -1.84
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 0.03,
+   "chg5": -1.81,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -1.75,
    "hot": false
   },
@@ -1516,15 +1689,17 @@
    "part": 0.38,
    "spark": [
     -0.39,
+    -1.85,
     -1.85
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.23,
+   "chg5": -4.04,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -1.67,
    "hot": false
   },
@@ -1539,15 +1714,17 @@
    "part": 0.75,
    "spark": [
     -1,
+    -1.91,
     -1.91
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.89,
+   "chg5": -4.75,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -2.29,
    "hot": false
   },
@@ -1562,15 +1739,17 @@
    "part": 0.64,
    "spark": [
     -0.67,
+    -2.04,
     -2.04
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.7,
+   "chg5": -4.68,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -2.27,
    "hot": false
   },
@@ -1585,15 +1764,17 @@
    "part": 1,
    "spark": [
     1.38,
+    -2.09,
     -2.09
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -0.74,
+   "chg5": -2.81,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -2.93,
    "hot": true
   },
@@ -1608,15 +1789,17 @@
    "part": 0.69,
    "spark": [
     -0.19,
+    -2.27,
     -2.27
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.46,
+   "chg5": -4.67,
    "streak_sign": -1,
-   "streak": 2,
+   "streak": 3,
    "flow": -2.62,
    "hot": false
   },
@@ -1631,15 +1814,17 @@
    "part": 0.55,
    "spark": [
     1.04,
+    -2.48,
     -2.48
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -1.47,
+   "chg5": -3.91,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -2.58,
    "hot": false
   },
@@ -1654,15 +1839,17 @@
    "part": 0.38,
    "spark": [
     5.97,
+    -2.67,
     -2.67
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": 3.14,
+   "chg5": 0.39,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -2.41,
    "hot": false
   },
@@ -1677,15 +1864,17 @@
    "part": 0.75,
    "spark": [
     0.47,
+    -2.92,
     -2.92
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.46,
+   "chg5": -5.31,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -3.5,
    "hot": false
   },
@@ -1700,15 +1889,17 @@
    "part": 0.51,
    "spark": [
     1.84,
+    -4.15,
     -4.15
    ],
    "spark_days": [
     "화",
-    "수"
+    "수",
+    "목"
    ],
-   "chg5": -2.39,
+   "chg5": -6.44,
    "streak_sign": -1,
-   "streak": 1,
+   "streak": 2,
    "flow": -4.18,
    "hot": false
   }
@@ -1746,194 +1937,199 @@
    "kind": "us",
    "ticker": "^DJI",
    "unit": "",
-   "last": 51863.69,
-   "chg": -0.36
+   "last": 51467.48,
+   "chg": -0.09
   },
   {
    "name": "S&P500",
    "kind": "us",
    "ticker": "^GSPC",
    "unit": "",
-   "last": 7764.64,
-   "chg": 0
+   "last": 7677.66,
+   "chg": -0.37
   },
   {
    "name": "나스닥",
    "kind": "us",
    "ticker": "^IXIC",
    "unit": "",
-   "last": 27244.28,
-   "chg": 0.45
+   "last": 26748.9,
+   "chg": -0.69
   },
   {
    "name": "필라델피아 반도체",
    "kind": "us",
    "ticker": "^SOX",
    "unit": "",
-   "last": 12689.82,
-   "chg": 2.06
+   "last": 12266.55,
+   "chg": -2.14
   },
   {
    "name": "나스닥 선물",
    "kind": "fut",
    "ticker": "NQ=F",
    "unit": "",
-   "last": 30944,
-   "chg": -0.27
+   "last": 30508,
+   "chg": -0.83
   },
   {
    "name": "S&P500 선물",
    "kind": "fut",
    "ticker": "ES=F",
    "unit": "",
-   "last": 7823,
-   "chg": -0.11
+   "last": 7738,
+   "chg": -0.45
   },
   {
    "name": "닛케이",
    "kind": "asia",
    "ticker": "^N225",
    "unit": "",
-   "last": 65018.95,
-   "chg": 1.38
+   "last": 65513.99,
+   "chg": 0.76
   },
   {
    "name": "상하이종합",
    "kind": "asia",
    "ticker": "000001.SS",
    "unit": "",
-   "last": 3936.52,
-   "chg": -0.39
+   "last": 3888.37,
+   "chg": -1.22
   },
   {
    "name": "항셍",
    "kind": "asia",
    "ticker": "^HSI",
    "unit": "",
-   "last": 24834.12,
-   "chg": -1.01
+   "last": 24761.13,
+   "chg": -0.29
   },
   {
    "name": "대만 가권",
    "kind": "asia",
    "ticker": "^TWII",
    "unit": "",
-   "last": 48157.29,
-   "chg": 0.75
+   "last": 48024.6,
+   "chg": -0.28
   },
   {
    "name": "원달러",
    "kind": "fx",
    "ticker": "KRW=X",
    "unit": "원",
-   "last": 1366,
-   "chg": 0.74
+   "last": 1368,
+   "chg": 0.12
   },
   {
    "name": "달러인덱스",
    "kind": "fx",
    "ticker": "DX-Y.NYB",
    "unit": "",
-   "last": 100.88,
-   "chg": 0.28
+   "last": 101.28,
+   "chg": 0.18
   },
   {
    "name": "유가(WTI)",
    "kind": "cmd",
    "ticker": "CL=F",
    "unit": "$",
-   "last": 90.61,
-   "chg": 0.1
+   "last": 93.94,
+   "chg": 1.93
   },
   {
    "name": "금",
    "kind": "cmd",
    "ticker": "GC=F",
    "unit": "$",
-   "last": 4351,
-   "chg": -0.59
+   "last": 4312,
+   "chg": -0.14
   },
   {
    "name": "미국 10년 금리",
    "kind": "rate",
    "ticker": "^TNX",
    "unit": "%",
-   "last": 4.97,
-   "chg": 0.1
+   "last": 5.1,
+   "chg": -0.31
   },
   {
    "name": "공포지수(VIX)",
    "kind": "risk",
    "ticker": "^VIX",
    "unit": "",
-   "last": 14.28,
-   "chg": 0.49
+   "last": 15.88,
+   "chg": 4.61
   },
   {
    "name": "비트코인",
    "kind": "crypto",
    "ticker": "BTC-USD",
    "unit": "$",
-   "last": 85490,
-   "chg": -0.61
+   "last": 84144,
+   "chg": -1.91
   }
  ],
  "errors": [],
+ "history": {
+  "src": "kv",
+  "days": 2,
+  "last": "2026-09-23"
+ },
  "calendar": [
   {
    "date": "2026-09-24",
    "kind": "off",
    "title": "추석 연휴 휴장",
    "note": "24일·25일 이틀 휴장",
-   "dday": 1,
+   "dday": 0,
    "label": "9월 24일 (목)",
-   "dtext": "내일"
+   "dtext": "오늘"
   },
   {
    "date": "2026-09-25",
    "kind": "off",
    "title": "추석 휴장",
    "note": "다음 거래일 9월 28일(월)",
-   "dday": 2,
+   "dday": 1,
    "label": "9월 25일 (금)",
-   "dtext": "D-2"
+   "dtext": "내일"
   },
   {
    "date": "2026-10-02",
    "kind": "us",
    "title": "미국 9월 고용보고서",
    "note": "한국시간 밤 9시 30분",
-   "dday": 9,
+   "dday": 8,
    "label": "10월 2일 (금)",
-   "dtext": "D-9"
+   "dtext": "D-8"
   },
   {
    "date": "2026-10-05",
    "kind": "off",
    "title": "개천절 대체 휴장",
    "note": "",
-   "dday": 12,
+   "dday": 11,
    "label": "10월 5일 (월)",
-   "dtext": "D-12"
+   "dtext": "D-11"
   },
   {
    "date": "2026-10-08",
    "kind": "expiry",
    "title": "옵션 만기일",
    "note": "만기 전후 수급 출렁임",
-   "dday": 15,
+   "dday": 14,
    "label": "10월 8일 (목)",
-   "dtext": "D-15"
+   "dtext": "D-14"
   },
   {
    "date": "2026-10-09",
    "kind": "off",
    "title": "한글날 휴장",
    "note": "",
-   "dday": 16,
+   "dday": 15,
    "label": "10월 9일 (금)",
-   "dtext": "D-16"
+   "dtext": "D-15"
   }
  ],
- "archived_at": "2026-09-23 21:15"
+ "archived_at": "2026-09-24 22:33"
 }
