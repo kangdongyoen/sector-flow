@@ -112,11 +112,18 @@ async function readSectors() {
 const PRICE_LIMIT = 30;
 const MAX_CHECK = 4;
 
+/** 업종 구성 종목 전부. 네이버는 한 번에 20개(최대 100개)씩만 주므로 끝까지 넘겨 받는다. */
 async function readMembers(no) {
-  const r = await fetch(`https://m.stock.naver.com/api/stocks/industry/${no}`, { headers: NAVER_H });
-  if (!r.ok) throw new Error('members ' + r.status);
-  const j = await r.json();
-  return (j.stocks || []).map((s) => ({
+  const all = [];
+  for (let page = 1; page <= 5; page++) {
+    const r = await fetch(`https://m.stock.naver.com/api/stocks/industry/${no}?page=${page}&pageSize=100`, { headers: NAVER_H });
+    if (!r.ok) throw new Error('members ' + r.status);
+    const j = await r.json();
+    const got = j.stocks || [];
+    all.push(...got);
+    if (got.length < 100 || all.length >= (Number(j.totalCount) || 0)) break;
+  }
+  return all.map((s) => ({
     name: s.stockName,
     chg: numOf(s.fluctuationsRatio),
     cap: numOf(s.marketValue),
