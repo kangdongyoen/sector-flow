@@ -7,6 +7,8 @@
  *   1. 장중 10분마다 업종 등락률을 찍어 둔다(intra:날짜). '지난 30분' 과 '오늘 흐름' 선이 여기서 나온다.
  *   2. 마감 뒤 하루치 업종 등락률을 쌓는다(history). 상세 화면의 캔들이 여기서 나온다.
  *   3. 개장 전 · 마감 뒤에 카카오톡 '나에게 보내기'로 요약을 보낸다.
+ *   4. 개장 전 한 번 경제 헤드라인(네이버 증권 주요 뉴스 제목)을 날짜별로 남긴다(news:날짜).
+ *      나중에 '그 뉴스가 나온 날 돈이 실제로 어디로 갔나'를 되짚는 기록이다.
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
  *   *\/10 0-6 * * MON-FRI  09:00 ~ 15:50  10분마다. 15:40 · 15:50 은 마감 뒤 기록과 알림
@@ -18,6 +20,7 @@
  *   kakao     카카오 REST 키 · 리프레시 토큰. /kakao 페이지가 넣는다. 밖으로 보여주지 않는다.
  *   intra:날짜  장중 10분 간격 업종 등락률. 나흘 뒤 저절로 지워진다.
  *   runs      최근 실행 기록 20개
+ *   news:날짜   그날 아침 헤드라인 제목 10개. 1년 뒤 저절로 지워진다.
  *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  */
 
@@ -56,6 +59,24 @@ async function getLive() {
 }
 
 const G = (d, n) => (d.globals || []).find((g) => g.name === n);
+
+/** 경제 헤드라인. 화면과 같은 /api/news 를 부른다. 제목 · 언론사 · 시각 · 주소만 온다. */
+async function getNews() {
+  const r = await fetch(`${SITE}/api/news?t=${Date.now()}`, { headers: { accept: 'application/json' } });
+  if (!r.ok) throw new Error('news ' + r.status);
+  const j = await r.json();
+  return Array.isArray(j.items) ? j.items : [];
+}
+
+/** 아침 헤드라인을 그날 이름으로 한 번만 남긴다 */
+async function archiveNews(env, day, items) {
+  const key = 'news:' + day;
+  if (!items.length || (await env.FLOW.get(key))) return false;
+  const at = kstNow().toISOString().slice(11, 16);
+  const rows = items.slice(0, 10).map((x) => ({ t: x.t, src: x.src, at: x.at, url: x.url }));
+  await env.FLOW.put(key, JSON.stringify({ day, at, items: rows }), { expirationTtl: 366 * 86400 });
+  return true;
+}
 
 /** 이 숫자가 어느 거래일 것인가. 시계가 아니라 코스피 마지막 체결 시각으로 정한다.
  *  그래야 휴장일에 어제 숫자를 오늘 것으로 잘못 쌓지 않는다. */
@@ -176,7 +197,7 @@ function dayLabel(now) {
 }
 
 /** 개장 전: 어젯밤 미국이 어떻게 끝났고, 지금 분위기가 어떤가 */
-function textAM(d, now) {
+function textAM(d, now, news) {
   const L = [`[섹터 흐름판] ${dayLabel(now)} 개장 전`];
   const us = [['다우', '다우'], ['나스닥', '나스닥'], ['필라델피아 반도체', '반도체']]
     .map(([n, s]) => [G(d, n), s])
@@ -189,8 +210,15 @@ function textAM(d, now) {
   if (nq && typeof nq.chg === 'number') L.push(`나스닥 선물 ${pct(nq.chg)}`);
   const m = d.mood || {};
   if (m.mood) L.push(`분위기 ${m.mood}` + ((m.why || []).length ? ' · ' + m.why.slice(0, 2).join(' · ') : ''));
+  // 헤드라인은 제목만, 앞쪽 두 개. 글자 한도를 넘기면 fit 이 통째로 뺀다.
+  for (const x of (news || []).slice(0, 2)) L.push('· ' + cut(x.t, 30));
   return fit(L);
 }
+
+const cut = (t, n) => {
+  const a = [...String(t || '')];
+  return a.length > n ? a.slice(0, n).join('') + '…' : a.join('');
+};
 
 const eok = (v) => (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US') + '억';
 
@@ -272,7 +300,19 @@ async function run(env, why) {
       }
     }
 
-    // 2. 카톡
+    // 2. 아침 헤드라인. 08:00 ~ 09:00 사이 한 번 받아 두고 카톡에도 쓴다.
+    let news = null;
+    if (mins >= 8 * 60 && mins < 9 * 60) {
+      try {
+        news = await getNews();
+        const saved = await archiveNews(env, today, news);
+        log.steps.push(saved ? `헤드라인 ${Math.min(news.length, 10)}개 남김` : '헤드라인 이미 남김');
+      } catch (e) {
+        log.steps.push('헤드라인 못 받음 · ' + String(e.message || e).slice(0, 80));
+      }
+    }
+
+    // 3. 카톡
     const slot = mins >= 8 * 60 && mins < 9 * 60 ? 'am'
       : mins >= 15 * 60 + 35 && mins < 17 * 60 ? 'pm' : null;
     if (!slot) {
@@ -291,7 +331,7 @@ async function run(env, why) {
           if (!tok) {
             log.steps.push('카톡 연결 전');
           } else {
-            await sendMemo(tok, slot === 'am' ? textAM(d, now) : textPM(d));
+            await sendMemo(tok, slot === 'am' ? textAM(d, now, news) : textPM(d));
             await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
             log.steps.push('카톡 보냄');
           }
