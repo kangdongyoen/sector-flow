@@ -18,6 +18,7 @@
  *   whale:v1    화면이 읽는 목록. 45일치, 많아야 400건
  *   whale:seen  이미 열어 본 접수번호와 마지막 실행 기록. 같은 공시를 두 번 열지 않는다
  *   whale:map   DART 회사번호 → 종목코드, 종목코드 → 네이버 업종번호
+ *   whale:at    마지막으로 확인한 시각과 그때 기록
  *
  * 숫자는 공시 원문 그대로 옮긴다. 해석하거나 점수를 매기지 않는다.
  */
@@ -395,7 +396,7 @@ async function doIn(row, map, budget) {
     no,
     mkt: row.mkt,
     who: cut(tidy(row.by), 40),
-    wk: role.role ? '임원' : role.major ? '주요주주' : whoKind(row.by, ''),
+    wk: role.role && !/주주/.test(role.role) ? '임원' : role.major || role.role ? '주요주주' : whoKind(row.by, ''),
     role: role.role ? cut(role.role, 16) : role.major ? '주요주주' : null,
     amt: Math.round(amt),
     sh: Math.round(sh),
@@ -507,6 +508,8 @@ export async function harvestWhale(env, opt = {}) {
     if (log.skip || opened) {
       writes.push(env.FLOW.put('whale:seen', JSON.stringify({ at: log.at, log, r: seen })));
     }
+    // 마지막으로 확인한 시각. 새 공시가 없어도 '멈춘 게 아니다'를 보여 주려고 매번 남긴다
+    writes.push(env.FLOW.put('whale:at', JSON.stringify({ at: log.at, log })));
     if (map.dirty) {
       delete map.dirty;
       writes.push(env.FLOW.put('whale:map', JSON.stringify(map)));
