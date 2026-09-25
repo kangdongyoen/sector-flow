@@ -399,11 +399,11 @@ export default {
       const hist = await env.FLOW.get('history', 'json');
       const k = await env.FLOW.get('kakao', 'json');
       const runs = (await env.FLOW.get('runs', 'json')) || [];
-      const ws = await env.FLOW.get('whale:seen', 'json');
+      const ws = await env.FLOW.get('whale:at', 'json');
       return json({
         days: hist && hist.days ? hist.days.map((x) => x.d) : [],
         kakao: k ? { connected: true, saved_at: k.saved_at || null, renewed_at: k.renewed_at || null } : { connected: false },
-        whale: ws ? { checked: ws.at || null, last: ws.log || null, seen: Object.keys(ws.r || {}).length } : null,
+        whale: ws ? { checked: ws.at || null, last: ws.log || null } : null,
         runs: runs.slice(0, 10),
       });
     }
