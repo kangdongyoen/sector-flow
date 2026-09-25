@@ -189,6 +189,28 @@ button{font:inherit; color:inherit; background:none; border:0}
 .nw .nm .tg{color:var(--t2); font-weight:700}
 .nw:hover .nt, .nw:focus-visible .nt{text-decoration:underline; text-underline-offset:3px}
 .nwmore{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--t2); text-decoration:none}
+.wh{display:block; padding:10px 0; border-top:1px solid var(--line); color:inherit; text-decoration:none}
+.whl .wh:first-child{border-top:0; padding-top:2px}
+.wh .l1{display:flex; align-items:baseline; gap:10px}
+.wh .co{flex:1; min-width:0; font-size:15px; font-weight:700; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wh .v{flex:none; font-size:14.5px; font-weight:700}
+.wh .l2{display:block; font-size:12.5px; color:var(--t2); margin-top:4px; line-height:1.45; overflow-wrap:anywhere}
+.wh .l3{display:block; font-size:11.5px; color:var(--t3); margin-top:2px; line-height:1.45}
+.wh:hover .co, .wh:focus-visible .co{text-decoration:underline; text-underline-offset:3px}
+.wk{display:inline-block; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; background:var(--track); color:var(--t2); margin-right:6px; vertical-align:1px}
+.wk.g{background:var(--gold-soft); color:var(--gold)}
+.whx{margin-top:12px; padding-top:10px; border-top:1px solid var(--line)}
+.whx summary{cursor:pointer; font-size:12.5px; font-weight:700; color:var(--t2); list-style:none}
+.whx summary::-webkit-details-marker{display:none}
+.whx summary::after{content:'›'; display:inline-block; margin-left:5px; transition:transform .15s}
+.whx[open] summary::after{transform:rotate(90deg)}
+button.nwmore{background:none; border:0; padding:0; cursor:pointer; font-family:inherit}
+.whx summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px; border-radius:4px}
+.whx .xb{font-size:13px; line-height:1.65; color:var(--t2)}
+.whx .xb h5{margin:14px 0 4px; font-size:12.5px; color:var(--t1)}
+.whx .xb p{margin:0}
+.whx .xb ul{margin:0; padding-left:18px}
+.whx .xb li + li{margin-top:3px}
 /* ── 오늘 흐름 선 ── */
 .iline{width:100%; height:150px; display:block}
 .iline .zero{stroke:var(--line-2); stroke-dasharray:3 3}
@@ -522,6 +544,7 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
         <span class="chev">›</span></button>
       ${indexCard()}
       ${checkCard()}
+      ${whaleCard()}
       ${glance()}
       <div class="seg" role="tablist">${tabs.map((t,i)=>`<button role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>
       ${panel}`;
@@ -648,6 +671,109 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
     if(!v||v.items===null) return '<div class="note">불러오는 중입니다.</div>';
     if(!v.items.length) return `<div class="note">${v.err?'헤드라인을 불러오지 못했습니다.':'최근 나흘 안에 이 업종 이름이 들어간 제목이 없습니다.'}</div>`;
     return nwRows(v.items,4,true);
+  }
+
+  /* ── 큰손 움직임 ──
+     DART 공시 두 가지를 예약 실행기가 10분마다 모아 둔다(/api/whale).
+     5% 대량보유 보고(기관 · 최대주주 지분 변동)와 임원 · 주요주주 매매 보고.
+     숫자는 공시 원문 그대로. 누르면 DART 원문으로 간다. 매수 신호로 읽히지 않게 설명을 붙인다. */
+  const byNo=Object.fromEntries(d.sectors.map(s=>[s.no,s]));
+  const DART_V='https://dart.fss.or.kr/dsaf001/main.do?rcpNo=';
+  const INST=['국민연금','연기금','외국계','운용사','금융사'];
+  const md=s=>s?`${Number(s.slice(5,7))}/${Number(s.slice(8,10))}`:'';
+  const won=v=>{ const a=Math.abs(v), g=v>0?'+':'-';
+    if(a>=1e9) return g+Math.round(a/1e8).toLocaleString()+'억';
+    if(a>=1e8) return g+(a/1e8).toFixed(1).replace(/\.0$/,'')+'억';
+    return g+Math.round(a/1e4).toLocaleString()+'만'; };
+  const shares=v=>{ const a=Math.abs(v); return a>=1e4?(a/1e4).toFixed(a>=1e5?0:1).replace(/\.0$/,'')+'만주':a.toLocaleString()+'주'; };
+  const p2=v=>Number(v).toFixed(2);
+  function whVal(x){
+    if(x.k==='in') return `<span class="v num ${cls(x.amt)}">${won(x.amt)}</span>`;
+    if(x.p0==null&&/신규/.test(x.kind||'')) return `<span class="v num u">신규 ${p2(x.p1)}%</span>`;
+    return `<span class="v num ${cls(x.d)}">${x.d>0?'+':''}${p2(x.d)}%p</span>`;
+  }
+  function whRow(x,showSec){
+    const s=byNo[x.no];
+    const wk=x.k==='in'&&/주주/.test(x.role||'')?'주요주주':x.wk;
+    const who=`<span class="wk ${INST.includes(wk)?'g':''}">${esc(wk)}</span>${esc(x.who)}${x.role&&x.role!==wk?` · ${esc(x.role)}`:''}`;
+    let what;
+    if(x.k==='in'){
+      what=[...(x.tags||[]), shares(x.sh)+(x.px?` · 평균 ${x.px.toLocaleString()}원`:'')];
+    } else {
+      const span=x.p0!=null?`${p2(x.p0)}% → ${p2(x.p1)}%`+(x.p0>=5&&x.p1<5?' (5% 아래로)':''):'';
+      what=[span, ...(x.tags||[])].filter(Boolean);
+    }
+    const ev=x.ev0?`${md(x.ev0)}~${md(x.ev)}`:md(x.ev);
+    const when=x.ev&&x.ev!==x.day?`변동 ${ev} · 공시 ${md(x.day)}`:`공시 ${md(x.day)}`;
+    const l3=[...what.map(esc), when, showSec&&s?esc(s.name):''].filter(Boolean).join(' · ');
+    return `<a class="wh" href="${DART_V}${esc(x.rcp)}" target="_blank" rel="noopener noreferrer">
+      <span class="l1"><span class="co">${esc(x.corp)}</span>${whVal(x)}</span>
+      <span class="l2">${who}</span>
+      <span class="l3">${l3}</span></a>`;
+  }
+  const whBox={items:null,at:0,loading:false,more:false,meta:{}};
+  let whxOpen=false;
+  const whChecked=()=>{ const c=whBox.meta&&whBox.meta.checked; return c?`DART 확인 ${md(c)} ${c.slice(11,16)}`:'DART 공시'; };
+  function loadWhale(){
+    if(whBox.loading||(whBox.at&&Date.now()-whBox.at<300000)) return;
+    whBox.loading=true;
+    fetch('/api/whale?n=15').then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(j=>{ Object.assign(whBox,{items:j.items||[],meta:j,at:Date.now(),loading:false,err:false}); paintWhale(); })
+      .catch(()=>{ Object.assign(whBox,{items:whBox.items||[],at:Date.now(),loading:false,err:true}); paintWhale(); });
+  }
+  function whaleHTML(){
+    if(whBox.items===null) return '<div class="note">공시를 불러오는 중입니다.</div>';
+    if(!whBox.items.length) return `<div class="note">${whBox.err?'공시를 불러오지 못했습니다.':'최근 눈여겨볼 큰손 공시가 없습니다.'}</div>`;
+    const n=whBox.more?15:5;
+    return `<div class="whl">${whBox.items.slice(0,n).map(x=>whRow(x,true)).join('')}</div>`
+      +(whBox.items.length>5?`<button class="nwmore" data-whmore="1">${whBox.more?'접기':`더 보기 (${Math.min(15,whBox.items.length)}건)`}</button>`:'');
+  }
+  function paintWhale(){
+    const el=document.getElementById('wh-home'); if(el) el.innerHTML=whaleHTML();
+    const c=document.getElementById('wh-chk'); if(c) c.textContent=whChecked();
+  }
+  const WHX=()=>`<details class="whx"${whxOpen?' open':''}><summary>이 칸은 뭔가요?</summary><div class="xb">
+      <h5>무엇을 보여주나</h5>
+      <p>법으로 공개해야 하는 두 가지 기록을 모아 숫자만 옮깁니다.</p>
+      <ul><li><b>5% 대량보유 보고.</b> 한 회사 주식을 5% 넘게 가진 사람이나 기관은 지분이 1%p 이상 바뀌면 금융감독원 DART 에 신고합니다.</li>
+        <li><b>임원 · 주요주주 매매 보고.</b> 회사 임원이나 10% 이상 가진 주요주주가 자기 회사 주식을 사고팔면 신고합니다.</li></ul>
+      <h5>여기서 볼 수 있는 것</h5>
+      <p>누가(외국계 운용사, 국민연금, 최대주주, 임원) 어느 회사를 얼마나(지분율 변화나 금액) 언제 움직였고 언제 공시했는지. 누르면 DART 원문이 열립니다.</p>
+      <h5>이걸로 할 수 있는 것</h5>
+      <ul><li>돈이 들어간 업종에 큰손도 들어왔는지 맞춰 봅니다. 업종 상세 화면에 그 업종 공시만 따로 모아 둡니다.</li>
+        <li>회사 사정을 가장 잘 아는 사람(임원 · 최대주주)이 자기 돈으로 샀는지 팔았는지 봅니다.</li>
+        <li>관심 있는 회사에 새로 5%를 넘게 산 기관이 있는지 봅니다.</li></ul>
+      <h5>왜 만들었나</h5>
+      <p>이 기록은 원래 누구나 공짜로 볼 수 있습니다. 그런데 하루 수십 건이 흩어져 있고 서식이 어려워 거의 아무도 안 봅니다. 업종 흐름과 한 화면에서 같이 보이게 하려고 만들었습니다.</p>
+      <h5>주의</h5>
+      <p><b>따라 사라는 신호가 아닙니다.</b> 큰손도 틀립니다. 신고는 거래 뒤 며칠, 길게는 몇 주 늦게 나옵니다. 그래서 변동일과 공시일을 같이 적습니다.
+        담보 계약 변경, 스톡옵션, 증여처럼 돈이 오가지 않은 기록은 뺐습니다. 홈에는 0.5%p 이상 바뀌었거나 새로 5%를 넘긴 것, 1억원 이상 매매만 올립니다.</p>
+    </div></details>`;
+  function whaleCard(){
+    loadWhale();
+    return `<div class="card"><div class="chead"><span class="ctitle">큰손 움직임</span>
+        <span class="more" style="cursor:default" id="wh-chk">${esc(whChecked())}</span></div>
+      <div class="cbody"><div id="wh-home">${whaleHTML()}</div>${WHX()}</div></div>`;
+  }
+  /* 업종 상세: 그 업종 종목의 큰손 공시 전부 */
+  const secWh={};
+  function paintSecWhale(no){
+    const el=document.getElementById('sec-wh'); if(el&&el.dataset.no==String(no)) el.innerHTML=secWhaleHTML(no);
+  }
+  function loadSecWhale(s){
+    if(s.no==null) return;
+    const v=secWh[s.no];
+    if(v&&(v.loading||Date.now()-v.at<300000)) return;
+    secWh[s.no]={items:v?v.items:null,since:v?v.since:null,at:Date.now(),loading:true};
+    fetch(`/api/whale?no=${s.no}&n=8`).then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(j=>{ secWh[s.no]={items:j.items||[],since:j.since,at:Date.now()}; paintSecWhale(s.no); })
+      .catch(()=>{ secWh[s.no]={items:[],at:Date.now(),err:true}; paintSecWhale(s.no); });
+  }
+  function secWhaleHTML(no){
+    const v=secWh[no];
+    if(!v||v.items===null) return '<div class="note">불러오는 중입니다.</div>';
+    if(!v.items.length) return `<div class="note">${v.err?'공시를 불러오지 못했습니다.':`${v.since?md(v.since)+' 이후 ':''}이 업종 종목의 큰손 공시가 없습니다.`}</div>`;
+    return `<div class="whl">${v.items.map(x=>whRow(x,false)).join('')}</div>`;
   }
 
   /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
@@ -824,6 +950,10 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
         <div class="card"><div class="chead"><span class="ctitle">구성 종목</span>
           <button class="more" data-tab="2">더보기 ›</button></div>
           <div class="cbody"><div class="note">${esc(breadth(s)||'집계 중')}</div></div></div>
+        <div class="card"><div class="chead"><span class="ctitle">이 업종 큰손</span>
+          <span class="more" style="cursor:default">DART 공시</span></div>
+          <div class="cbody"><div id="sec-wh" data-no="${s.no}">${(loadSecWhale(s),secWhaleHTML(s.no))}</div>
+          <div class="note" style="margin-top:8px">이 업종 종목에 5% 넘게 가진 기관 · 최대주주의 지분 변동과 임원 · 주요주주의 장내 매매 공시입니다. 누르면 원문. 따라 사라는 신호가 아닙니다.</div></div></div>
         <div class="card chk"><div class="chead"><span class="ctitle">관련 헤드라인</span>
           <span class="more" style="cursor:default">참고용</span></div>
           <div class="cbody"><div id="sec-news" data-no="${s.no}">${(loadSecNews(s),secNewsHTML(s.no))}</div>
@@ -862,7 +992,7 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
       <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
       <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 업종 등락률은 <b>네이버 증권</b> 값을 그대로 씁니다. 증권앱과 업종 분류가 다르면 묶음이 달라 숫자도 달라집니다.<br>· 해외 지표는 야후 기준이고 전부 <b>전일 종가 대비</b>입니다.<br>· 맨 위에 '몇 시 기준'인지 늘 적혀 있습니다. 장중이면 빨간 점이 뜹니다.</div>
       <div class="panel"><b>데이터가 없는 것</b><br>· 업종별 개인 · 기관 · 외국인 수급 (시장 전체 수급은 홈 '한눈에' 칸에 있습니다)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
-      <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 · 경제 헤드라인 네이버 증권 · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
+      <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 · 경제 헤드라인 네이버 증권 · 큰손 공시 금융감독원 DART · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
   const I_SEARCH=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.6 16.6 4.2 4.2"/></svg>`;
@@ -917,7 +1047,7 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
     sbar.className='sbar'+(search&&(route.name==='sectors'||route.name==='home')?' on':'');
     const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} · 화면에서 빠져 있습니다.</div>`:'';
     const bp=bell?`<div class="panel"><b>${esc(d.updated_label)}</b> · ${esc(d.market_label)}<br>
-      화면은 장중 30초마다 갱신 · 업종 기록 장중 10분마다 · 개장 전 알림 08:37 · 마감 기록 15:40</div>`:'';
+      화면은 장중 30초마다 갱신 · 업종 기록 장중 10분마다 · 큰손 공시 평일 10분마다 · 개장 전 알림 08:37 · 마감 기록 15:40</div>`:'';
     const body = route.name==='home'?scHome() : route.name==='sectors'?scSectors() :
       route.name==='global'?scGlobal() : route.name==='watch'?scWatch() :
       route.name==='more'?scMore() : route.name==='flow'?scFlow() :
@@ -933,6 +1063,7 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
 
   document.addEventListener('click',e=>{
     const nav=e.target.closest('.nav button'); if(nav){ go(nav.dataset.go); return; }
+    const wm=e.target.closest('[data-whmore]'); if(wm){ whBox.more=!whBox.more; paintWhale(); return; }
     const act=e.target.closest('[data-act]');
     if(act){ if(act.dataset.act==='search'){ search=!search; if(!search){term='';q.value='';}
         if(route.name==='home') route={name:'sectors',arg:null,tab:0};
@@ -946,6 +1077,7 @@ const DATA = {"source":"naver+yahoo","updated":"2026-09-24 22:33","updated_label
     const tab=e.target.closest('[data-tab]'); if(tab){ route.tab=+tab.dataset.tab; render(); return; }
     const op=e.target.closest('[data-open]'); if(op){ go('detail',op.dataset.open); return; }
   });
+  document.addEventListener('toggle',e=>{ if(e.target.classList&&e.target.classList.contains('whx')) whxOpen=e.target.open; },true);
   q.addEventListener('input',()=>{ term=q.value.trim(); if(route.name==='sectors') render(); });
   render();
 
