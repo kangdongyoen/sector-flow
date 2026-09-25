@@ -9,10 +9,13 @@
  *   3. 개장 전 · 마감 뒤에 카카오톡 '나에게 보내기'로 요약을 보낸다.
  *   4. 개장 전 한 번 경제 헤드라인(네이버 증권 주요 뉴스 제목)을 날짜별로 남긴다(news:날짜).
  *      나중에 '그 뉴스가 나온 날 돈이 실제로 어디로 갔나'를 되짚는 기록이다.
+ *   5. 평일 07:00 ~ 21:59 10분마다 DART 에서 '큰손' 공시를 모은다(whale.js).
+ *      5% 대량보유 보고와 임원 · 주요주주 매매 보고. 화면 '큰손 움직임'이 여기서 나온다.
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
  *   *\/10 0-6 * * MON-FRI  09:00 ~ 15:50  10분마다. 15:40 · 15:50 은 마감 뒤 기록과 알림
  *   37,47 23 * * SUN-THU   08:37 · 08:47  개장 전 (한국 월~금 아침)
+ *   3,13,23,33,43,53 * * * *   10분마다 DART 확인. 한국 평일 07~21시가 아니면 바로 끝낸다
  * 같은 알림은 하루에 한 번만 간다. 앞 순번이 성공하면 뒤 순번은 건너뛴다.
  *
  * 저장소(KV) 키
@@ -22,7 +25,12 @@
  *   runs      최근 실행 기록 20개
  *   news:날짜   그날 아침 헤드라인 제목 10개. 1년 뒤 저절로 지워진다.
  *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
+ *   whale:v1 · whale:seen · whale:map   큰손 공시 목록 · 이미 본 공시 · 종목코드 표 (whale.js 참고)
  */
+
+import { harvestWhale } from './whale.js';
+
+const WHALE_CRON = '3,13,23,33,43,53 * * * *';
 
 const SITE = 'https://lucent-sector.pages.dev';
 const KEEP_DAYS = 60;
@@ -350,6 +358,20 @@ async function run(env, why) {
   return log;
 }
 
+/* ── 큰손 공시 ── */
+
+async function whaleRun(env, force) {
+  const now = kstNow();
+  const h = now.getUTCHours(), dow = now.getUTCDay();
+  if (!force && (dow === 0 || dow === 6 || HOLIDAYS.has(ymd(now)) || h < 7 || h > 21)) return null;
+  try {
+    const r = await harvestWhale(env, { budget: 40 });
+    return r.log;
+  } catch (e) {
+    return { err: String(e.message || e).slice(0, 160) };
+  }
+}
+
 /* ── 바깥에서 보는 창 ── */
 
 function json(o, status = 200) {
@@ -365,7 +387,8 @@ function json(o, status = 200) {
 
 export default {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(run(env, event.cron));
+    if (event.cron === WHALE_CRON) ctx.waitUntil(whaleRun(env, false));
+    else ctx.waitUntil(run(env, event.cron));
   },
 
   async fetch(req, env) {
@@ -376,9 +399,11 @@ export default {
       const hist = await env.FLOW.get('history', 'json');
       const k = await env.FLOW.get('kakao', 'json');
       const runs = (await env.FLOW.get('runs', 'json')) || [];
+      const ws = await env.FLOW.get('whale:seen', 'json');
       return json({
         days: hist && hist.days ? hist.days.map((x) => x.d) : [],
         kakao: k ? { connected: true, saved_at: k.saved_at || null, renewed_at: k.renewed_at || null } : { connected: false },
+        whale: ws ? { checked: ws.at || null, last: ws.log || null, seen: Object.keys(ws.r || {}).length } : null,
         runs: runs.slice(0, 10),
       });
     }
@@ -396,6 +421,16 @@ export default {
       }
       await env.FLOW.put('manual_at', String(Date.now()), { expirationTtl: 3600 });
       return json({ ok: true, log: await run(env, 'manual') });
+    }
+
+    // 큰손 공시 손으로 한 번 모으기. 2분에 한 번만.
+    if (u.pathname === '/whale') {
+      const last = await env.FLOW.get('whale_manual_at');
+      if (last && Date.now() - Number(last) < 2 * 60 * 1000) {
+        return json({ ok: false, why: '2분 안에 다시 돌릴 수 없습니다' }, 429);
+      }
+      await env.FLOW.put('whale_manual_at', String(Date.now()), { expirationTtl: 3600 });
+      return json({ ok: true, log: await whaleRun(env, true) });
     }
 
     return json({ error: 'not found' }, 404);
