@@ -205,6 +205,17 @@ button{font:inherit; color:inherit; background:none; border:0}
 .whx summary::after{content:'›'; display:inline-block; margin-left:5px; transition:transform .15s}
 .whx[open] summary::after{transform:rotate(90deg)}
 button.nwmore{background:none; border:0; padding:0; cursor:pointer; font-family:inherit}
+.pushp h5{margin:0 0 8px; font-size:13.5px; color:var(--t1); display:flex; align-items:center; gap:8px}
+.pushp h5 .st{font-size:10.5px; font-weight:700; color:var(--gold); background:var(--gold-soft); padding:2px 8px; border-radius:999px}
+.pushp .pl{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:13.5px; color:var(--t1); cursor:pointer}
+.pushp .pl input{width:18px; height:18px; margin:0; accent-color:var(--gold); flex:none}
+.pushp .pl .w{margin-left:auto; color:var(--t3); font-size:11.5px; white-space:nowrap}
+.pushp .pb{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.pushp .pb button{border:0; border-radius:10px; padding:10px 15px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; background:var(--track); color:var(--t1)}
+.pushp .pb button.go{background:var(--gold); color:#121211}
+.pushp .pb button:disabled{opacity:.55; cursor:default}
+.pushp .pb button:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+.pushp .pm{margin-top:8px; font-size:12.5px; line-height:1.6; color:var(--t2)}
 .whx summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px; border-radius:4px}
 .whx .xb{font-size:13px; line-height:1.65; color:var(--t2)}
 .whx .xb h5{margin:14px 0 4px; font-size:12.5px; color:var(--t1)}
@@ -753,7 +764,8 @@ const DATA = null; /*__DATA__*/
     loadWhale();
     return `<div class="card"><div class="chead"><span class="ctitle">큰손 움직임</span>
         <span class="more" style="cursor:default" id="wh-chk">${esc(whChecked())}</span></div>
-      <div class="cbody"><div id="wh-home">${whaleHTML()}</div>${WHX()}</div></div>`;
+      <div class="cbody"><div id="wh-home">${whaleHTML()}</div>${WHX()}
+        <button class="nwmore" data-act="bell" style="margin-top:12px">휴대폰으로 알림 받기 ›</button></div></div>`;
   }
   /* 업종 상세: 그 업종 종목의 큰손 공시 전부 */
   const secWh={};
@@ -775,6 +787,73 @@ const DATA = null; /*__DATA__*/
     if(!v.items.length) return `<div class="note">${v.err?'공시를 불러오지 못했습니다.':`${v.since?md(v.since)+' 이후 ':''}이 업종 종목의 큰손 공시가 없습니다.`}</div>`;
     return `<div class="whl">${v.items.map(x=>whRow(x,false)).join('')}</div>`;
   }
+
+  /* ── 휴대폰 알림(웹 푸시) ──
+     '알림 받기'를 누르면 이 기기를 받는 쪽으로 등록한다(/api/push). 보내기는 예약 실행기가 한다.
+     아이폰은 애플 정책상 '홈 화면에 추가'로 연 화면에서만 알림을 받을 수 있다. */
+  const PUSH_KINDS=[['am','개장 전 요약','평일 08:37'],['pm','마감 요약','평일 15:40'],['wh','큰손 공시 요약','평일 18:30'],['hot','아주 큰 큰손 공시','들어오는 즉시']];
+  const pushSt={ok:'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,sub:null,busy:false,msg:'',prefs:{am:true,pm:true,wh:true,hot:true}};
+  try{ Object.assign(pushSt.prefs,JSON.parse(localStorage.getItem('lucent.push')||'{}')); }catch(e){}
+  const onIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const asApp=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(r=>pushSt.ok?r.pushManager.getSubscription():null)
+      .then(s=>{ pushSt.sub=s||null; paintPush(); }).catch(()=>{});
+  }
+  const keyBytes=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); };
+  const pushApi=(method,body)=>fetch('/api/push',{method,headers:{'content-type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json().catch(()=>({})).then(j=>Object.assign({status:r.status},j)));
+  function pushHTML(){
+    const head=`<h5>휴대폰 알림${pushSt.sub?'<span class="st">켜짐</span>':''}</h5>`;
+    if(!pushSt.ok){
+      if(onIOS&&!asApp()) return head+`<div class="pm" style="margin-top:0">아이폰은 <b>홈 화면에 추가</b>한 뒤에 받을 수 있습니다. 애플 정책입니다.<br>
+        ① 사파리 아래 <b>공유 버튼</b> ② <b>홈 화면에 추가</b> ③ 홈 화면에 생긴 <b>섹터 흐름</b> 아이콘으로 열고 여기서 다시 누르세요. iOS 16.4 이상이 필요합니다.</div>`;
+      return head+`<div class="pm" style="margin-top:0">이 브라우저는 알림을 지원하지 않습니다. 크롬이나 삼성 인터넷으로 열어 주세요.</div>`;
+    }
+    if(Notification.permission==='denied') return head+`<div class="pm" style="margin-top:0">이 사이트 알림이 막혀 있습니다. 브라우저 설정 → 사이트 설정 → 알림에서 <b>허용</b>으로 바꾼 뒤 다시 열어 주세요.</div>`;
+    const dis=pushSt.busy?'disabled':'';
+    const rows=PUSH_KINDS.map(([k,t,w])=>`<label class="pl"><input type="checkbox" data-pk="${k}" ${pushSt.prefs[k]?'checked':''} ${dis}>${t}<span class="w">${w}</span></label>`).join('');
+    const btn=pushSt.sub
+      ? `<button data-push="test" ${dis}>시험 알림 보내기</button><button data-push="off" ${dis}>알림 끄기</button>`
+      : `<button class="go" data-push="on" ${dis}>${pushSt.busy?'켜는 중…':'이 기기로 알림 받기'}</button>`;
+    return head+(pushSt.sub?'':`<div class="pm" style="margin:0 0 6px">사이트를 안 열어도 휴대폰이 울립니다. 받을 것만 고르세요.</div>`)
+      +rows+`<div class="pb">${btn}</div>`+(pushSt.msg?`<div class="pm">${esc(pushSt.msg)}</div>`:'');
+  }
+  function paintPush(){ const el=document.getElementById('pushbox'); if(el) el.innerHTML=pushHTML(); }
+  const savePush=()=>{ try{ localStorage.setItem('lucent.push',JSON.stringify(pushSt.prefs)); }catch(e){} };
+  async function pushStep(fn){
+    pushSt.busy=true; pushSt.msg=''; paintPush();
+    try{ pushSt.msg=await fn()||''; }catch(e){ pushSt.msg=String(e.message||e); }
+    pushSt.busy=false; paintPush();
+  }
+  const pushOn=()=>pushStep(async()=>{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted') throw new Error(perm==='denied'?'알림을 허용하지 않으셨습니다. 브라우저 설정에서 바꿀 수 있습니다.':'알림 허용 창이 닫혔습니다. 다시 눌러 주세요.');
+    const k=await fetch('/api/push').then(r=>r.json());
+    if(!k.key) throw new Error(k.error||'알림 키를 받지 못했습니다.');
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(k.key)});
+    const j=await pushApi('POST',{sub:sub.toJSON(),prefs:pushSt.prefs});
+    if(!j.ok){ await sub.unsubscribe().catch(()=>{}); throw new Error(j.error||'등록하지 못했습니다.'); }
+    pushSt.sub=sub; savePush();
+    return '켜졌습니다. 곧 확인 알림이 하나 옵니다.';
+  });
+  const pushOff=()=>pushStep(async()=>{
+    const s=pushSt.sub;
+    if(s){ await pushApi('DELETE',{endpoint:s.endpoint}); await s.unsubscribe(); }
+    pushSt.sub=null;
+    return '알림을 껐습니다.';
+  });
+  const pushTest=()=>pushStep(async()=>{
+    const j=await pushApi('POST',{sub:pushSt.sub.toJSON(),test:true});
+    if(!j.ok) throw new Error(j.error||'보내지 못했습니다.');
+    return '보냈습니다. 몇 초 안에 울립니다.';
+  });
+  const pushSave=()=>{ savePush(); if(!pushSt.sub) return; pushStep(async()=>{
+    const j=await pushApi('POST',{sub:pushSt.sub.toJSON(),prefs:pushSt.prefs});
+    if(!j.ok) throw new Error(j.error||'저장하지 못했습니다.');
+    return '저장했습니다.';
+  }); };
 
   /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
      막대 하나로 오른 업종과 빠진 업종의 비율을 보여준다. */
@@ -1008,7 +1087,7 @@ const DATA = null; /*__DATA__*/
     if(route.name==='home'){
       tb.innerHTML=`<div class="brand"><div class="bn">LUCENT</div><div class="bs">투자 인사이트, 더 선명하게</div></div>
         <div class="icons"><button class="ibtn" data-act="search" aria-label="검색" data-on="${search?1:0}">${I_SEARCH}</button>
-        <button class="ibtn" data-act="bell" aria-label="갱신 정보" data-on="${bell?1:0}">${I_BELL}<span class="dm"></span></button></div>`;
+        <button class="ibtn" data-act="bell" aria-label="알림 · 갱신 정보" data-on="${bell?1:0}">${I_BELL}<span class="dm"></span></button></div>`;
     } else if(route.name==='detail'){
       const on=isW(route.arg);
       tb.innerHTML=`<button class="back" aria-label="뒤로">‹</button><span class="htitle">${esc(route.arg)}</span>
@@ -1047,7 +1126,8 @@ const DATA = null; /*__DATA__*/
     sbar.className='sbar'+(search&&(route.name==='sectors'||route.name==='home')?' on':'');
     const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} · 화면에서 빠져 있습니다.</div>`:'';
     const bp=bell?`<div class="panel"><b>${esc(d.updated_label)}</b> · ${esc(d.market_label)}<br>
-      화면은 장중 30초마다 갱신 · 업종 기록 장중 10분마다 · 큰손 공시 평일 10분마다 · 개장 전 알림 08:37 · 마감 기록 15:40</div>`:'';
+      화면은 장중 30초마다 갱신 · 업종 기록 장중 10분마다 · 큰손 공시 평일 10분마다 · 개장 전 알림 08:37 · 마감 기록 15:40</div>
+      <div class="panel pushp" id="pushbox">${pushHTML()}</div>`:'';
     const body = route.name==='home'?scHome() : route.name==='sectors'?scSectors() :
       route.name==='global'?scGlobal() : route.name==='watch'?scWatch() :
       route.name==='more'?scMore() : route.name==='flow'?scFlow() :
@@ -1064,6 +1144,8 @@ const DATA = null; /*__DATA__*/
   document.addEventListener('click',e=>{
     const nav=e.target.closest('.nav button'); if(nav){ go(nav.dataset.go); return; }
     const wm=e.target.closest('[data-whmore]'); if(wm){ whBox.more=!whBox.more; paintWhale(); return; }
+    const pb=e.target.closest('[data-push]');
+    if(pb){ const a=pb.dataset.push; if(a==='on') pushOn(); else if(a==='off') pushOff(); else pushTest(); return; }
     const act=e.target.closest('[data-act]');
     if(act){ if(act.dataset.act==='search'){ search=!search; if(!search){term='';q.value='';}
         if(route.name==='home') route={name:'sectors',arg:null,tab:0};
@@ -1076,6 +1158,10 @@ const DATA = null; /*__DATA__*/
       const el=document.getElementById('g'+jp.dataset.jump); if(el) el.scrollIntoView({block:'start'}); return; }
     const tab=e.target.closest('[data-tab]'); if(tab){ route.tab=+tab.dataset.tab; render(); return; }
     const op=e.target.closest('[data-open]'); if(op){ go('detail',op.dataset.open); return; }
+  });
+  document.addEventListener('change',e=>{
+    const c=e.target.closest&&e.target.closest('[data-pk]');
+    if(c){ pushSt.prefs[c.dataset.pk]=c.checked; pushSave(); }
   });
   document.addEventListener('toggle',e=>{ if(e.target.classList&&e.target.classList.contains('whx')) whxOpen=e.target.open; },true);
   q.addEventListener('input',()=>{ term=q.value.trim(); if(route.name==='sectors') render(); });
