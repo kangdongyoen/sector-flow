@@ -11,7 +11,7 @@
  *      나중에 '그 뉴스가 나온 날 돈이 실제로 어디로 갔나'를 되짚는 기록이다.
  *   5. 평일 07:00 ~ 21:59 10분마다 DART 에서 '큰손' 공시를 모은다(whale.js).
  *      5% 대량보유 보고와 임원 · 주요주주 매매 보고. 화면 '큰손 움직임'이 여기서 나온다.
- *   6. 휴대폰 알림(push.js, ntfy). 카톡과 따로 간다. 하나가 실패해도 다른 하나는 간다.
+ *   6. 휴대폰 알림(push.js, 웹 푸시). 사이트에서 '알림 받기'를 누른 기기로 간다. 카톡과는 따로 간다.
  *      08:37 개장 전 · 15:40 마감 · 18:33 그날 큰손 요약 · 아주 큰 공시는 들어오는 즉시
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
@@ -28,12 +28,13 @@
  *   news:날짜   그날 아침 헤드라인 제목 10개. 1년 뒤 저절로 지워진다.
  *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  *   whale:v1 · whale:seen · whale:map   큰손 공시 목록 · 이미 본 공시 · 종목코드 표 (whale.js 참고)
- *   push      휴대폰 알림 주제 이름. 비밀번호 역할이라 밖으로 보여주지 않는다
+ *   vapid     웹 푸시 서명 키. 밖으로 보여주지 않는다
+ *   sub:…     알림을 받는 기기 하나. functions/api/push.js 가 만든다
  *   push:날짜:am|pm|wh   그날 휴대폰 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  */
 
 import { harvestWhale, isInstant, whatLine, whenLine, digest } from './whale.js';
-import { pushCfg, push } from './push.js';
+import { listSubs, pushAll, pushNote } from './push.js';
 
 const WHALE_CRON = '3,13,23,33,43,53 * * * *';
 
@@ -353,9 +354,9 @@ async function run(env, why) {
           log.steps.push('카톡 실패 · ' + String(e.message || e).slice(0, 160));
         }
       }
-      log.steps.push(await pushOnce(env, `push:${today}:${slot}`, () => {
+      log.steps.push(await pushOnce(env, `push:${today}:${slot}`, slot, () => {
         const [head, ...rest] = text.split('\n');
-        return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), click: SITE, tags: [slot === 'am' ? 'sunrise' : 'chart_with_upwards_trend'] };
+        return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), url: SITE, tag: slot };
       }));
     }
   }
@@ -371,14 +372,12 @@ async function run(env, why) {
 /* ── 휴대폰 알림 ── */
 
 /** 하루 한 번만 가는 알림. 표시(flag)가 있으면 건너뛴다. 결과를 한 줄로 돌려준다 */
-async function pushOnce(env, flag, make) {
-  const cfg = await pushCfg(env);
-  if (!cfg) return '휴대폰 알림 설정 전';
+async function pushOnce(env, flag, kind, make, subs) {
   if (await env.FLOW.get(flag)) return '휴대폰 이미 보냄';
   try {
-    await push(cfg, make());
-    await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
-    return '휴대폰 보냄';
+    const r = await pushAll(env, kind, make(), subs);
+    if (r.sent) await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
+    return pushNote(r);
   } catch (e) {
     return '휴대폰 실패 · ' + String(e.message || e).slice(0, 120);
   }
@@ -394,45 +393,43 @@ async function whaleRun(env, force) {
   const h = now.getUTCHours(), dow = now.getUTCDay();
   const mins = h * 60 + now.getUTCMinutes();
   if (!force && (dow === 0 || dow === 6 || HOLIDAYS.has(today) || h < 7 || h > 21)) return null;
+
+  // 바깥 요청은 한 번 돌 때 50개까지. 알림 몫(구독자 수 × 2)을 먼저 떼고 나머지로 DART 를 본다
+  let subs = [];
+  try {
+    subs = await listSubs(env);
+  } catch (e) {}
+  const budget = Math.max(10, 44 - subs.length * 2);
   let r;
   try {
-    r = await harvestWhale(env, { budget: 36 });
+    r = await harvestWhale(env, { budget });
   } catch (e) {
     return { err: String(e.message || e).slice(0, 160) };
   }
-  const log = Object.assign({}, r.log);
+  const log = Object.assign({ subs: subs.length }, r.log);
+  if (!subs.length) return log;
 
-  // 아주 큰 공시는 바로 울린다. 오늘 · 어제 공시만, 한 회사 한 번, 한 번에 세 개까지
-  const cfg = await pushCfg(env);
-  if (cfg) {
-    const yday = ymd(new Date(now.getTime() - 86400 * 1000));
-    const seen = new Set();
-    const hot = r.fresh
-      .filter((x) => x.day >= yday && isInstant(x))
-      .filter((x) => (seen.has(x.corp) ? false : seen.add(x.corp)))
-      .slice(0, 3);
-    let sent = 0;
-    for (const x of hot) {
-      try {
-        await push(cfg, {
-          title: `큰손 · ${x.corp}`,
-          body: `${whatLine(x)}\n${whenLine(x)}`,
-          priority: 4,
-          click: DART_V + x.rcp,
-          tags: ['moneybag'],
-        });
-        sent++;
-      } catch (e) {
-        log.push_err = String(e.message || e).slice(0, 80);
-      }
+  // 아주 큰 공시는 바로 울린다. 오늘 · 어제 공시만, 한 회사 한 번. 여러 건이면 한 알림에 묶는다
+  const yday = ymd(new Date(now.getTime() - 86400 * 1000));
+  const seen = new Set();
+  const hot = r.fresh
+    .filter((x) => x.day >= yday && isInstant(x))
+    .filter((x) => (seen.has(x.corp) ? false : seen.add(x.corp)));
+  if (hot.length) {
+    const msg = hot.length === 1
+      ? { title: `큰손 · ${hot[0].corp}`, body: `${whatLine(hot[0])}\n${whenLine(hot[0])}`, url: DART_V + hot[0].rcp, tag: 'hot-' + hot[0].rcp, hot: true }
+      : { title: `큰손 ${hot.length}건`, body: hot.slice(0, 5).map((x) => `${x.corp} | ${whatLine(x)}`).join('\n'), url: SITE, tag: 'hot-' + hot[0].rcp, hot: true };
+    try {
+      log.hot = pushNote(await pushAll(env, 'hot', msg, subs));
+    } catch (e) {
+      log.hot = '실패 · ' + String(e.message || e).slice(0, 80);
     }
-    if (hot.length) log.pushed = sent;
+  }
 
-    // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
-    if (mins >= 18 * 60 + 30) {
-      const dg = digest(r.out.items || [], today);
-      if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, () => Object.assign(dg, { click: SITE, tags: ['moneybag'] }));
-    }
+  // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
+  if (mins >= 18 * 60 + 30) {
+    const dg = digest(r.out.items || [], today);
+    if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, 'wh', () => Object.assign(dg, { url: SITE, tag: 'wh' }), subs);
   }
   return log;
 }
@@ -469,6 +466,7 @@ export default {
         days: hist && hist.days ? hist.days.map((x) => x.d) : [],
         kakao: k ? { connected: true, saved_at: k.saved_at || null, renewed_at: k.renewed_at || null } : { connected: false },
         whale: ws ? { checked: ws.at || null, last: ws.log || null } : null,
+        push: { devices: (await env.FLOW.list({ prefix: 'sub:' })).keys.length },
         runs: runs.slice(0, 10),
       });
     }
@@ -486,23 +484,6 @@ export default {
       }
       await env.FLOW.put('manual_at', String(Date.now()), { expirationTtl: 3600 });
       return json({ ok: true, log: await run(env, 'manual') });
-    }
-
-    // 휴대폰 알림이 오는지 확인. 아무나 마구 울리지 못하게 10분에 한 번만.
-    if (u.pathname === '/push-test') {
-      const cfg = await pushCfg(env);
-      if (!cfg) return json({ ok: false, why: '휴대폰 알림 설정 전' }, 400);
-      const last = await env.FLOW.get('push_test_at');
-      if (last && Date.now() - Number(last) < 10 * 60 * 1000) {
-        return json({ ok: false, why: '10분 안에 다시 보낼 수 없습니다' }, 429);
-      }
-      await env.FLOW.put('push_test_at', String(Date.now()), { expirationTtl: 3600 });
-      try {
-        await push(cfg, { title: '섹터 흐름판 알림 연결됨', body: '평일 08:37 개장 전 · 15:40 마감 · 18:30 큰손 요약이 이렇게 옵니다.\n아주 큰 큰손 공시는 들어오는 즉시 울립니다.', click: SITE, tags: ['white_check_mark'] });
-        return json({ ok: true });
-      } catch (e) {
-        return json({ ok: false, why: String(e.message || e).slice(0, 160) }, 502);
-      }
     }
 
     // 큰손 공시 손으로 한 번 모으기. 2분에 한 번만.
