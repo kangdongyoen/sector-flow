@@ -30,7 +30,7 @@ const UA =
 const H = { 'user-agent': UA, 'accept-language': 'ko-KR,ko;q=0.9', accept: 'text/html,application/json,*/*;q=0.8' };
 
 const KEEP_DAYS = 45;
-const MAX_ITEMS = 400;
+const MAX_ITEMS = 1200; // 하루 30건 안팎 × 45일. 400 이면 열흘치밖에 못 담았다
 const MIN_AMT = 5e7; // 임원 매매 최소 금액(원)
 
 /* 시험할 때 요청 경로를 바꿔 끼울 수 있게 */
@@ -314,6 +314,8 @@ async function do5(row, map, budget) {
   if (typeof p1 !== 'number') return null;
   const d = Math.round((p1 - p0) * 100) / 100;
   if (!isNew && Math.abs(d) < 0.01) return null; // 지분이 그대로면 담보 · 계약 얘기다
+  // 0.1%p 도 안 되는 변동은 어느 화면에도 안 나온다. 5% 선을 넘나든 것만 남긴다
+  if (!isNew && Math.abs(d) < 0.1 && !(p.p0 >= 5 && p1 < 5)) return null;
   // 대표보고자가 바뀐 보고는 서로 다른 사람의 지분을 견주게 돼서 증감이 뜻이 없다
   if (/대표\s*보고자/.test(p.reason || '')) return null;
   const tags = tag5(p.reason);
@@ -518,3 +520,75 @@ export async function harvestWhale(env, opt = {}) {
   }
   return { log, out, seen, map, fresh };
 }
+
+/* ── 휴대폰 알림 문구 ── */
+
+const INST_KINDS = new Set(['연기금', '외국계', '운용사', '금융사']);
+
+/**
+ * 바로 울릴 만한 공시인가. 지난 7영업일 기준 하루 2건 안팎이 되도록 맞췄다.
+ *   임원 · 주요주주 장내 · 시간외 매매 50억원 이상
+ *   공개매수
+ *   외국계 · 운용사 · 연기금 · 금융사가 새로 5%를 넘었거나 2%p 이상 바꾼 것
+ * 국민연금은 분기마다 수십 건을 한꺼번에 내므로 바로 울리지 않고 저녁 요약에 묶는다.
+ */
+export function isInstant(x) {
+  if (x.wk === '국민연금' || /국민연금/.test(x.who || '')) return false;
+  if (x.k === 'in') return Math.abs(x.amt || 0) >= 5e9;
+  if (!x.hi) return false;
+  if ((x.tags || []).includes('공개매수')) return true;
+  if (INST_KINDS.has(x.wk)) return (/신규/.test(x.kind || '') && x.p1 >= 5) || Math.abs(x.d || 0) >= 2;
+  return false;
+}
+
+const won = (v) => {
+  const a = Math.abs(v), g = v > 0 ? '+' : '-';
+  if (a >= 1e9) return g + Math.round(a / 1e8).toLocaleString('en-US') + '억';
+  if (a >= 1e8) return g + (a / 1e8).toFixed(1).replace(/\.0$/, '') + '억';
+  return g + Math.round(a / 1e4).toLocaleString('en-US') + '만';
+};
+const md = (s) => (s ? `${Number(s.slice(5, 7))}/${Number(s.slice(8, 10))}` : '');
+const p2 = (v) => Number(v).toFixed(2);
+
+/** 누가 무엇을 얼마나. 회사 이름은 뺀다(제목에 들어간다) */
+export function whatLine(x) {
+  const tag = (x.tags || []).join(' · ');
+  if (x.k === 'in') {
+    const who = x.who + (x.role && x.role !== x.wk ? `(${x.role})` : `(${x.wk})`);
+    return `${who} ${tag} ${won(x.amt)}`.replace(/\s+/g, ' ').trim();
+  }
+  const isNew = x.p0 === null || x.p0 === undefined;
+  const span = isNew ? `신규 ${p2(x.p1)}%` : `${p2(x.p0)}% → ${p2(x.p1)}% (${x.d > 0 ? '+' : ''}${p2(x.d)}%p)`;
+  return `${x.who}(${x.wk}) ${span}${tag ? ' · ' + tag : ''}`;
+}
+
+export function whenLine(x) {
+  return x.ev && x.ev !== x.day ? `변동 ${md(x.ev)} · 공시 ${md(x.day)}` : `공시 ${md(x.day)}`;
+}
+
+/** 순서 매기기용 크기. 금액은 억 단위, 지분은 1%p 를 10억으로 친다. 바로 울린 것은 맨 앞 */
+const weight = (x) =>
+  (isInstant(x) ? 1e6 : 0) + (x.k === 'in' ? Math.abs(x.amt || 0) / 1e8 : Math.abs(x.d || 0) * 10);
+
+/** 저녁 요약. 그날 눈여겨볼 공시를 회사별로 하나씩, 큰 순서로 */
+export function digest(items, day) {
+  const today = items.filter((x) => x.day === day && x.hi);
+  if (!today.length) return null;
+  const nps = today.filter((x) => x.wk === '국민연금');
+  const rest = today.filter((x) => x.wk !== '국민연금');
+  const byCorp = new Map();
+  for (const x of rest) {
+    const cur = byCorp.get(x.corp);
+    if (!cur || weight(x) > weight(cur)) byCorp.set(x.corp, x);
+  }
+  const top = [...byCorp.values()].sort((a, b) => weight(b) - weight(a));
+  const lines = top.slice(0, 5).map((x) => `· ${x.corp} | ${whatLine(x)}`);
+  if (top.length > 5) lines.push(`· 외 ${top.length - 5}개 회사`);
+  if (nps.length) {
+    const up = nps.filter((x) => x.d > 0).length, dn = nps.filter((x) => x.d < 0).length;
+    lines.push(`· 국민연금 ${nps.length}건 (늘림 ${up} · 줄임 ${dn})`);
+  }
+  const title = rest.length ? `큰손 공시 ${md(day)} · ${rest.length}건` : `큰손 공시 ${md(day)} · 국민연금 ${nps.length}건`;
+  return { title, body: lines.join('\n') };
+}
+
