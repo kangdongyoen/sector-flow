@@ -11,6 +11,8 @@
  *      나중에 '그 뉴스가 나온 날 돈이 실제로 어디로 갔나'를 되짚는 기록이다.
  *   5. 평일 07:00 ~ 21:59 10분마다 DART 에서 '큰손' 공시를 모은다(whale.js).
  *      5% 대량보유 보고와 임원 · 주요주주 매매 보고. 화면 '큰손 움직임'이 여기서 나온다.
+ *   6. 휴대폰 알림(push.js, ntfy). 카톡과 따로 간다. 하나가 실패해도 다른 하나는 간다.
+ *      08:37 개장 전 · 15:40 마감 · 18:33 그날 큰손 요약 · 아주 큰 공시는 들어오는 즉시
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
  *   *\/10 0-6 * * MON-FRI  09:00 ~ 15:50  10분마다. 15:40 · 15:50 은 마감 뒤 기록과 알림
@@ -26,9 +28,12 @@
  *   news:날짜   그날 아침 헤드라인 제목 10개. 1년 뒤 저절로 지워진다.
  *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  *   whale:v1 · whale:seen · whale:map   큰손 공시 목록 · 이미 본 공시 · 종목코드 표 (whale.js 참고)
+ *   push      휴대폰 알림 주제 이름. 비밀번호 역할이라 밖으로 보여주지 않는다
+ *   push:날짜:am|pm|wh   그날 휴대폰 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  */
 
-import { harvestWhale } from './whale.js';
+import { harvestWhale, isInstant, whatLine, whenLine, digest } from './whale.js';
+import { pushCfg, push } from './push.js';
 
 const WHALE_CRON = '3,13,23,33,43,53 * * * *';
 
@@ -320,7 +325,7 @@ async function run(env, why) {
       }
     }
 
-    // 3. 카톡
+    // 3. 카톡 · 휴대폰 알림. 문구는 같고, 보냈다는 표시는 따로 둔다
     const slot = mins >= 8 * 60 && mins < 9 * 60 ? 'am'
       : mins >= 15 * 60 + 35 && mins < 17 * 60 ? 'pm' : null;
     if (!slot) {
@@ -330,16 +335,17 @@ async function run(env, why) {
     } else if (slot === 'pm' && td && td !== today) {
       log.steps.push('오늘 장 숫자가 아니라 알림 안 함');
     } else {
+      const text = slot === 'am' ? textAM(d, now, news) : textPM(d);
       const flag = `sent:${today}:${slot}`;
       if (await env.FLOW.get(flag)) {
-        log.steps.push('알림 이미 보냄');
+        log.steps.push('카톡 이미 보냄');
       } else {
         try {
           const tok = await kakaoAccess(env);
           if (!tok) {
             log.steps.push('카톡 연결 전');
           } else {
-            await sendMemo(tok, slot === 'am' ? textAM(d, now, news) : textPM(d));
+            await sendMemo(tok, text);
             await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
             log.steps.push('카톡 보냄');
           }
@@ -347,6 +353,10 @@ async function run(env, why) {
           log.steps.push('카톡 실패 · ' + String(e.message || e).slice(0, 160));
         }
       }
+      log.steps.push(await pushOnce(env, `push:${today}:${slot}`, () => {
+        const [head, ...rest] = text.split('\n');
+        return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), click: SITE, tags: [slot === 'am' ? 'sunrise' : 'chart_with_upwards_trend'] };
+      }));
     }
   }
 
@@ -358,18 +368,73 @@ async function run(env, why) {
   return log;
 }
 
+/* ── 휴대폰 알림 ── */
+
+/** 하루 한 번만 가는 알림. 표시(flag)가 있으면 건너뛴다. 결과를 한 줄로 돌려준다 */
+async function pushOnce(env, flag, make) {
+  const cfg = await pushCfg(env);
+  if (!cfg) return '휴대폰 알림 설정 전';
+  if (await env.FLOW.get(flag)) return '휴대폰 이미 보냄';
+  try {
+    await push(cfg, make());
+    await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
+    return '휴대폰 보냄';
+  } catch (e) {
+    return '휴대폰 실패 · ' + String(e.message || e).slice(0, 120);
+  }
+}
+
+const DART_V = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=';
+
 /* ── 큰손 공시 ── */
 
 async function whaleRun(env, force) {
   const now = kstNow();
+  const today = ymd(now);
   const h = now.getUTCHours(), dow = now.getUTCDay();
-  if (!force && (dow === 0 || dow === 6 || HOLIDAYS.has(ymd(now)) || h < 7 || h > 21)) return null;
+  const mins = h * 60 + now.getUTCMinutes();
+  if (!force && (dow === 0 || dow === 6 || HOLIDAYS.has(today) || h < 7 || h > 21)) return null;
+  let r;
   try {
-    const r = await harvestWhale(env, { budget: 40 });
-    return r.log;
+    r = await harvestWhale(env, { budget: 36 });
   } catch (e) {
     return { err: String(e.message || e).slice(0, 160) };
   }
+  const log = Object.assign({}, r.log);
+
+  // 아주 큰 공시는 바로 울린다. 오늘 · 어제 공시만, 한 회사 한 번, 한 번에 세 개까지
+  const cfg = await pushCfg(env);
+  if (cfg) {
+    const yday = ymd(new Date(now.getTime() - 86400 * 1000));
+    const seen = new Set();
+    const hot = r.fresh
+      .filter((x) => x.day >= yday && isInstant(x))
+      .filter((x) => (seen.has(x.corp) ? false : seen.add(x.corp)))
+      .slice(0, 3);
+    let sent = 0;
+    for (const x of hot) {
+      try {
+        await push(cfg, {
+          title: `큰손 · ${x.corp}`,
+          body: `${whatLine(x)}\n${whenLine(x)}`,
+          priority: 4,
+          click: DART_V + x.rcp,
+          tags: ['moneybag'],
+        });
+        sent++;
+      } catch (e) {
+        log.push_err = String(e.message || e).slice(0, 80);
+      }
+    }
+    if (hot.length) log.pushed = sent;
+
+    // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
+    if (mins >= 18 * 60 + 30) {
+      const dg = digest(r.out.items || [], today);
+      if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, () => Object.assign(dg, { click: SITE, tags: ['moneybag'] }));
+    }
+  }
+  return log;
 }
 
 /* ── 바깥에서 보는 창 ── */
@@ -421,6 +486,23 @@ export default {
       }
       await env.FLOW.put('manual_at', String(Date.now()), { expirationTtl: 3600 });
       return json({ ok: true, log: await run(env, 'manual') });
+    }
+
+    // 휴대폰 알림이 오는지 확인. 아무나 마구 울리지 못하게 10분에 한 번만.
+    if (u.pathname === '/push-test') {
+      const cfg = await pushCfg(env);
+      if (!cfg) return json({ ok: false, why: '휴대폰 알림 설정 전' }, 400);
+      const last = await env.FLOW.get('push_test_at');
+      if (last && Date.now() - Number(last) < 10 * 60 * 1000) {
+        return json({ ok: false, why: '10분 안에 다시 보낼 수 없습니다' }, 429);
+      }
+      await env.FLOW.put('push_test_at', String(Date.now()), { expirationTtl: 3600 });
+      try {
+        await push(cfg, { title: '섹터 흐름판 알림 연결됨', body: '평일 08:37 개장 전 · 15:40 마감 · 18:30 큰손 요약이 이렇게 옵니다.\n아주 큰 큰손 공시는 들어오는 즉시 울립니다.', click: SITE, tags: ['white_check_mark'] });
+        return json({ ok: true });
+      } catch (e) {
+        return json({ ok: false, why: String(e.message || e).slice(0, 160) }, 502);
+      }
     }
 
     // 큰손 공시 손으로 한 번 모으기. 2분에 한 번만.
