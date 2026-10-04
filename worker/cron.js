@@ -356,7 +356,7 @@ async function run(env, why) {
       }
       log.steps.push(await pushOnce(env, `push:${today}:${slot}`, slot, () => {
         const [head, ...rest] = text.split('\n');
-        return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), url: SITE, tag: slot };
+        return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), url: SITE + '/', tag: slot };
       }));
     }
   }
@@ -382,8 +382,6 @@ async function pushOnce(env, flag, kind, make, subs) {
     return '휴대폰 실패 · ' + String(e.message || e).slice(0, 120);
   }
 }
-
-const DART_V = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=';
 
 /* ── 큰손 공시 ── */
 
@@ -416,9 +414,10 @@ async function whaleRun(env, force) {
     .filter((x) => x.day >= yday && isInstant(x))
     .filter((x) => (seen.has(x.corp) ? false : seen.add(x.corp)));
   if (hot.length) {
+    // 누르면 사이트로 간다. 한 건이면 그 업종 상세의 큰손 칸, 여러 건이면 홈의 큰손 칸. DART 원문은 거기서 한 번 더 누르면 된다
     const msg = hot.length === 1
-      ? { title: `큰손 · ${hot[0].corp}`, body: `${whatLine(hot[0])}\n${whenLine(hot[0])}`, url: DART_V + hot[0].rcp, tag: 'hot-' + hot[0].rcp, hot: true }
-      : { title: `큰손 ${hot.length}건`, body: hot.slice(0, 5).map((x) => `${x.corp} | ${whatLine(x)}`).join('\n'), url: SITE, tag: 'hot-' + hot[0].rcp, hot: true };
+      ? { title: `큰손 · ${hot[0].corp}`, body: `${whatLine(hot[0])}\n${whenLine(hot[0])}`, url: SITE + (hot[0].no ? '/#s=' + hot[0].no : '/#whale'), tag: 'hot-' + hot[0].rcp, hot: true }
+      : { title: `큰손 ${hot.length}건`, body: hot.slice(0, 5).map((x) => `${x.corp} | ${whatLine(x)}`).join('\n'), url: SITE + '/#whale', tag: 'hot-' + hot[0].rcp, hot: true };
     try {
       log.hot = pushNote(await pushAll(env, 'hot', msg, subs));
     } catch (e) {
@@ -429,7 +428,7 @@ async function whaleRun(env, force) {
   // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
   if (mins >= 18 * 60 + 30) {
     const dg = digest(r.out.items || [], today);
-    if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, 'wh', () => Object.assign(dg, { url: SITE, tag: 'wh' }), subs);
+    if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, 'wh', () => Object.assign(dg, { url: SITE + '/#whale', tag: 'wh' }), subs);
   }
   return log;
 }
