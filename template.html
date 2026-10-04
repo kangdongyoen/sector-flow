@@ -933,8 +933,8 @@ const DATA = null; /*__DATA__*/
     if(hit&&(hit==='loading'||(hit.at&&Date.now()-hit.at<60000))) return;
     intraBox[name]='loading';
     fetch('/api/intraday?name='+encodeURIComponent(name)).then(r=>r.ok?r.json():Promise.reject(r.status))
-      .then(j=>{ intraBox[name]={at:Date.now(),day:j.day,points:j.points||[]}; if(route.name==='detail') render(); })
-      .catch(()=>{ intraBox[name]={at:Date.now(),points:[]}; if(route.name==='detail') render(); });
+      .then(j=>{ intraBox[name]={at:Date.now(),day:j.day,points:j.points||[]}; if(route.name==='detail') render(true); })
+      .catch(()=>{ intraBox[name]={at:Date.now(),points:[]}; if(route.name==='detail') render(true); });
   }
   function intraLine(name){
     const v=intraBox[name];
@@ -960,8 +960,8 @@ const DATA = null; /*__DATA__*/
     if(no==null || stocksBox[no]!==undefined) return;
     stocksBox[no]='loading';
     fetch('/api/industry/'+no).then(r=>r.ok?r.json():Promise.reject(r.status))
-      .then(j=>{ stocksBox[no]=j.stocks||[]; if(route.name==='detail') render(); })
-      .catch(()=>{ stocksBox[no]='error'; if(route.name==='detail') render(); });
+      .then(j=>{ stocksBox[no]=j.stocks||[]; if(route.name==='detail') render(true); })
+      .catch(()=>{ stocksBox[no]='error'; if(route.name==='detail') render(true); });
   }
   function stockRows(no){
     const v=stocksBox[no];
@@ -1121,7 +1121,9 @@ const DATA = null; /*__DATA__*/
     return bits.join(' · ');
   }
 
-  function render(){
+  /* keep=true 는 숫자만 새로 받은 경우. 보던 자리를 그대로 둔다(30초마다 맨 위로 튀지 않게) */
+  function render(keep){
+    const y=window.scrollY;
     renderTop();
     sbar.className='sbar'+(search&&(route.name==='sectors'||route.name==='home')?' on':'');
     const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} · 화면에서 빠져 있습니다.</div>`:'';
@@ -1137,7 +1139,7 @@ const DATA = null; /*__DATA__*/
       const on=b.dataset.go===route.name||(route.name==='detail'&&b.dataset.go==='sectors')||(route.name==='flow'&&b.dataset.go==='home');
       if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
     });
-    window.scrollTo(0,0);
+    window.scrollTo(0,keep?y:0);
   }
   function go(n,a){ route={name:n,arg:a||null,tab:0}; bell=false; render(); }
 
@@ -1167,6 +1169,56 @@ const DATA = null; /*__DATA__*/
   q.addEventListener('input',()=>{ term=q.value.trim(); if(route.name==='sectors') render(); });
   render();
 
+  /* ── 알림을 누르고 들어온 자리 ──
+     #whale   홈의 큰손 칸 (펼친 채로)
+     #s=278   그 업종 상세의 '이 업종 큰손' 칸
+     그 밖     홈 맨 위
+     처음 열 때는 주소의 # 로, 이미 열려 있으면 서비스 워커가 보낸 메시지로 온다. */
+  function scrollToEl(el){
+    if(!el) return;
+    const top=el.getBoundingClientRect().top+window.scrollY-70;
+    window.scrollTo(0,Math.max(0,top));
+  }
+  /* 처음 몇 초는 위쪽 칸(지수 · 헤드라인)이 늦게 채워지며 키가 커진다. 그동안은 목표 칸에 붙어 있다가,
+     사람이 직접 스크롤하면 바로 놓는다. */
+  let anchor=null, anchorRO=null;
+  function holdAt(getEl){
+    anchor={getEl,until:Date.now()+5000};
+    const again=()=>{ if(!anchor) return; if(Date.now()>anchor.until){ anchor=null; return; } scrollToEl(anchor.getEl()); };
+    requestAnimationFrame(again);
+    if(!anchorRO&&window.ResizeObserver){ anchorRO=new ResizeObserver(()=>requestAnimationFrame(again)); anchorRO.observe(view); }
+    ['touchstart','wheel','keydown'].forEach(t=>addEventListener(t,()=>{ anchor=null; },{once:true,passive:true}));
+  }
+  function deepLink(hash){
+    const h=String(hash||'').replace(/^#/,'');
+    const m=h.match(/^s=(\d+)/);
+    if(h==='whale'){
+      go('home'); whBox.more=true; paintWhale();
+      holdAt(()=>{ const el=document.getElementById('wh-home'); return el&&el.closest('.card'); });
+      return true;
+    }
+    if(m&&byNo[+m[1]]){
+      go('detail',byNo[+m[1]].name);
+      holdAt(()=>{ const el=document.getElementById('sec-wh'); return el&&el.closest('.card'); });
+      return true;
+    }
+    return false;
+  }
+  function takeHash(){
+    if(location.hash&&deepLink(location.hash)) history.replaceState(null,'',location.pathname+location.search);
+  }
+  takeHash();
+  window.addEventListener('hashchange',takeHash);
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('message',e=>{
+      const m=e.data||{};
+      if(m.type!=='go') return;
+      let h=''; try{ h=new URL(m.url,location.origin).hash; }catch(err){}
+      if(!deepLink(h)){ anchor=null; go('home'); }
+    });
+    if(navigator.serviceWorker.startMessages) navigator.serviceWorker.startMessages();
+  }
+
   /* ── 실시간 갱신 ──
      화면이 열려 있는 동안 /api/live 를 직접 불러 온다.
      미리 구워 둔 DATA 는 첫 화면과 통신 실패 때의 예비용으로 남는다.
@@ -1182,7 +1234,7 @@ const DATA = null; /*__DATA__*/
       fails=0;
       d=Object.assign({},DATA,j,{calendar:DATA.calendar});
       byName=Object.fromEntries(d.sectors.map(s=>[s.name,s]));
-      render();
+      render(true);
       later(j.market_status==='open' ? 30000 : 300000);
     }catch(e){
       fails++;
