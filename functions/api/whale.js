@@ -8,6 +8,9 @@
  * 목록은 예약 실행기(lucent-sector-cron)가 10분마다 DART 에서 모아 저장소(KV)에 넣는다.
  * 여기서는 읽어서 걸러 주기만 한다. 숫자는 공시 원문 그대로다.
  *
+ * 응답에는 업종별 집계(by_sector)도 든다. 최근 14일 눈여겨볼 공시를 업종번호별로 산 건수 · 판 건수로 센다.
+ * 홈 '돈이 들어간 곳' 줄에 '큰손 매수 3' 꼬리표를 붙이는 데 쓴다. 건수만 센다. 점수는 매기지 않는다.
+ *
  * '눈여겨볼' 기준 (hi)
  *   5%   매수 · 매도 · 시간외 · 공개매수 · 증자처럼 돈이 오간 변동이면서
  *        0.5%p 이상 바뀌었거나, 새로 5%를 넘었거나, 5% 아래로 내려간 것
@@ -40,12 +43,25 @@ export async function onRequestGet(context) {
   const pick = no ? all.filter((x) => x.no === no && worth(x)) : all.filter((x) => x.hi);
   const oldest = all.length ? all[all.length - 1].day : null;
 
+  const since = new Date(Date.now() + 9 * 3600 * 1000 - 14 * 86400 * 1000).toISOString().slice(0, 10);
+  const by_sector = {};
+  for (const x of all) {
+    if (!x.hi || !x.no || x.day < since) continue;
+    const dir = x.k === 'in' ? Math.sign(x.amt || 0) : Math.sign(x.d || 0);
+    if (!dir) continue;
+    const b = by_sector[x.no] || (by_sector[x.no] = { buy: 0, sell: 0 });
+    if (dir > 0) b.buy++;
+    else b.sell++;
+  }
+
   const body = {
     updated: (cur && cur.updated) || null,
     checked: (at && at.at) || (cur && cur.updated) || null,
     since: oldest,
     total: pick.length,
     items: pick.slice(0, n),
+    by_sector,
+    by_sector_since: since,
   };
   const res = new Response(JSON.stringify(body), {
     headers: Object.assign({ 'cache-control': 'public, max-age=120' }, H),
