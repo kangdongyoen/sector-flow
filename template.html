@@ -327,6 +327,7 @@ button.nwmore{background:none; border:0; padding:0; cursor:pointer; font-family:
   background:rgba(31,31,31,.07); color:var(--t2); white-space:nowrap}
 :root[data-theme="dark"] .tag{background:rgba(255,255,255,.1)}
 .tag.hot{background:var(--gold-soft); color:var(--gold)}
+.tag.wt b{font-weight:700} .tag.wt .u{color:var(--up)} .tag.wt .d{color:var(--down)}
 
 /* ── 상세 ── */
 .dwrap{background:var(--dark)}
@@ -461,9 +462,13 @@ const DATA = null; /*__DATA__*/
   const isW=n=>watch.includes(n);
 
   let route={name:'home',arg:null,tab:0}, search=false, term='', bell=false;
+  /* 큰손 꼬리표: 최근 14일 그 업종 종목에 난 눈여겨볼 공시 건수. 매수 신호가 아니라 건수다. */
+  const whTag=s=>{ const b=whBox.meta&&whBox.meta.by_sector&&whBox.meta.by_sector[s.no]; if(!b) return '';
+    return `<span class="tag wt">큰손${b.buy?` <b class="u">매수${b.buy}</b>`:''}${b.sell?` <b class="d">매도${b.sell}</b>`:''}</span>`; };
   const tags=s=>(s.streak>=2?`<span class="tag">${s.streak}일째</span>`:'')
     +(s.hot?`<span class="tag hot">${s.chg>=0?'전 종목급 상승':'전 종목급 하락'}</span>`:'')
-    +(s.excluded&&s.excluded.length?`<span class="tag">숫자 보정</span>`:'');
+    +(s.excluded&&s.excluded.length?`<span class="tag">숫자 보정</span>`:'')
+    +whTag(s);
   /* 업종 안에서 몇 개가 같이 움직였나. 이게 '돈 몰림'보다 정직하다. */
   const breadth=s=>(s.total?`${s.total}개 중 ${s.chg>=0?s.rise+'개 상승':s.fall+'개 하락'}`:'');
 
@@ -722,14 +727,16 @@ const DATA = null; /*__DATA__*/
       <span class="l2">${who}</span>
       <span class="l3">${l3}</span></a>`;
   }
-  const whBox={items:null,at:0,loading:false,more:false,meta:{}};
+  const whBox={items:null,at:0,loading:false,more:false,meta:{},painted:false};
   let whxOpen=false;
   const whChecked=()=>{ const c=whBox.meta&&whBox.meta.checked; return c?`DART 확인 ${md(c)} ${c.slice(11,16)}`:'DART 공시'; };
   function loadWhale(){
     if(whBox.loading||(whBox.at&&Date.now()-whBox.at<300000)) return;
     whBox.loading=true;
     fetch('/api/whale?n=15').then(r=>r.ok?r.json():Promise.reject(r.status))
-      .then(j=>{ Object.assign(whBox,{items:j.items||[],meta:j,at:Date.now(),loading:false,err:false}); paintWhale(); })
+      .then(j=>{ Object.assign(whBox,{items:j.items||[],meta:j,at:Date.now(),loading:false,err:false}); paintWhale();
+        // 꼬리표가 붙는 줄(돈이 들어간 곳 · 전체 섹터)은 이미 그려져 있다. 처음 받았을 때 한 번 다시 그린다
+        if(!whBox.painted){ whBox.painted=true; render(true); } })
       .catch(()=>{ Object.assign(whBox,{items:whBox.items||[],at:Date.now(),loading:false,err:true}); paintWhale(); });
   }
   function whaleHTML(){
@@ -751,7 +758,7 @@ const DATA = null; /*__DATA__*/
       <h5>여기서 볼 수 있는 것</h5>
       <p>누가(외국계 운용사, 국민연금, 최대주주, 임원) 어느 회사를 얼마나(지분율 변화나 금액) 언제 움직였고 언제 공시했는지. 누르면 DART 원문이 열립니다.</p>
       <h5>이걸로 할 수 있는 것</h5>
-      <ul><li>돈이 들어간 업종에 큰손도 들어왔는지 맞춰 봅니다. 업종 상세 화면에 그 업종 공시만 따로 모아 둡니다.</li>
+      <ul><li>돈이 들어간 업종에 큰손도 들어왔는지 봅니다. 업종 줄에 붙는 <b>큰손 매수 3</b> 같은 꼬리표가 최근 14일 그 업종 종목에 난 공시 건수입니다. 업종 상세 화면에는 그 업종 공시만 따로 모아 둡니다.</li>
         <li>회사 사정을 가장 잘 아는 사람(임원 · 최대주주)이 자기 돈으로 샀는지 팔았는지 봅니다.</li>
         <li>관심 있는 회사에 새로 5%를 넘게 산 기관이 있는지 봅니다.</li></ul>
       <h5>왜 만들었나</h5>
@@ -791,8 +798,8 @@ const DATA = null; /*__DATA__*/
   /* ── 휴대폰 알림(웹 푸시) ──
      '알림 받기'를 누르면 이 기기를 받는 쪽으로 등록한다(/api/push). 보내기는 예약 실행기가 한다.
      아이폰은 애플 정책상 '홈 화면에 추가'로 연 화면에서만 알림을 받을 수 있다. */
-  const PUSH_KINDS=[['am','개장 전 요약','평일 08:37'],['pm','마감 요약','평일 15:40'],['wh','큰손 공시 요약','평일 18:30'],['hot','아주 큰 큰손 공시','들어오는 즉시']];
-  const pushSt={ok:'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,sub:null,busy:false,msg:'',prefs:{am:true,pm:true,wh:true,hot:true}};
+  const PUSH_KINDS=[['am','개장 전 요약','평일 08:37'],['pm','마감 요약','평일 15:40'],['wh','큰손 공시 요약','평일 18:30'],['hot','아주 큰 큰손 공시','들어오는 즉시'],['wa','관심 섹터 소식','상위 3위 · 큰손 공시']];
+  const pushSt={ok:'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,sub:null,busy:false,msg:'',prefs:{am:true,pm:true,wh:true,hot:true,wa:true}};
   try{ Object.assign(pushSt.prefs,JSON.parse(localStorage.getItem('lucent.push')||'{}')); }catch(e){}
   const onIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const asApp=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
@@ -801,6 +808,7 @@ const DATA = null; /*__DATA__*/
       .then(s=>{ pushSt.sub=s||null; paintPush(); }).catch(()=>{});
   }
   const keyBytes=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); };
+  const watchNos=()=>watch.map(n=>byName[n]&&byName[n].no).map(x=>x||0);
   const pushApi=(method,body)=>fetch('/api/push',{method,headers:{'content-type':'application/json'},body:JSON.stringify(body)})
     .then(r=>r.json().catch(()=>({})).then(j=>Object.assign({status:r.status},j)));
   function pushHTML(){
@@ -812,7 +820,7 @@ const DATA = null; /*__DATA__*/
     }
     if(Notification.permission==='denied') return head+`<div class="pm" style="margin-top:0">이 사이트 알림이 막혀 있습니다. 브라우저 설정 → 사이트 설정 → 알림에서 <b>허용</b>으로 바꾼 뒤 다시 열어 주세요.</div>`;
     const dis=pushSt.busy?'disabled':'';
-    const rows=PUSH_KINDS.map(([k,t,w])=>`<label class="pl"><input type="checkbox" data-pk="${k}" ${pushSt.prefs[k]?'checked':''} ${dis}>${t}<span class="w">${w}</span></label>`).join('');
+    const rows=PUSH_KINDS.map(([k,t,w])=>`<label class="pl"><input type="checkbox" data-pk="${k}" ${pushSt.prefs[k]?'checked':''} ${dis}>${t}${k==='wa'&&watch.length?` <span class="f">${watch.length}개</span>`:''}<span class="w">${w}</span></label>`).join('');
     const btn=pushSt.sub
       ? `<button data-push="test" ${dis}>시험 알림 보내기</button><button data-push="off" ${dis}>알림 끄기</button>`
       : `<button class="go" data-push="on" ${dis}>${pushSt.busy?'켜는 중…':'이 기기로 알림 받기'}</button>`;
@@ -833,7 +841,7 @@ const DATA = null; /*__DATA__*/
     if(!k.key) throw new Error(k.error||'알림 키를 받지 못했습니다.');
     const reg=await navigator.serviceWorker.ready;
     const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(k.key)});
-    const j=await pushApi('POST',{sub:sub.toJSON(),prefs:pushSt.prefs});
+    const j=await pushApi('POST',{sub:sub.toJSON(),prefs:pushSt.prefs,watch,watch_no:watchNos()});
     if(!j.ok){ await sub.unsubscribe().catch(()=>{}); throw new Error(j.error||'등록하지 못했습니다.'); }
     pushSt.sub=sub; savePush();
     return '켜졌습니다. 곧 확인 알림이 하나 옵니다.';
@@ -850,10 +858,14 @@ const DATA = null; /*__DATA__*/
     return '보냈습니다. 몇 초 안에 울립니다.';
   });
   const pushSave=()=>{ savePush(); if(!pushSt.sub) return; pushStep(async()=>{
-    const j=await pushApi('POST',{sub:pushSt.sub.toJSON(),prefs:pushSt.prefs});
+    const j=await pushApi('POST',{sub:pushSt.sub.toJSON(),prefs:pushSt.prefs,watch,watch_no:watchNos()});
     if(!j.ok) throw new Error(j.error||'저장하지 못했습니다.');
     return '저장했습니다.';
   }); };
+  /* 관심 목록이 바뀌면 알림 쪽에도 조용히 알린다. 화면 글은 바꾸지 않는다 */
+  let watchSyncT=null;
+  function syncWatch(){ if(!pushSt.sub) return; clearTimeout(watchSyncT);
+    watchSyncT=setTimeout(()=>{ pushApi('POST',{sub:pushSt.sub.toJSON(),prefs:pushSt.prefs,watch,watch_no:watchNos()}).catch(()=>{}); },1500); }
 
   /* 잠깐 봐도 오늘이 어떤 날이었는지 알게 하는 칸.
      막대 하나로 오른 업종과 빠진 업종의 비율을 보여준다. */
@@ -1055,7 +1067,7 @@ const DATA = null; /*__DATA__*/
   function scWatch(){
     const list=watch.map(n=>byName[n]).filter(Boolean);
     if(!list.length) return `<div class="empty">관심 섹터가 없습니다.<br>섹터를 눌러 들어가서 <b>관심 섹터에 추가</b>를 누르세요.</div>`;
-    return toneRows(list)+`<p class="note">관심 목록은 이 브라우저에만 저장됩니다. 다른 기기에는 따라가지 않습니다.</p>`;
+    return toneRows(list)+`<p class="note">관심 목록은 이 브라우저에만 저장됩니다. 다른 기기에는 따라가지 않습니다.${pushSt.sub?'<br>관심 섹터가 마감 상위 3위에 들거나 그 업종 종목에 큰손 공시가 나면 이 기기로 알림이 옵니다.':'<br>휴대폰 알림을 켜 두면 관심 섹터가 마감 상위 3위에 들거나 큰손 공시가 났을 때 알려 드립니다.'}</p>`;
   }
   function scMore(){
     const cal=calNow(), K={off:'휴장',usoff:'미국 휴장',fomc:'FOMC',kr:'한국',us:'미국',expiry:'만기'};
@@ -1124,6 +1136,7 @@ const DATA = null; /*__DATA__*/
   /* keep=true 는 숫자만 새로 받은 경우. 보던 자리를 그대로 둔다(30초마다 맨 위로 튀지 않게) */
   function render(keep){
     const y=window.scrollY;
+    loadWhale();
     renderTop();
     sbar.className='sbar'+(search&&(route.name==='sectors'||route.name==='home')?' on':'');
     const al=(d.errors&&d.errors.length)?`<div class="alert">수집 실패: ${esc(d.errors.join(', '))} · 화면에서 빠져 있습니다.</div>`:'';
@@ -1153,7 +1166,7 @@ const DATA = null; /*__DATA__*/
         if(route.name==='home') route={name:'sectors',arg:null,tab:0};
         render(); if(search) q.focus(); } else { bell=!bell; render(); } return; }
     const w=e.target.closest('[data-watch]');
-    if(w){ const n=w.dataset.watch; watch=isW(n)?watch.filter(x=>x!==n):watch.concat(n); save(); render(); return; }
+    if(w){ const n=w.dataset.watch; watch=isW(n)?watch.filter(x=>x!==n):watch.concat(n); save(); syncWatch(); render(); return; }
     const mg=e.target.closest('.more[data-go]'); if(mg){ go(mg.dataset.go); return; }
     const jp=e.target.closest('[data-jump]');
     if(jp){ route.tab=+jp.dataset.jump; render();
@@ -1222,7 +1235,7 @@ const DATA = null; /*__DATA__*/
   /* ── 실시간 갱신 ──
      화면이 열려 있는 동안 /api/live 를 직접 불러 온다.
      미리 구워 둔 DATA 는 첫 화면과 통신 실패 때의 예비용으로 남는다.
-     일정(calendar)은 빌드할 때 계산한 값을 그대로 쓴다. */
+     일정(calendar)은 실시간 응답에 든 것을 쓰고, 없으면 빌드 때 값으로 버틴다. */
   let timer=null, fails=0;
   function later(ms){ clearTimeout(timer); timer=setTimeout(pull,ms); }
   async function pull(){
@@ -1232,7 +1245,7 @@ const DATA = null; /*__DATA__*/
       const j=await r.json();
       if(!j || j.error || !Array.isArray(j.sectors) || !j.sectors.length) throw new Error('empty');
       fails=0;
-      d=Object.assign({},DATA,j,{calendar:DATA.calendar});
+      d=Object.assign({},DATA,j,{calendar:(j.calendar&&j.calendar.length)?j.calendar:DATA.calendar});
       byName=Object.fromEntries(d.sectors.map(s=>[s.name,s]));
       render(true);
       later(j.market_status==='open' ? 30000 : 300000);
