@@ -328,6 +328,8 @@ button.nwmore{background:none; border:0; padding:0; cursor:pointer; font-family:
 :root[data-theme="dark"] .tag{background:rgba(255,255,255,.1)}
 .tag.hot{background:var(--gold-soft); color:var(--gold)}
 .tag.wt b{font-weight:700} .tag.wt .u{color:var(--up)} .tag.wt .d{color:var(--down)}
+.lk{background:none; border:0; padding:0; font:inherit; color:var(--t1); cursor:pointer; font-weight:600}
+.lk b{margin-left:3px}
 
 /* ── 상세 ── */
 .dwrap{background:var(--dark)}
@@ -360,6 +362,8 @@ button.nwmore{background:none; border:0; padding:0; cursor:pointer; font-family:
 .lrow .ll{margin-left:auto; font-size:14px; color:var(--t3)}
 .lrow .lc{margin-left:auto; font-size:15px; font-weight:700; text-align:right; flex-shrink:0}
 .lrow .ll ~ .lc{margin-left:0; width:74px}
+.lrow .ln.fw{flex:0 0 52px; color:var(--t3); font-size:14px} .lrow .lc.fw{margin-left:0; text-align:left; font-weight:600; font-size:14px; line-height:1.5}
+.lrow .lc.fl{display:flex; gap:12px; font-size:14px} .lrow .lc.fl span{min-width:76px} .lrow .lc.fl small{font-size:12px; font-weight:500; color:var(--t3)}
 
 /* ── 캘린더 ── */
 .ev{display:grid; grid-template-columns:54px 1fr auto; gap:3px 13px; align-items:center;
@@ -540,7 +544,7 @@ const DATA = null; /*__DATA__*/
     const tabs=['자금흐름','전체섹터','글로벌'];
     let panel;
     if(route.tab===0){
-      panel=`${fastCard()}<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
+      panel=`${fastCard()}${flowCard()}<div class="pair"><div class="card tint-up"><div class="chead"><span class="ctitle in">돈이 들어간 곳</span>
           <button class="more" data-go="flow">더보기 ›</button></div>
           <div class="cbody">${rankRows(d.top_in,max,'up')}</div></div>
         <div class="card tint-dn"><div class="chead"><span class="ctitle out">돈이 빠진 곳</span>
@@ -805,7 +809,7 @@ const DATA = null; /*__DATA__*/
   const asApp=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js').then(r=>pushSt.ok?r.pushManager.getSubscription():null)
-      .then(s=>{ pushSt.sub=s||null; paintPush(); }).catch(()=>{});
+      .then(s=>{ pushSt.sub=s||null; paintPush(); if(s&&watch.length) syncWatch(); }).catch(()=>{});
   }
   const keyBytes=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); };
   const watchNos=()=>watch.map(n=>byName[n]&&byName[n].no).map(x=>x||0);
@@ -907,18 +911,87 @@ const DATA = null; /*__DATA__*/
   }
 
   /* ── 자금 흐름 ── */
+  /* ── 업종별 수급(/api/flow) ──
+     외국인 · 기관 · 개인이 그날 어느 업종을 사고팔았나. 마감 뒤 16시부터 쌓이고, 평일 저녁이면 전날 것이 보인다.
+     업종마다 시가총액 큰 종목 4~8개를 합친 추정치라 화면에 그렇게 적는다. */
+  const flowBox={data:null,at:0,loading:false,err:false};
+  function loadFlow(){
+    if(flowBox.loading||(flowBox.at&&Date.now()-flowBox.at<300000)) return;
+    flowBox.loading=true;
+    fetch('/api/flow').then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(j=>{ Object.assign(flowBox,{data:j,at:Date.now(),loading:false,err:false}); if(['flow','home','detail'].includes(route.name)) render(true); })
+      .catch(()=>{ Object.assign(flowBox,{data:flowBox.data||{},at:Date.now(),loading:false,err:true}); });
+  }
+  const FLOW_WHO={1:['p','개인'],2:['i','기관'],3:['f','외국인']};
+  const eokF=v=>(v>0?'+':'')+Math.round(v).toLocaleString()+'억';
+  function flowRows(list,max,dir){
+    if(!list.length) return '<div class="note">해당하는 업종이 없습니다.</div>';
+    return list.map((x,i)=>{ const s=byNo[x.no]; const nm=s?s.name:x.name;
+      return `<button class="ritem" ${s?`data-open="${esc(s.name)}"`:''}>
+        <span class="rno num">${i+1}</span><span class="rname">${esc(nm)}${s?tags(s):''}</span>
+        <span class="rval num ${cls(x.v)}">${eokF(x.v)}</span>
+        <span class="rbar ${dir}"><i style="width:${Math.min(100,Math.abs(x.v)/max*100)}%;background:${col(x.v)}"></i></span>
+      </button>`; }).join('');
+  }
+  const flowDay=f=>f&&f.day?`${Number(f.day.slice(5,7))}/${Number(f.day.slice(8,10))}`:'';
+  function flowNote(f){
+    return `<p class="note"><b>${esc(flowDay(f))} ${f.partial?`받는 중 (${f.done}/${f.need} 종목)`:'마감 기준'} · 추정치.</b> ${esc(f.note||'')}<br>
+      금액이 큰 순서일 뿐입니다. 산 쪽이 반드시 맞는 것도, 따라 사라는 뜻도 아닙니다.</p>`;
+  }
   function scFlow(){
+    loadFlow();
     const names=['전체','개인','기관','외국인'];
-    const max=Math.max(1,...d.sectors.map(s=>Math.abs(s.chg)));
-    const ups=d.sectors.filter(s=>s.chg>0).slice(0,5).map(s=>s.name);
-    const dns=d.sectors.filter(s=>s.chg<0).slice(-5).reverse().map(s=>s.name);
-    return `<div class="chips" role="tablist">${names.map((t,i)=>`<button class="chip" role="tab" data-tab="0" aria-selected="${i===0}" ${i?'disabled':''}>${t}</button>`).join('')}</div>
-      <div class="card"><div class="chead"><span class="ctitle">상위 유입 섹터</span></div>
-        <div class="cbody">${rankRows(ups,max,'up')}</div></div>
-      <div class="card"><div class="chead"><span class="ctitle out">상위 유출 섹터</span></div>
-        <div class="cbody">${rankRows(dns,max,'dn')}</div></div>
-      <p class="note"><b>순위는 등락률과 참여율로 매깁니다.</b> 같은 등락률이면 업종 안에서 더 많은 종목이 같이 움직인 쪽을 위로 올립니다.<br>
-        <b>업종별 개인 · 기관 · 외국인 수급은 아직 없습니다.</b> 시장 전체 수급은 홈 '한눈에' 칸에서 봅니다.</p>`;
+    const chips=`<div class="chips" role="tablist">${names.map((t,i)=>`<button class="chip" role="tab" data-tab="${i}" aria-selected="${route.tab===i}">${t}</button>`).join('')}</div>`;
+    if(route.tab===0){
+      const max=Math.max(1,...d.sectors.map(s=>Math.abs(s.chg)));
+      const ups=d.sectors.filter(s=>s.chg>0).slice(0,5).map(s=>s.name);
+      const dns=d.sectors.filter(s=>s.chg<0).slice(-5).reverse().map(s=>s.name);
+      return chips+`<div class="card"><div class="chead"><span class="ctitle">상위 유입 섹터</span></div>
+          <div class="cbody">${rankRows(ups,max,'up')}</div></div>
+        <div class="card"><div class="chead"><span class="ctitle out">상위 유출 섹터</span></div>
+          <div class="cbody">${rankRows(dns,max,'dn')}</div></div>
+        <p class="note"><b>순위는 등락률과 참여율로 매깁니다.</b> 같은 등락률이면 업종 안에서 더 많은 종목이 같이 움직인 쪽을 위로 올립니다.<br>
+          누가 샀는지는 위의 <b>개인 · 기관 · 외국인</b>에서 봅니다.</p>`;
+    }
+    const [who,label]=FLOW_WHO[route.tab];
+    const f=flowBox.data;
+    if(!f) return chips+`<div class="card"><div class="cbody"><div class="note">${flowBox.err?'수급을 불러오지 못했습니다.':'수급을 불러오는 중입니다.'}</div></div></div>`;
+    if(!f.day) return chips+`<div class="card"><div class="cbody"><div class="note">${esc(f.note||'아직 받은 수급이 없습니다.')}</div></div></div>`;
+    const r=f[who]||{top:[],bottom:[]};
+    const mx=l=>Math.max(1,...l.map(x=>Math.abs(x.v)));
+    return chips+`<div class="card"><div class="chead"><span class="ctitle in">${label}이 산 업종</span><span class="more" style="cursor:default">${esc(flowDay(f))} · 억원</span></div>
+        <div class="cbody">${flowRows(r.top,mx(r.top),'up')}</div></div>
+      <div class="card"><div class="chead"><span class="ctitle out">${label}이 판 업종</span><span class="more" style="cursor:default">${esc(flowDay(f))} · 억원</span></div>
+        <div class="cbody">${flowRows(r.bottom,mx(r.bottom),'dn')}</div></div>`+flowNote(f);
+  }
+  /* 홈 '자금흐름' 탭 맨 위: 외국인 · 기관이 산 업종 두 개씩 */
+  function flowCard(){
+    loadFlow();
+    const f=flowBox.data;
+    if(!f||!f.day) return '';
+    const line=(who,label)=>{ const t=((f[who]||{}).top||[]).slice(0,2); if(!t.length) return '';
+      return `<div class="lrow"><span class="ln fw">${label}</span><span class="lc fw">${t.map(x=>`<button class="lk" data-open="${esc((byNo[x.no]||{}).name||x.name)}">${esc((byNo[x.no]||{}).name||x.name)} <b class="num ${cls(x.v)}">${eokF(x.v)}</b></button>`).join(' · ')}</span></div>`; };
+    const rows=line('f','외국인')+line('i','기관');
+    if(!rows) return '';
+    return `<div class="card" id="flow-home"><div class="chead"><span class="ctitle">${esc(flowDay(f))} 누가 어디를 샀나</span>
+        <button class="more" data-go="flow" data-gotab="3">업종별 수급 ›</button></div>
+      <div class="cbody"><div class="llist">${rows}</div>
+        <div class="note" style="margin-top:8px">업종마다 시가총액 큰 종목 4~8개 기준 추정치${f.partial?` · 받는 중 ${f.done}/${f.need}`:''}</div></div></div>`;
+  }
+
+  /* 업종 상세: 그날 이 업종의 외국인 · 기관 · 개인 수급과 종목별 내역 */
+  function secFlowCard(s){
+    loadFlow();
+    const f=flowBox.data, x=f&&f.sectors&&f.sectors[s.no];
+    if(!x) return '';
+    const stocks=(x.top||[]).slice().sort((a,b)=>Math.abs(b.f)+Math.abs(b.i)-Math.abs(a.f)-Math.abs(a.i));
+    return `<div class="card"><div class="chead"><span class="ctitle">${esc(flowDay(f))} 수급</span><span class="more" style="cursor:default">상위 ${x.k}종목 · 억원</span></div>
+      <div class="cbody"><div class="inv">
+        <div><div class="k">외국인</div><div class="v num ${cls(x.f)}">${eokF(x.f)}</div></div>
+        <div><div class="k">기관</div><div class="v num ${cls(x.i)}">${eokF(x.i)}</div></div>
+        <div><div class="k">개인</div><div class="v num ${cls(x.p)}">${eokF(x.p)}</div></div></div>
+        <div class="llist" style="margin-top:10px">${stocks.map(t=>`<div class="lrow"><span class="ln">${esc(t.name)}</span><span class="lc fl"><span class="num ${cls(t.f)}"><small>외</small> ${eokF(t.f)}</span><span class="num ${cls(t.i)}"><small>기</small> ${eokF(t.i)}</span></span></div>`).join('')}</div>
+        <div class="note" style="margin-top:8px">시가총액 상위 ${x.k}종목${x.cov?`(업종 시총의 ${x.cov}%)`:''}을 합친 값 · 순매수 수량 × 종가 추정 · 네이버 투자자별 매매동향</div></div></div>`;
   }
 
   /* ── 상세 ── */
@@ -1032,6 +1105,7 @@ const DATA = null; /*__DATA__*/
             하루 가격제한폭(±30%)을 넘은 종목입니다. 상장 첫날이거나 거래가 다시 열린 종목이라 어제 가격이 없습니다.
             이런 종목이 섞이면 업종 숫자가 부풀어서, 빼고 다시 계산했습니다.<br>
             네이버 원래 숫자 <b class="num">${fmt(s.naver_chg)}</b> → 바로잡은 숫자 <b class="num">${fmt(s.chg)}</b></div></div></div>`:''}
+        ${secFlowCard(s)}
         <div class="card"><div class="chead"><span class="ctitle">업종 안에서 무슨 일이</span></div>
           <div class="cbody"><div class="llist">
             <div class="lrow"><span class="ln">상승</span><span class="ll num">${s.rise??'–'}</span><span class="lc u">개</span></div>
@@ -1083,7 +1157,7 @@ const DATA = null; /*__DATA__*/
       <div class="panel"><b>갱신 시각</b><br>장중에는 화면을 열어 두면 <b>30초마다 스스로 갱신</b>합니다. 맨 위에 빨간 점과 '실시간'이 뜹니다.<br>장이 끝나면 그날 마감치로 고정되고 '오늘의 기록'으로 바뀝니다.<br>통신이 막히면 마지막으로 저장된 값을 보여주고, 맨 위에 그 시각이 적힙니다.</div>
       <div class="panel"><b>숫자가 증권앱과 다를 때</b><br>· 업종 등락률은 <b>네이버 증권</b> 값을 그대로 씁니다. 증권앱과 업종 분류가 다르면 묶음이 달라 숫자도 달라집니다.<br>· 해외 지표는 야후 기준이고 전부 <b>전일 종가 대비</b>입니다.<br>· 맨 위에 '몇 시 기준'인지 늘 적혀 있습니다. 장중이면 빨간 점이 뜹니다.</div>
       <div class="panel"><b>데이터가 없는 것</b><br>· 업종별 개인 · 기관 · 외국인 수급 (시장 전체 수급은 홈 '한눈에' 칸에 있습니다)<br>· 뉴스 기반 상승 · 하락 이유 (사후 서사라 넣지 않았습니다)<br>· 업종 과거 기록 (업종 단위로 바꾸면서 새로 쌓는 중입니다. 5거래일 모이면 차트가 생깁니다)<br>일정은 2026년까지 들어 있습니다. 연말에 갱신해야 합니다.</div>
-      <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 · 경제 헤드라인 네이버 증권 · 큰손 공시 금융감독원 DART · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
+      <div class="panel"><b>출처</b><br>업종 · 코스피 · 코스닥 · 경제 헤드라인 · 업종별 수급 네이버 증권 · 큰손 공시 금융감독원 DART · 해외 지표 Yahoo Finance · FOMC 미국 연준 · 금통위 한국은행 · 물가 · 고용 미국 노동통계국 · 휴장일 한국거래소<br><br>이 화면은 투자 자문이 아닙니다. 판단과 책임은 보는 사람에게 있습니다.</div>`;
   }
 
   const I_SEARCH=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.6 16.6 4.2 4.2"/></svg>`;
@@ -1167,7 +1241,7 @@ const DATA = null; /*__DATA__*/
         render(); if(search) q.focus(); } else { bell=!bell; render(); } return; }
     const w=e.target.closest('[data-watch]');
     if(w){ const n=w.dataset.watch; watch=isW(n)?watch.filter(x=>x!==n):watch.concat(n); save(); syncWatch(); render(); return; }
-    const mg=e.target.closest('.more[data-go]'); if(mg){ go(mg.dataset.go); return; }
+    const mg=e.target.closest('.more[data-go]'); if(mg){ go(mg.dataset.go); if(mg.dataset.gotab){ route.tab=+mg.dataset.gotab; render(); } return; }
     const jp=e.target.closest('[data-jump]');
     if(jp){ route.tab=+jp.dataset.jump; render();
       const el=document.getElementById('g'+jp.dataset.jump); if(el) el.scrollIntoView({block:'start'}); return; }
@@ -1205,6 +1279,7 @@ const DATA = null; /*__DATA__*/
   function deepLink(hash){
     const h=String(hash||'').replace(/^#/,'');
     const m=h.match(/^s=(\d+)/);
+    if(h==='flow'){ go('flow'); route.tab=3; render(); return true; }
     if(h==='whale'){
       go('home'); whBox.more=true; paintWhale();
       holdAt(()=>{ const el=document.getElementById('wh-home'); return el&&el.closest('.card'); });
