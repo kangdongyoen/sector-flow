@@ -2,17 +2,20 @@
  * 휴대폰 알림 구독  ·  Cloudflare Pages Function
  *
  *   GET    /api/push              웹 푸시 공개키 { key }
- *   POST   /api/push  { sub, prefs }          구독하기 · 받을 종류 바꾸기. 처음이면 '켜졌습니다' 알림을 보낸다
+ *   POST   /api/push  { sub, prefs, watch }   구독하기 · 받을 종류와 관심 업종 바꾸기. 처음이면 '켜졌습니다' 알림을 보낸다
  *   POST   /api/push  { sub, test: true }     이 기기로 시험 알림 (30초에 한 번)
  *   DELETE /api/push  { endpoint }            구독 끊기
  *
  * 구독 정보는 저장소(KV) 'sub:…' 에 기기마다 하나씩 둔다. 보내기는 예약 실행기가 한다(worker/push.js).
- * prefs  am 개장 전 · pm 마감 · wh 큰손 요약 · hot 아주 큰 큰손 공시
+ * prefs  am 개장 전 · pm 마감 · wh 큰손 요약 · hot 아주 큰 큰손 공시 · wa 관심 업종 소식
+ * watch  관심 업종 이름 목록(최대 20개). watch_no 는 같은 순서의 네이버 업종번호. 화면의 관심 목록이 바뀔 때마다 같이 온다
  */
 
 import { loadVapid, sendPush, subKey } from '../../worker/webpush.js';
 
-const KINDS = ['am', 'pm', 'wh', 'hot'];
+const KINDS = ['am', 'pm', 'wh', 'hot', 'wa'];
+const cleanWatch = (w) => (Array.isArray(w) ? w.map((x) => String(x).slice(0, 40)).filter(Boolean).slice(0, 20) : []);
+const cleanNos = (w) => (Array.isArray(w) ? w.map(Number).filter((x) => x > 0 && x < 10000).slice(0, 20) : []);
 const J = (o, status = 200) =>
   new Response(JSON.stringify(o), {
     status,
@@ -78,6 +81,8 @@ export async function onRequestPost({ request, env }) {
     endpoint: sub.endpoint,
     keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) },
     prefs: cleanPrefs(b.prefs),
+    watch: 'watch' in b ? cleanWatch(b.watch) : (cur && cur.watch) || [],
+    watch_no: 'watch' in b ? cleanNos(b.watch_no) : (cur && cur.watch_no) || [],
     at: (cur && cur.at) || new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' '),
   };
   await env.FLOW.put(key, JSON.stringify(rec));
