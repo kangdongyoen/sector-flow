@@ -8,7 +8,7 @@
  * 금액은 순매수 수량 × 종가라서 추정치다. 응답의 note 에 그 말을 넣어 두고 화면이 그대로 보여 준다.
  */
 
-import { rankFlow } from '../../worker/flow.js';
+import { rankFlow, skipSector } from '../../worker/flow.js';
 
 const H = { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*' };
 const J = (o, status = 200, cc = 'public, max-age=120') => new Response(JSON.stringify(o), { status, headers: Object.assign({ 'cache-control': cc }, H) });
@@ -45,6 +45,7 @@ export async function onRequestGet(context) {
   const sectors = {};
   for (const [no, s] of Object.entries(flow.sectors || {})) {
     const m = (flow.meta && flow.meta[no]) || {};
+    if (skipSector(m.name)) continue;
     sectors[no] = { name: m.name || '', f: s.f, i: s.i, p: s.p, n: s.n, k: m.k || s.n, cov: m.cov || null, top: s.top };
   }
   const body = {
