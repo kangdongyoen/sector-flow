@@ -6,12 +6,12 @@
  *
  *   1. 장중 10분마다 업종 등락률을 찍어 둔다(intra:날짜). '지난 30분' 과 '오늘 흐름' 선이 여기서 나온다.
  *   2. 마감 뒤 하루치 업종 등락률을 쌓는다(history). 상세 화면의 캔들이 여기서 나온다.
- *   3. 개장 전 · 마감 뒤에 카카오톡 '나에게 보내기'로 요약을 보낸다.
+ *   3. 개장 전 · 마감 뒤에 휴대폰 알림으로 요약을 보낸다(push.js).
  *   4. 개장 전 한 번 경제 헤드라인(네이버 증권 주요 뉴스 제목)을 날짜별로 남긴다(news:날짜).
  *      나중에 '그 뉴스가 나온 날 돈이 실제로 어디로 갔나'를 되짚는 기록이다.
  *   5. 평일 07:00 ~ 21:59 10분마다 DART 에서 '큰손' 공시를 모은다(whale.js).
  *      5% 대량보유 보고와 임원 · 주요주주 매매 보고. 화면 '큰손 움직임'이 여기서 나온다.
- *   6. 휴대폰 알림(push.js, 웹 푸시). 사이트에서 '알림 받기'를 누른 기기로 간다. 카톡과는 따로 간다.
+ *   6. 휴대폰 알림(push.js, 웹 푸시). 사이트에서 '알림 받기'를 누른 기기로 간다.
  *      08:37 개장 전 · 15:40 마감 · 18:33 그날 큰손 요약 · 아주 큰 공시는 들어오는 즉시
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
@@ -22,31 +22,24 @@
  *
  * 저장소(KV) 키
  *   history   하루치 업종 등락률 60일
- *   kakao     카카오 REST 키 · 리프레시 토큰. /kakao 페이지가 넣는다. 밖으로 보여주지 않는다.
  *   intra:날짜  장중 10분 간격 업종 등락률. 나흘 뒤 저절로 지워진다.
  *   runs      최근 실행 기록 20개
  *   news:날짜   그날 아침 헤드라인 제목 10개. 1년 뒤 저절로 지워진다.
- *   sent:날짜:am|pm   그날 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  *   whale:v1 · whale:seen · whale:map   큰손 공시 목록 · 이미 본 공시 · 종목코드 표 (whale.js 참고)
  *   vapid     웹 푸시 서명 키. 밖으로 보여주지 않는다
  *   sub:…     알림을 받는 기기 하나. functions/api/push.js 가 만든다
- *   push:날짜:am|pm|wh   그날 휴대폰 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
+ *   push:날짜:am|pm|wh|wa   그날 휴대폰 알림을 보냈다는 표시. 사흘 뒤 저절로 지워진다.
  */
 
 import { harvestWhale, isInstant, whatLine, whenLine, digest } from './whale.js';
-import { listSubs, pushAll, pushNote } from './push.js';
+import { KR_HOLIDAYS as HOLIDAYS } from './calendar.js';
+import { listSubs, pushAll, pushEach, pushNote } from './push.js';
 
 const WHALE_CRON = '3,13,23,33,43,53 * * * *';
 
 const SITE = 'https://lucent-sector.pages.dev';
 const KEEP_DAYS = 60;
 
-/** 한국거래소 휴장일 (2026년, 증권사 공지 기준). 주말은 따로 거른다. 해가 바뀌면 여기에 더한다. */
-const HOLIDAYS = new Set([
-  '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-02', '2026-05-01',
-  '2026-05-05', '2026-05-25', '2026-06-03', '2026-07-17', '2026-08-17',
-  '2026-09-24', '2026-09-25', '2026-10-05', '2026-10-09', '2026-12-25', '2026-12-31',
-]);
 
 const kstNow = () => new Date(Date.now() + 9 * 3600 * 1000);
 const ymd = (d) => d.toISOString().slice(0, 10);
@@ -162,47 +155,7 @@ async function snapshot(env, d, day, t) {
   return cur.snaps.length;
 }
 
-/* ── 2. 카카오톡 ── */
-
-async function kakaoAccess(env) {
-  const k = await env.FLOW.get('kakao', 'json');
-  if (!k || !k.key || !k.refresh) return null;
-  const form = { grant_type: 'refresh_token', client_id: k.key, refresh_token: k.refresh };
-  if (k.secret) form.client_secret = k.secret;
-  const r = await fetch('https://kauth.kakao.com/oauth/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded;charset=utf-8' },
-    body: new URLSearchParams(form),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (!j.access_token) throw new Error('토큰 갱신 실패 ' + JSON.stringify(j).slice(0, 160));
-  // 만료가 한 달 안으로 다가오면 카카오가 새 리프레시 토큰을 준다. 받은 즉시 바꿔 끼운다.
-  if (j.refresh_token) {
-    k.refresh = j.refresh_token;
-    k.renewed_at = new Date().toISOString();
-    await env.FLOW.put('kakao', JSON.stringify(k));
-  }
-  return j.access_token;
-}
-
-async function sendMemo(token, text) {
-  const tpl = {
-    object_type: 'text',
-    text,
-    link: { web_url: SITE, mobile_web_url: SITE },
-    button_title: '열어보기',
-  };
-  const r = await fetch('https://kapi.kakao.com/v2/api/talk/memo/default/send', {
-    method: 'POST',
-    headers: {
-      authorization: 'Bearer ' + token,
-      'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
-    },
-    body: new URLSearchParams({ template_object: JSON.stringify(tpl) }),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (j.result_code !== 0) throw new Error('전송 실패 ' + JSON.stringify(j).slice(0, 160));
-}
+/* ── 2. 알림 문구 ── */
 
 function dayLabel(now) {
   const m = String(now.getUTCMonth() + 1).padStart(2, '0');
@@ -236,7 +189,7 @@ const cut = (t, n) => {
 
 const eok = (v) => (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US') + '억';
 
-/** 카카오 글자 한도(200자)를 넘기면 뒤쪽 줄부터 통째로 뺀다. 줄 중간이 잘리지 않게. */
+/** 알림 글자 한도(200자)를 넘기면 뒤쪽 줄부터 통째로 뺀다. 줄 중간이 잘리지 않게. */
 function fit(lines, max = 200) {
   const out = [];
   for (const l of lines.filter(Boolean)) {
@@ -314,7 +267,7 @@ async function run(env, why) {
       }
     }
 
-    // 2. 아침 헤드라인. 08:00 ~ 09:00 사이 한 번 받아 두고 카톡에도 쓴다.
+    // 2. 아침 헤드라인. 08:00 ~ 09:00 사이 한 번 받아 두고 아침 알림에도 쓴다.
     let news = null;
     if (mins >= 8 * 60 && mins < 9 * 60) {
       try {
@@ -326,7 +279,7 @@ async function run(env, why) {
       }
     }
 
-    // 3. 카톡 · 휴대폰 알림. 문구는 같고, 보냈다는 표시는 따로 둔다
+    // 3. 휴대폰 알림
     const slot = mins >= 8 * 60 && mins < 9 * 60 ? 'am'
       : mins >= 15 * 60 + 35 && mins < 17 * 60 ? 'pm' : null;
     if (!slot) {
@@ -337,27 +290,12 @@ async function run(env, why) {
       log.steps.push('오늘 장 숫자가 아니라 알림 안 함');
     } else {
       const text = slot === 'am' ? textAM(d, now, news) : textPM(d);
-      const flag = `sent:${today}:${slot}`;
-      if (await env.FLOW.get(flag)) {
-        log.steps.push('카톡 이미 보냄');
-      } else {
-        try {
-          const tok = await kakaoAccess(env);
-          if (!tok) {
-            log.steps.push('카톡 연결 전');
-          } else {
-            await sendMemo(tok, text);
-            await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
-            log.steps.push('카톡 보냄');
-          }
-        } catch (e) {
-          log.steps.push('카톡 실패 · ' + String(e.message || e).slice(0, 160));
-        }
-      }
       log.steps.push(await pushOnce(env, `push:${today}:${slot}`, slot, () => {
         const [head, ...rest] = text.split('\n');
         return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), url: SITE + '/', tag: slot };
       }));
+      // 마감 뒤 관심 업종 소식. 그 기기가 관심으로 둔 업종이 상위 · 하위 3위에 들었을 때만, 기기마다 다른 글
+      if (slot === 'pm') log.steps.push(await watchClose(env, d, today));
     }
   }
 
@@ -381,6 +319,29 @@ async function pushOnce(env, flag, kind, make, subs) {
   } catch (e) {
     return '휴대폰 실패 · ' + String(e.message || e).slice(0, 120);
   }
+}
+
+/** 관심 업종이 오늘 돈이 들어간 곳 · 빠진 곳 3위 안에 들었나. 기기마다 다른 글이라 pushEach 로 간다 */
+async function watchClose(env, d, today) {
+  const flag = `push:${today}:wa`;
+  if (await env.FLOW.get(flag)) return '관심 이미 보냄';
+  let subs;
+  try {
+    subs = await listSubs(env);
+  } catch (e) {
+    return '관심 구독 못 읽음';
+  }
+  const S = Object.fromEntries((d.sectors || []).map((s) => [s.name, s]));
+  const rank = (list) => Object.fromEntries((list || []).slice(0, 3).map((n, i) => [n, i + 1]));
+  const up = rank(d.top_in), dn = rank(d.top_out);
+  const r = await pushEach(env, 'wa', subs, (sub) => {
+    const names = (sub.watch || []).filter((n) => S[n] && (up[n] || dn[n]));
+    if (!names.length) return null;
+    const lines = names.map((n) => `${n} ${up[n] ? `들어간 곳 ${up[n]}위` : `빠진 곳 ${dn[n]}위`} ${pct(S[n].chg)}`);
+    return { title: `관심 업종 ${names.length === 1 ? names[0] : names.length + '개'} · 오늘 ${up[names[0]] ? '상위' : '하위'}권`, body: lines.join('\n'), url: SITE + '/#s=' + S[names[0]].no, tag: 'wa' };
+  });
+  if (r.sent) await env.FLOW.put(flag, '1', { expirationTtl: 3 * 86400 });
+  return '관심 ' + pushNote(r).replace('휴대폰 ', '');
 }
 
 /* ── 큰손 공시 ── */
@@ -425,6 +386,25 @@ async function whaleRun(env, force) {
     }
   }
 
+  // 관심 업종 종목에 난 눈여겨볼 공시. 기기마다 그 기기 관심 업종 것만, 한 번에 세 건까지
+  const byNo = {};
+  const hotRcp = new Set(hot.map((x) => x.rcp));
+  for (const x of r.fresh) if (x.hi && x.no && x.day >= yday) (byNo[x.no] || (byNo[x.no] = [])).push(x);
+  if (Object.keys(byNo).length) {
+    const wr = await pushEach(env, 'wa', subs, (sub) => {
+      const mine = [];
+      (sub.watch_no || []).forEach((no, i) => { for (const x of byNo[no] || []) mine.push(Object.assign({ sec: (sub.watch || [])[i] || '' }, x)); });
+      // 아주 큰 공시로 이미 그 기기에 간 것은 또 보내지 않는다
+      const hotOff = !!(sub.prefs && sub.prefs.hot === false);
+      const pick = mine.filter((x) => hotOff || !hotRcp.has(x.rcp)).slice(0, 3);
+      if (!pick.length) return null;
+      return pick.length === 1
+        ? { title: `관심 ${pick[0].sec} · ${pick[0].corp}`, body: `${whatLine(pick[0])}\n${whenLine(pick[0])}`, url: SITE + '/#s=' + pick[0].no, tag: 'wa-' + pick[0].rcp }
+        : { title: `관심 업종 큰손 ${pick.length}건`, body: pick.map((x) => `${x.corp} | ${whatLine(x)}`).join('\n'), url: SITE + '/#s=' + pick[0].no, tag: 'wa-' + pick[0].rcp };
+    });
+    if (wr.n) log.watch = pushNote(wr);
+  }
+
   // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
   if (mins >= 18 * 60 + 30) {
     const dg = digest(r.out.items || [], today);
@@ -455,15 +435,13 @@ export default {
   async fetch(req, env) {
     const u = new URL(req.url);
 
-    // 상태: 기록이 며칠 쌓였나, 카톡이 연결됐나, 최근에 뭘 했나. 토큰은 보여주지 않는다.
+    // 상태: 기록이 며칠 쌓였나, 알림 기기가 몇 대인가, 최근에 뭘 했나.
     if (u.pathname === '/' || u.pathname === '/status') {
       const hist = await env.FLOW.get('history', 'json');
-      const k = await env.FLOW.get('kakao', 'json');
       const runs = (await env.FLOW.get('runs', 'json')) || [];
       const ws = await env.FLOW.get('whale:at', 'json');
       return json({
         days: hist && hist.days ? hist.days.map((x) => x.d) : [],
-        kakao: k ? { connected: true, saved_at: k.saved_at || null, renewed_at: k.renewed_at || null } : { connected: false },
         whale: ws ? { checked: ws.at || null, last: ws.log || null } : null,
         push: { devices: (await env.FLOW.list({ prefix: 'sub:' })).keys.length },
         runs: runs.slice(0, 10),
