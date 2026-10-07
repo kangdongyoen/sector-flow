@@ -26,6 +26,9 @@ export const setFetch = (f) => {
   F = f;
 };
 
+/** 네이버 업종 '기타'는 ETF · ETN 꾸러미(인버스 · 레버리지 · 해외지수)라 업종이 아니다. 수급에서 뺀다 */
+export const skipSector = (name) => name === '기타';
+
 const num = (v) => {
   const n = parseFloat(String(v === null || v === undefined ? '' : v).replace(/[,+%]/g, ''));
   return isFinite(n) ? n : 0;
@@ -81,6 +84,10 @@ export async function refreshMembers(env, sectors, budget) {
   for (const s of sectors) {
     if (budget.n < 3) break;
     if (b.done.includes(s.no)) continue;
+    if (skipSector(s.name)) {
+      b.done.push(s.no);
+      continue;
+    }
     try {
       const rows = await readMembers(s.no, budget);
       const { top, cap, cov } = pickTop(rows);
@@ -117,7 +124,10 @@ export async function fetchFlow(env, day, budget, opts = {}) {
   cur.miss = cur.miss || {};
   const bz = day.replace(/-/g, '');
   const all = [];
-  for (const no of Object.keys(mem.sectors)) for (const s of mem.sectors[no].top) all.push({ no, s });
+  for (const no of Object.keys(mem.sectors)) {
+    if (skipSector(mem.sectors[no].name)) continue;
+    for (const s of mem.sectors[no].top) all.push({ no, s });
+  }
   cur.need = all.length;
   let n = 0, miss = 0, err = 0;
   for (const { no, s } of all) {
@@ -166,7 +176,9 @@ export const readFlow = (env, day) => env.FLOW.get('flow:' + day, 'json');
 
 /** 상위 · 하위 업종 n개씩. who: 'f' | 'i' | 'p' */
 export function rankFlow(flow, who, n = 5) {
-  const rows = Object.entries(flow.sectors || {}).map(([no, s]) => ({ no: Number(no), name: (flow.meta && flow.meta[no] && flow.meta[no].name) || '', v: s[who] }));
+  const rows = Object.entries(flow.sectors || {})
+    .map(([no, s]) => ({ no: Number(no), name: (flow.meta && flow.meta[no] && flow.meta[no].name) || '', v: s[who] }))
+    .filter((r) => !skipSector(r.name));
   rows.sort((a, b) => b.v - a.v);
   return { top: rows.filter((r) => r.v > 0).slice(0, n), bottom: rows.filter((r) => r.v < 0).slice(-n).reverse() };
 }
