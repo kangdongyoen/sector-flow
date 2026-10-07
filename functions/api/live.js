@@ -13,6 +13,8 @@
  * 화면과 판정 로직은 건드릴 필요가 없다.
  */
 
+import { KR_HOLIDAYS, US_HOLIDAYS, US_HALF, buildCalendar } from '../../worker/calendar.js';
+
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
@@ -440,22 +442,8 @@ function judgeMood(gl) {
 
 const WD = ['일', '월', '화', '수', '목', '금', '토'];
 
-/** 한국거래소 휴장일 (2026년, 증권사 공지 기준). 주말은 따로 거른다. 예약 실행기(worker/cron.js)와 같은 목록이다. */
-const HOLIDAYS = new Set([
-  '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-02', '2026-05-01',
-  '2026-05-05', '2026-05-25', '2026-06-03', '2026-07-17', '2026-08-17',
-  '2026-09-24', '2026-09-25', '2026-10-05', '2026-10-09', '2026-12-25', '2026-12-31',
-]);
-
-/** 미국 주식시장 휴장일 · 조기 폐장일 (현지 날짜). 증권사 공지 기준.
- *  미결제일(콜럼버스데이 · 재향군인의날)은 장이 정상으로 열려 여기에 넣지 않는다. */
-const US_HOLIDAYS = {
-  '2026-01-01': '새해', '2026-01-19': '마틴루서킹 데이', '2026-02-16': '대통령의 날',
-  '2026-04-03': '성금요일', '2026-05-25': '메모리얼 데이', '2026-06-19': '준틴스',
-  '2026-07-03': '독립기념일 대체', '2026-09-07': '노동절', '2026-11-26': '추수감사절',
-  '2026-12-25': '성탄절',
-};
-const US_HALF = new Set(['2026-11-27', '2026-12-24']);
+/** 휴장일 · 일정은 worker/calendar.js 한 곳에서 관리한다. 미결제일(콜럼버스데이 · 재향군인의날)은 장이 정상으로 열려 휴장에 넣지 않는다. */
+const HOLIDAYS = KR_HOLIDAYS;
 
 function nyNow(now) {
   const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
@@ -652,6 +640,8 @@ async function build(ctx, origin) {
     sectors,
     globals,
     errors,
+    // 다가오는 일정. 보는 순간의 한국 날짜 기준이라 화면이 오래 열려 있어도 밀리지 않는다.
+    calendar: buildCalendar(calISO),
     // 과거 기록을 어디서 읽었나. kv 면 예약 실행기가 쌓은 것, file 이면 GitHub 예비 파일.
     history: hist ? { src: hist.src, days: hist.days.length, last: hist.days[hist.days.length - 1]?.d || null } : null,
   };
