@@ -1,14 +1,14 @@
 {
  "source": "naver+yahoo",
- "updated": "2026-10-10 00:18",
- "updated_label": "10월 10일 00:18 기준",
- "date_label": "10월 10일",
- "weekday": "토",
- "market_status": "closed",
- "market_label": "주말 휴장",
+ "updated": "2026-10-13 02:54",
+ "updated_label": "10월 13일 02:54 기준",
+ "date_label": "10월 13일",
+ "weekday": "화",
+ "market_status": "pre",
+ "market_label": "개장 전",
  "us": {
   "state": "open",
-  "last": "2026-10-09",
+  "last": "2026-10-12",
   "half": false,
   "holiday": null,
   "label": "미국 지금 장중"
@@ -16,336 +16,165 @@
  "market": [
   {
    "name": "코스피",
-   "day": "2026-10-08",
+   "day": "2026-10-12",
    "inv": {
-    "personal": 29972,
-    "foreign": -20704,
-    "inst": -16789
+    "personal": 14857,
+    "foreign": -20103,
+    "inst": -1345
    },
    "breadth": {
-    "rise": 252,
-    "fall": 625,
-    "steady": 40,
-    "upper": 3,
+    "rise": 166,
+    "fall": 720,
+    "steady": 32,
+    "upper": 1,
     "lower": 0
    }
   },
   {
    "name": "코스닥",
-   "day": "2026-10-08",
+   "day": "2026-10-12",
    "inv": {
-    "personal": 483,
-    "foreign": 625,
-    "inst": -1075
+    "personal": 2316,
+    "foreign": -130,
+    "inst": -2196
    },
    "breadth": {
-    "rise": 618,
-    "fall": 1031,
-    "steady": 88,
-    "upper": 13,
+    "rise": 223,
+    "fall": 1465,
+    "steady": 45,
+    "upper": 5,
     "lower": 1
    }
   }
  ],
  "intraday": null,
  "is_live": false,
- "trade_day": "2026-10-08",
- "trade_label": "10월 8일 (목)",
+ "trade_day": "2026-10-12",
+ "trade_label": "10월 12일 (월)",
  "is_today": false,
- "headline": "10월 8일 돈은 판매업체 · 도로와철도운송으로 갔다",
- "subline": "판매업체 13개 중 8개 상승 · 오른 업종 12개 · 빠진 업종 61개",
+ "headline": "10월 12일 돈은 해운사 · 손해보험으로 갔다",
+ "subline": "해운사 11개 중 6개 상승 · 오른 업종 8개 · 빠진 업종 65개",
  "mood": {
-  "mood": "보통",
-  "emoji": "🟡",
-  "score": 1,
-  "why": []
+  "mood": "나쁨",
+  "emoji": "🔴",
+  "score": -2,
+  "why": [
+   "미국 선물 약세",
+   "미국 반도체 약세"
+  ]
  },
  "top_in": [
-  "판매업체",
-  "도로와철도운송",
-  "전기제품"
+  "해운사",
+  "손해보험",
+  "광고"
  ],
  "top_out": [
-  "가정용품",
-  "생물공학",
-  "우주항공과국방"
+  "전기장비",
+  "기계",
+  "전자제품"
  ],
  "sectors": [
   {
-   "name": "판매업체",
-   "no": 265,
-   "chg": 3.25,
-   "total": 13,
+   "name": "해운사",
+   "no": 323,
+   "chg": 5.28,
+   "total": 11,
+   "rise": 6,
+   "fall": 5,
+   "steady": 0,
+   "part": 0.55,
+   "spark": [
+    1.87,
+    -0.88,
+    0.36,
+    -2.34,
+    5.28
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 4.19,
+   "streak_sign": 1,
+   "streak": 1,
+   "flow": 5.49,
+   "hot": false
+  },
+  {
+   "name": "손해보험",
+   "no": 315,
+   "chg": 1.1,
+   "total": 12,
    "rise": 8,
    "fall": 4,
-   "steady": 1,
-   "part": 0.62,
-   "spark": [
-    -0.14,
-    3.18,
-    -1.33,
-    3.25,
-    3.25
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 8.38,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 3.56,
-   "hot": false
-  },
-  {
-   "name": "도로와철도운송",
-   "no": 329,
-   "chg": 2.38,
-   "total": 8,
-   "rise": 4,
-   "fall": 4,
    "steady": 0,
-   "part": 0.5,
+   "part": 0.67,
    "spark": [
-    1.06,
-    -1.08,
-    3.61,
-    2.38,
-    2.38
+    0.31,
+    0.64,
+    0.48,
+    -1.97,
+    1.1
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 8.57,
+   "chg5": 0.53,
    "streak_sign": 1,
-   "streak": 3,
-   "flow": 2.38,
+   "streak": 1,
+   "flow": 1.25,
    "hot": false
   },
   {
-   "name": "전기제품",
-   "no": 283,
-   "chg": 2,
-   "total": 68,
-   "rise": 33,
-   "fall": 30,
-   "steady": 5,
-   "part": 0.49,
-   "spark": [
-    2.53,
-    6.34,
-    -1.13,
-    2,
-    2
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 12.15,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 1.98,
-   "hot": false
-  },
-  {
-   "name": "디스플레이장비및부품",
-   "no": 269,
-   "chg": 1.74,
-   "total": 71,
-   "rise": 41,
-   "fall": 21,
-   "steady": 9,
-   "part": 0.58,
-   "spark": [
-    0.72,
-    0.55,
-    -1.75,
-    1.74,
-    1.74
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 2.99,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 1.85,
-   "hot": false
-  },
-  {
-   "name": "핸드셋",
-   "no": 292,
-   "chg": 1.14,
-   "total": 57,
-   "rise": 23,
-   "fall": 31,
-   "steady": 3,
-   "part": 0.4,
-   "spark": [
-    1.44,
-    2.19,
-    0.12,
-    1.14,
-    1.14
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 6.17,
-   "streak_sign": 1,
-   "streak": 5,
-   "flow": 1.05,
-   "hot": false
-  },
-  {
-   "name": "컴퓨터와주변기기",
-   "no": 293,
-   "chg": 0.89,
-   "total": 21,
-   "rise": 10,
-   "fall": 8,
-   "steady": 3,
-   "part": 0.48,
-   "spark": [
-    3.28,
-    1.1,
-    -1.62,
-    0.89,
-    0.89
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 4.56,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 0.88,
-   "hot": false
-  },
-  {
-   "name": "가구",
-   "no": 303,
-   "chg": 0.67,
-   "total": 11,
-   "rise": 4,
-   "fall": 4,
-   "steady": 3,
-   "part": 0.36,
-   "spark": [
-    0.85,
-    0.46,
-    0.39,
-    0.67,
-    0.67
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 3.08,
-   "streak_sign": 1,
-   "streak": 5,
-   "flow": 0.59,
-   "hot": false
-  },
-  {
-   "name": "건축제품",
-   "no": 320,
-   "chg": 0.54,
-   "total": 11,
-   "rise": 8,
-   "fall": 3,
-   "steady": 0,
-   "part": 0.73,
-   "spark": [
-    -1.15,
-    -1.08,
-    -0.01,
-    0.54,
-    0.54
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -1.17,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 0.64,
-   "hot": false
-  },
-  {
-   "name": "전문소매",
-   "no": 328,
-   "chg": 0.51,
-   "total": 5,
-   "rise": 3,
-   "fall": 1,
-   "steady": 1,
-   "part": 0.6,
-   "spark": [
-    1.23,
-    0.32,
-    -0.64,
-    0.51,
-    0.51
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 1.94,
-   "streak_sign": 1,
-   "streak": 2,
-   "flow": 0.55,
-   "hot": false
-  },
-  {
-   "name": "교육서비스",
-   "no": 290,
-   "chg": 0.49,
-   "total": 24,
-   "rise": 13,
+   "name": "광고",
+   "no": 310,
+   "chg": 0.82,
+   "total": 19,
+   "rise": 6,
    "fall": 9,
-   "steady": 2,
-   "part": 0.54,
+   "steady": 4,
+   "part": 0.32,
    "spark": [
-    0.67,
-    -0.45,
-    0.22,
-    0.49,
+    0.27,
+    0.02,
+    0.87,
+    -0.85,
+    0.82
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 1.13,
+   "streak_sign": 1,
+   "streak": 1,
+   "flow": 0.7,
+   "hot": false
+  },
+  {
+   "name": "항공사",
+   "no": 305,
+   "chg": 0.49,
+   "total": 9,
+   "rise": 4,
+   "fall": 3,
+   "steady": 2,
+   "part": 0.44,
+   "spark": [
+    -1.03,
+    1.6,
+    -0.63,
+    -1.8,
     0.49
    ],
    "spark_days": [
@@ -353,347 +182,260 @@
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 1.42,
+   "chg5": -1.4,
    "streak_sign": 1,
-   "streak": 3,
-   "flow": 0.51,
-   "hot": false
-  },
-  {
-   "name": "기타금융",
-   "no": 319,
-   "chg": 0.4,
-   "total": 6,
-   "rise": 5,
-   "fall": 1,
-   "steady": 0,
-   "part": 0.83,
-   "spark": [
-    -0.32,
-    -1.24,
-    2.59,
-    0.4,
-    0.4
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 1.8,
-   "streak_sign": 1,
-   "streak": 3,
-   "flow": 0.51,
-   "hot": false
-  },
-  {
-   "name": "식품과기본식료품소매",
-   "no": 302,
-   "chg": 0.29,
-   "total": 7,
-   "rise": 5,
-   "fall": 2,
-   "steady": 0,
-   "part": 0.71,
-   "spark": [
-    1.11,
-    -0.83,
-    0.86,
-    0.29,
-    0.29
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 1.72,
-   "streak_sign": 1,
-   "streak": 3,
-   "flow": 0.34,
-   "hot": false
-  },
-  {
-   "name": "다각화된통신서비스",
-   "no": 336,
-   "chg": 0,
-   "total": 3,
-   "rise": 1,
-   "fall": 1,
-   "steady": 1,
-   "part": 0.33,
-   "spark": [
-    0.4,
-    -0.76,
-    -0.38,
-    0,
-    0
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -0.74,
-   "streak_sign": 0,
-   "streak": 0,
-   "flow": 0,
-   "hot": false
-  },
-  {
-   "name": "부동산",
-   "no": 280,
-   "chg": -0.01,
-   "total": 31,
-   "rise": 10,
-   "fall": 16,
-   "steady": 5,
-   "part": 0.52,
-   "spark": [
-    0.05,
-    0.09,
-    -0.27,
-    -0.01,
-    -0.01
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -0.15,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.01,
-   "hot": false
-  },
-  {
-   "name": "출판",
-   "no": 314,
-   "chg": -0.01,
-   "total": 7,
-   "rise": 2,
-   "fall": 5,
-   "steady": 0,
-   "part": 0.71,
-   "spark": [
-    0.33,
-    0.13,
-    -0.3,
-    -0.01,
-    -0.01
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 0.14,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.01,
-   "hot": false
-  },
-  {
-   "name": "레저용장비와제품",
-   "no": 271,
-   "chg": -0.02,
-   "total": 13,
-   "rise": 4,
-   "fall": 9,
-   "steady": 0,
-   "part": 0.69,
-   "spark": [
-    0.25,
-    -0.74,
-    -0.43,
-    -0.02,
-    -0.02
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -0.96,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -0.02,
-   "hot": false
-  },
-  {
-   "name": "화학",
-   "no": 272,
-   "chg": -0.03,
-   "total": 122,
-   "rise": 50,
-   "fall": 64,
-   "steady": 8,
-   "part": 0.52,
-   "spark": [
-    2.42,
-    4.72,
-    -2.54,
-    -0.03,
-    -0.03
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 4.47,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.03,
-   "hot": false
-  },
-  {
-   "name": "포장재",
-   "no": 311,
-   "chg": -0.23,
-   "total": 27,
-   "rise": 15,
-   "fall": 10,
-   "steady": 2,
-   "part": 0.37,
-   "spark": [
-    -0.05,
-    1.68,
-    1.02,
-    -0.23,
-    -0.23
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 2.19,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -0.21,
+   "streak": 1,
+   "flow": 0.47,
    "hot": false
   },
   {
    "name": "음료",
    "no": 309,
-   "chg": -0.23,
+   "chg": 0.33,
    "total": 16,
-   "rise": 8,
-   "fall": 6,
-   "steady": 2,
-   "part": 0.38,
+   "rise": 7,
+   "fall": 8,
+   "steady": 1,
+   "part": 0.44,
    "spark": [
     0.37,
     -0.24,
     0.31,
     -0.23,
-    -0.23
+    0.33
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -0.02,
+   "chg5": 0.54,
+   "streak_sign": 1,
+   "streak": 1,
+   "flow": 0.31,
+   "hot": false
+  },
+  {
+   "name": "전문소매",
+   "no": 328,
+   "chg": 0.32,
+   "total": 5,
+   "rise": 3,
+   "fall": 2,
+   "steady": 0,
+   "part": 0.6,
+   "spark": [
+    1.23,
+    0.32,
+    -0.64,
+    0.51,
+    0.32
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 1.74,
+   "streak_sign": 1,
+   "streak": 2,
+   "flow": 0.35,
+   "hot": false
+  },
+  {
+   "name": "섬유,의류,신발,호화품",
+   "no": 274,
+   "chg": 0.07,
+   "total": 81,
+   "rise": 21,
+   "fall": 52,
+   "steady": 8,
+   "part": 0.26,
+   "spark": [
+    0.46,
+    0.54,
+    2.12,
+    -0.25,
+    0.07
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 2.96,
+   "streak_sign": 1,
+   "streak": 1,
+   "flow": 0.06,
+   "hot": false
+  },
+  {
+   "name": "가정용기기와용품",
+   "no": 298,
+   "chg": 0.04,
+   "total": 20,
+   "rise": 6,
+   "fall": 13,
+   "steady": 1,
+   "part": 0.3,
+   "spark": [
+    2.15,
+    -0.15,
+    0.87,
+    -1.35,
+    0.04
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 1.54,
+   "streak_sign": 1,
+   "streak": 1,
+   "flow": 0.03,
+   "hot": false
+  },
+  {
+   "name": "은행",
+   "no": 301,
+   "chg": -0.07,
+   "total": 11,
+   "rise": 3,
+   "fall": 8,
+   "steady": 0,
+   "part": 0.73,
+   "spark": [
+    1.39,
+    -0.33,
+    -0.06,
+    -2.8,
+    -0.07
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -1.9,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -0.08,
+   "hot": false
+  },
+  {
+   "name": "식품",
+   "no": 268,
+   "chg": -0.19,
+   "total": 92,
+   "rise": 30,
+   "fall": 57,
+   "steady": 5,
+   "part": 0.62,
+   "spark": [
+    0.17,
+    -0.04,
+    0.24,
+    -1.38,
+    -0.19
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -1.2,
    "streak_sign": -1,
    "streak": 2,
    "flow": -0.21,
    "hot": false
   },
   {
-   "name": "섬유,의류,신발,호화품",
-   "no": 274,
-   "chg": -0.25,
-   "total": 81,
-   "rise": 42,
-   "fall": 30,
-   "steady": 9,
-   "part": 0.37,
+   "name": "백화점과일반상점",
+   "no": 264,
+   "chg": -0.29,
+   "total": 14,
+   "rise": 5,
+   "fall": 9,
+   "steady": 0,
+   "part": 0.64,
    "spark": [
-    0.46,
-    0.54,
-    2.12,
-    -0.25,
-    -0.25
+    0.21,
+    -0.9,
+    -0.27,
+    -2.5,
+    -0.29
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 2.63,
+   "chg5": -3.72,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -0.32,
+   "hot": false
+  },
+  {
+   "name": "운송인프라",
+   "no": 296,
+   "chg": -0.37,
+   "total": 8,
+   "rise": 2,
+   "fall": 6,
+   "steady": 0,
+   "part": 0.75,
+   "spark": [
+    0.39,
+    -0.58,
+    0.43,
+    -0.42,
+    -0.37
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.55,
    "streak_sign": -1,
    "streak": 2,
-   "flow": -0.22,
+   "flow": -0.44,
    "hot": false
   },
   {
-   "name": "창업투자",
-   "no": 277,
-   "chg": -0.36,
-   "total": 90,
-   "rise": 38,
-   "fall": 34,
-   "steady": 18,
-   "part": 0.38,
-   "spark": [
-    1.34,
-    0.57,
-    -2.98,
-    -0.36,
-    -0.36
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -1.83,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.33,
-   "hot": false
-  },
-  {
-   "name": "철강",
-   "no": 304,
+   "name": "상업서비스와공급품",
+   "no": 324,
    "chg": -0.4,
-   "total": 55,
-   "rise": 21,
-   "fall": 32,
-   "steady": 2,
-   "part": 0.58,
+   "total": 31,
+   "rise": 7,
+   "fall": 19,
+   "steady": 5,
+   "part": 0.61,
    "spark": [
-    1.14,
-    1.77,
-    -3.38,
-    -0.4,
+    1.26,
+    1.22,
+    -0.31,
+    -0.45,
     -0.4
    ],
    "spark_days": [
@@ -701,105 +443,221 @@
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -1.34,
+   "chg5": 1.31,
    "streak_sign": -1,
    "streak": 3,
-   "flow": -0.43,
+   "flow": -0.44,
    "hot": false
   },
   {
-   "name": "운송인프라",
-   "no": 296,
-   "chg": -0.42,
-   "total": 8,
-   "rise": 4,
-   "fall": 4,
+   "name": "레저용장비와제품",
+   "no": 271,
+   "chg": -0.52,
+   "total": 13,
+   "rise": 5,
+   "fall": 8,
    "steady": 0,
+   "part": 0.62,
+   "spark": [
+    0.25,
+    -0.74,
+    -0.43,
+    -0.02,
+    -0.52
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -1.45,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -0.57,
+   "hot": false
+  },
+  {
+   "name": "기타금융",
+   "no": 319,
+   "chg": -0.58,
+   "total": 6,
+   "rise": 2,
+   "fall": 3,
+   "steady": 1,
    "part": 0.5,
    "spark": [
+    -0.32,
+    -1.24,
+    2.59,
+    0.4,
+    -0.58
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 0.81,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -0.58,
+   "hot": false
+  },
+  {
+   "name": "가구",
+   "no": 303,
+   "chg": -0.6,
+   "total": 11,
+   "rise": 4,
+   "fall": 6,
+   "steady": 1,
+   "part": 0.55,
+   "spark": [
+    0.85,
+    0.46,
     0.39,
-    -0.58,
-    0.43,
-    -0.42,
-    -0.42
+    0.67,
+    -0.6
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -0.6,
+   "chg5": 1.78,
    "streak_sign": -1,
-   "streak": 2,
-   "flow": -0.42,
+   "streak": 1,
+   "flow": -0.62,
    "hot": false
   },
   {
-   "name": "상업서비스와공급품",
-   "no": 324,
-   "chg": -0.45,
-   "total": 31,
-   "rise": 13,
-   "fall": 14,
-   "steady": 4,
-   "part": 0.45,
+   "name": "건축자재",
+   "no": 289,
+   "chg": -0.67,
+   "total": 51,
+   "rise": 14,
+   "fall": 35,
+   "steady": 2,
+   "part": 0.69,
    "spark": [
-    1.26,
-    1.22,
-    -0.31,
-    -0.45,
-    -0.45
+    0.24,
+    0.33,
+    0.37,
+    -1.95,
+    -0.67
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 1.26,
+   "chg5": -1.69,
    "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.43,
+   "streak": 2,
+   "flow": -0.77,
    "hot": false
   },
   {
-   "name": "방송과엔터테인먼트",
-   "no": 285,
-   "chg": -0.64,
-   "total": 57,
-   "rise": 24,
-   "fall": 25,
-   "steady": 8,
-   "part": 0.44,
+   "name": "항공화물운송과물류",
+   "no": 326,
+   "chg": -0.7,
+   "total": 13,
+   "rise": 4,
+   "fall": 9,
+   "steady": 0,
+   "part": 0.69,
    "spark": [
-    -0.14,
-    0.43,
-    3.84,
-    -0.64,
-    -0.64
+    1.3,
+    -0.3,
+    -5.24,
+    -2.13,
+    -0.7
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 2.81,
+   "chg5": -6.99,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -0.81,
+   "hot": false
+  },
+  {
+   "name": "가스유틸리티",
+   "no": 312,
+   "chg": -0.71,
+   "total": 12,
+   "rise": 2,
+   "fall": 9,
+   "steady": 1,
+   "part": 0.75,
+   "spark": [
+    0.63,
+    2.49,
+    2.02,
+    -0.93,
+    -0.71
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 3.5,
    "streak_sign": -1,
    "streak": 2,
-   "flow": -0.61,
+   "flow": -0.85,
+   "hot": false
+  },
+  {
+   "name": "포장재",
+   "no": 311,
+   "chg": -0.75,
+   "total": 27,
+   "rise": 6,
+   "fall": 18,
+   "steady": 3,
+   "part": 0.67,
+   "spark": [
+    -0.05,
+    1.68,
+    1.02,
+    -0.23,
+    -0.75
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 1.66,
+   "streak_sign": -1,
+   "streak": 2,
+   "flow": -0.85,
    "hot": false
   },
   {
    "name": "호텔,레스토랑,레저",
    "no": 317,
-   "chg": -0.77,
+   "chg": -0.76,
    "total": 19,
    "rise": 3,
    "fall": 15,
@@ -810,74 +668,16 @@
     -0.08,
     0.98,
     -0.77,
-    -0.77
+    -0.76
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -0.87,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -0.95,
-   "hot": false
-  },
-  {
-   "name": "무역회사와판매업체",
-   "no": 334,
-   "chg": -0.82,
-   "total": 8,
-   "rise": 2,
-   "fall": 5,
-   "steady": 1,
-   "part": 0.63,
-   "spark": [
-    2.13,
-    1.2,
-    -0.2,
-    -0.82,
-    -0.82
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 1.46,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.91,
-   "hot": false
-  },
-  {
-   "name": "광고",
-   "no": 310,
-   "chg": -0.85,
-   "total": 19,
-   "rise": 4,
-   "fall": 12,
-   "steady": 3,
-   "part": 0.63,
-   "spark": [
-    0.27,
-    0.02,
-    0.87,
-    -0.85,
-    -0.85
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -0.55,
+   "chg5": -0.86,
    "streak_sign": -1,
    "streak": 2,
    "flow": -0.94,
@@ -886,17 +686,75 @@
   {
    "name": "종이와목재",
    "no": 318,
-   "chg": -0.88,
+   "chg": -0.8,
    "total": 14,
    "rise": 6,
-   "fall": 7,
-   "steady": 1,
-   "part": 0.5,
+   "fall": 8,
+   "steady": 0,
+   "part": 0.57,
    "spark": [
     1.61,
     1,
     -0.64,
     -0.88,
+    -0.8
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 0.26,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -0.84,
+   "hot": false
+  },
+  {
+   "name": "교육서비스",
+   "no": 290,
+   "chg": -0.81,
+   "total": 24,
+   "rise": 9,
+   "fall": 12,
+   "steady": 3,
+   "part": 0.5,
+   "spark": [
+    0.67,
+    -0.45,
+    0.22,
+    0.49,
+    -0.81
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 0.11,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -0.81,
+   "hot": false
+  },
+  {
+   "name": "부동산",
+   "no": 280,
+   "chg": -0.88,
+   "total": 31,
+   "rise": 7,
+   "fall": 21,
+   "steady": 3,
+   "part": 0.68,
+   "spark": [
+    0.05,
+    0.09,
+    -0.27,
+    -0.01,
     -0.88
    ],
    "spark_days": [
@@ -904,376 +762,231 @@
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 0.18,
+   "chg5": -1.02,
    "streak_sign": -1,
    "streak": 3,
-   "flow": -0.88,
+   "flow": -1.01,
    "hot": false
   },
   {
-   "name": "가스유틸리티",
-   "no": 312,
-   "chg": -0.93,
+   "name": "자동차",
+   "no": 273,
+   "chg": -1.02,
    "total": 12,
-   "rise": 3,
-   "fall": 9,
-   "steady": 0,
-   "part": 0.75,
+   "rise": 1,
+   "fall": 10,
+   "steady": 1,
+   "part": 0.83,
    "spark": [
-    0.63,
-    2.49,
-    2.02,
-    -0.93,
-    -0.93
+    -0.32,
+    0.36,
+    -3.11,
+    -2.89,
+    -1.02
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 3.27,
+   "chg5": -6.83,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -1.29,
+   "hot": false
+  },
+  {
+   "name": "게임엔터테인먼트",
+   "no": 263,
+   "chg": -1.17,
+   "total": 34,
+   "rise": 11,
+   "fall": 18,
+   "steady": 5,
+   "part": 0.53,
+   "spark": [
+    1.19,
+    -1.51,
+    1.59,
+    -4.72,
+    -1.17
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.66,
    "streak_sign": -1,
    "streak": 2,
-   "flow": -1.12,
-   "hot": false
-  },
-  {
-   "name": "디스플레이패널",
-   "no": 327,
-   "chg": -0.93,
-   "total": 6,
-   "rise": 2,
-   "fall": 2,
-   "steady": 2,
-   "part": 0.33,
-   "spark": [
-    -0.06,
-    0.01,
-    -3.27,
-    -0.93,
-    -0.93
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -5.11,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -0.8,
-   "hot": false
-  },
-  {
-   "name": "건강관리기술",
-   "no": 288,
-   "chg": -1.04,
-   "total": 13,
-   "rise": 3,
-   "fall": 9,
-   "steady": 1,
-   "part": 0.69,
-   "spark": [
-    -0.64,
-    1.55,
-    -2.96,
-    -1.04,
-    -1.04
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -4.11,
-   "streak_sign": -1,
-   "streak": 3,
    "flow": -1.2,
    "hot": false
   },
   {
-   "name": "기타",
-   "no": 25,
-   "chg": -1.25,
-   "total": 1541,
-   "rise": 336,
-   "fall": 1101,
-   "steady": 104,
-   "part": 0.71,
+   "name": "건축제품",
+   "no": 320,
+   "chg": -1.17,
+   "total": 11,
+   "rise": 2,
+   "fall": 9,
+   "steady": 0,
+   "part": 0.82,
    "spark": [
-    -0.11,
-    0.35,
-    -1.17,
-    -1.25,
-    -1.25
+    -1.15,
+    -1.08,
+    -0.01,
+    0.54,
+    -1.17
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -3.39,
+   "chg5": -2.85,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -1.47,
+   "hot": false
+  },
+  {
+   "name": "도로와철도운송",
+   "no": 329,
+   "chg": -1.27,
+   "total": 8,
+   "rise": 2,
+   "fall": 6,
+   "steady": 0,
+   "part": 0.75,
+   "spark": [
+    1.06,
+    -1.08,
+    3.61,
+    2.38,
+    -1.27
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 4.7,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -1.52,
+   "hot": false
+  },
+  {
+   "name": "소프트웨어",
+   "no": 287,
+   "chg": -1.6,
+   "total": 74,
+   "rise": 12,
+   "fall": 53,
+   "steady": 9,
+   "part": 0.72,
+   "spark": [
+    1.75,
+    7.05,
+    -3.9,
+    -2.15,
+    -1.6
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 0.79,
    "streak_sign": -1,
    "streak": 3,
-   "flow": -1.46,
+   "flow": -1.88,
    "hot": false
   },
   {
-   "name": "자동차부품",
-   "no": 270,
-   "chg": -1.31,
-   "total": 154,
-   "rise": 69,
-   "fall": 71,
-   "steady": 14,
-   "part": 0.46,
+   "name": "식품과기본식료품소매",
+   "no": 302,
+   "chg": -1.73,
+   "total": 7,
+   "rise": 2,
+   "fall": 5,
+   "steady": 0,
+   "part": 0.71,
    "spark": [
-    1.43,
-    -0.16,
-    -1.38,
-    -1.31,
-    -1.31
+    1.11,
+    -0.83,
+    0.86,
+    0.29,
+    -1.73
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -2.73,
+   "chg5": -0.33,
    "streak_sign": -1,
-   "streak": 4,
-   "flow": -1.27,
-   "hot": false
-  },
-  {
-   "name": "가정용기기와용품",
-   "no": 298,
-   "chg": -1.35,
-   "total": 20,
-   "rise": 7,
-   "fall": 12,
-   "steady": 1,
-   "part": 0.6,
-   "spark": [
-    2.15,
-    -0.15,
-    0.87,
-    -1.35,
-    -1.35
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 0.13,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -1.46,
-   "hot": false
-  },
-  {
-   "name": "식품",
-   "no": 268,
-   "chg": -1.38,
-   "total": 92,
-   "rise": 30,
-   "fall": 54,
-   "steady": 8,
-   "part": 0.59,
-   "spark": [
-    0.17,
-    -0.04,
-    0.24,
-    -1.38,
-    -1.38
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -2.38,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -1.48,
+   "streak": 1,
+   "flow": -2.02,
    "hot": false
   },
   {
    "name": "건강관리장비와용품",
    "no": 281,
-   "chg": -1.62,
+   "chg": -1.86,
    "total": 104,
-   "rise": 32,
-   "fall": 56,
-   "steady": 16,
-   "part": 0.54,
+   "rise": 20,
+   "fall": 71,
+   "steady": 13,
+   "part": 0.68,
    "spark": [
     -0.61,
     5.26,
     -0.05,
     -1.62,
-    -1.62
+    -1.86
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": 1.21,
+   "chg5": 0.96,
    "streak_sign": -1,
    "streak": 3,
-   "flow": -1.67,
+   "flow": -2.13,
    "hot": false
   },
   {
-   "name": "석유와가스",
-   "no": 313,
-   "chg": -1.7,
-   "total": 19,
-   "rise": 7,
-   "fall": 11,
-   "steady": 1,
-   "part": 0.58,
-   "spark": [
-    3.9,
-    0.65,
-    1,
-    -1.7,
-    -1.7
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 2.06,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -1.81,
-   "hot": false
-  },
-  {
-   "name": "비철금속",
-   "no": 322,
-   "chg": -1.74,
-   "total": 40,
-   "rise": 15,
-   "fall": 22,
-   "steady": 3,
-   "part": 0.55,
-   "spark": [
-    1.54,
-    2.41,
-    -4.2,
-    -1.74,
-    -1.74
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -3.82,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -1.81,
-   "hot": false
-  },
-  {
-   "name": "항공사",
-   "no": 305,
-   "chg": -1.8,
-   "total": 9,
-   "rise": 1,
-   "fall": 6,
-   "steady": 2,
-   "part": 0.67,
-   "spark": [
-    -1.03,
-    1.6,
-    -0.63,
-    -1.8,
-    -1.8
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -3.64,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -2.04,
-   "hot": false
-  },
-  {
-   "name": "전자장비와기기",
-   "no": 282,
-   "chg": -1.84,
-   "total": 105,
-   "rise": 44,
-   "fall": 54,
-   "steady": 7,
-   "part": 0.51,
-   "spark": [
-    1.49,
-    6.14,
-    -4.01,
-    -1.84,
-    -1.84
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -0.37,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -1.85,
-   "hot": false
-  },
-  {
-   "name": "건축자재",
-   "no": 289,
+   "name": "양방향미디어와서비스",
+   "no": 300,
    "chg": -1.95,
-   "total": 51,
-   "rise": 15,
-   "fall": 34,
-   "steady": 2,
-   "part": 0.67,
+   "total": 16,
+   "rise": 2,
+   "fall": 13,
+   "steady": 1,
+   "part": 0.81,
    "spark": [
-    0.24,
-    0.33,
-    0.37,
-    -1.95,
+    0.17,
+    -0.43,
+    -1.17,
+    -2.5,
     -1.95
    ],
    "spark_days": [
@@ -1281,743 +994,18 @@
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -2.96,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -2.22,
-   "hot": false
-  },
-  {
-   "name": "손해보험",
-   "no": 315,
-   "chg": -1.97,
-   "total": 12,
-   "rise": 2,
-   "fall": 10,
-   "steady": 0,
-   "part": 0.83,
-   "spark": [
-    0.31,
-    0.64,
-    0.48,
-    -1.97,
-    -1.97
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -2.52,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -2.49,
-   "hot": false
-  },
-  {
-   "name": "반도체와반도체장비",
-   "no": 278,
-   "chg": -2.1,
-   "total": 172,
-   "rise": 95,
-   "fall": 72,
-   "steady": 5,
-   "part": 0.42,
-   "spark": [
-    0.1,
-    -1.95,
-    -1.99,
-    -2.1,
-    -2.1
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -7.8,
+   "chg5": -5.77,
    "streak_sign": -1,
    "streak": 4,
-   "flow": -1.97,
-   "hot": false
-  },
-  {
-   "name": "항공화물운송과물류",
-   "no": 326,
-   "chg": -2.13,
-   "total": 13,
-   "rise": 5,
-   "fall": 7,
-   "steady": 1,
-   "part": 0.54,
-   "spark": [
-    1.3,
-    -0.3,
-    -5.24,
-    -2.13,
-    -2.13
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.33,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -2.2,
-   "hot": false
-  },
-  {
-   "name": "소프트웨어",
-   "no": 287,
-   "chg": -2.15,
-   "total": 74,
-   "rise": 19,
-   "fall": 46,
-   "steady": 9,
-   "part": 0.62,
-   "spark": [
-    1.75,
-    7.05,
-    -3.9,
-    -2.15,
-    -2.15
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": 0.22,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -2.36,
-   "hot": false
-  },
-  {
-   "name": "생명과학도구및서비스",
-   "no": 262,
-   "chg": -2.18,
-   "total": 41,
-   "rise": 12,
-   "fall": 22,
-   "steady": 7,
-   "part": 0.54,
-   "spark": [
-    -1.48,
-    3.59,
-    0.19,
-    -2.18,
-    -2.18
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -2.16,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -2.25,
-   "hot": false
-  },
-  {
-   "name": "해운사",
-   "no": 323,
-   "chg": -2.34,
-   "total": 11,
-   "rise": 5,
-   "fall": 6,
-   "steady": 0,
-   "part": 0.55,
-   "spark": [
-    1.87,
-    -0.88,
-    0.36,
-    -2.34,
-    -2.34
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -3.35,
-   "streak_sign": -1,
-   "streak": 2,
    "flow": -2.43,
    "hot": false
   },
   {
-   "name": "양방향미디어와서비스",
-   "no": 300,
-   "chg": -2.5,
-   "total": 16,
-   "rise": 7,
-   "fall": 9,
-   "steady": 0,
-   "part": 0.56,
-   "spark": [
-    0.17,
-    -0.43,
-    -1.17,
-    -2.5,
-    -2.5
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -6.29,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -2.62,
-   "hot": false
-  },
-  {
-   "name": "백화점과일반상점",
-   "no": 264,
-   "chg": -2.5,
-   "total": 14,
-   "rise": 2,
-   "fall": 11,
-   "steady": 1,
-   "part": 0.79,
-   "spark": [
-    0.21,
-    -0.9,
-    -0.27,
-    -2.5,
-    -2.5
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -5.85,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -3.08,
-   "hot": false
-  },
-  {
-   "name": "에너지장비및서비스",
-   "no": 295,
-   "chg": -2.63,
-   "total": 34,
-   "rise": 6,
-   "fall": 25,
-   "steady": 3,
-   "part": 0.74,
-   "spark": [
-    2.78,
-    2.52,
-    -2.37,
-    -2.63,
-    -2.63
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -2.47,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.13,
-   "hot": false
-  },
-  {
-   "name": "건설",
-   "no": 279,
-   "chg": -2.76,
-   "total": 78,
-   "rise": 19,
-   "fall": 51,
-   "steady": 8,
-   "part": 0.65,
-   "spark": [
-    -0.31,
-    -0.17,
-    -1.14,
-    -2.76,
-    -2.76
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -6.97,
-   "streak_sign": -1,
-   "streak": 5,
-   "flow": -3.09,
-   "hot": false
-  },
-  {
-   "name": "은행",
-   "no": 301,
-   "chg": -2.8,
-   "total": 11,
-   "rise": 0,
-   "fall": 11,
-   "steady": 0,
-   "part": 1,
-   "spark": [
-    1.39,
-    -0.33,
-    -0.06,
-    -2.8,
-    -2.8
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -4.58,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -3.92,
-   "hot": true
-  },
-  {
-   "name": "통신장비",
-   "no": 294,
-   "chg": -2.85,
-   "total": 55,
-   "rise": 6,
-   "fall": 41,
-   "steady": 8,
-   "part": 0.75,
-   "spark": [
-    4.06,
-    2.02,
-    -3.58,
-    -2.85,
-    -2.85
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -3.39,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.42,
-   "hot": false
-  },
-  {
-   "name": "무선통신서비스",
-   "no": 333,
-   "chg": -2.86,
-   "total": 4,
-   "rise": 0,
-   "fall": 4,
-   "steady": 0,
-   "part": 1,
-   "spark": [
-    2.11,
-    0.02,
-    -0.96,
-    -2.86,
-    -2.86
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -4.55,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -4,
-   "hot": false
-  },
-  {
-   "name": "자동차",
-   "no": 273,
-   "chg": -2.89,
-   "total": 12,
-   "rise": 3,
-   "fall": 9,
-   "steady": 0,
-   "part": 0.75,
-   "spark": [
-    -0.32,
-    0.36,
-    -3.11,
-    -2.89,
-    -2.89
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.59,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.47,
-   "hot": false
-  },
-  {
-   "name": "화장품",
-   "no": 266,
-   "chg": -3,
-   "total": 64,
-   "rise": 14,
-   "fall": 48,
-   "steady": 2,
-   "part": 0.75,
-   "spark": [
-    -1.3,
-    0.4,
-    3.86,
-    -3,
-    -3
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -3.16,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -3.6,
-   "hot": false
-  },
-  {
-   "name": "IT서비스",
-   "no": 267,
-   "chg": -3.04,
-   "total": 119,
-   "rise": 29,
-   "fall": 81,
-   "steady": 9,
-   "part": 0.68,
-   "spark": [
-    0.28,
-    1.41,
-    -3.93,
-    -3.04,
-    -3.04
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.15,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.48,
-   "hot": false
-  },
-  {
-   "name": "증권",
-   "no": 321,
-   "chg": -3.18,
-   "total": 39,
-   "rise": 3,
-   "fall": 33,
-   "steady": 3,
-   "part": 0.85,
-   "spark": [
-    0.08,
-    -0.23,
-    -1.42,
-    -3.18,
-    -3.18
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -7.73,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -4.07,
-   "hot": true
-  },
-  {
-   "name": "전자제품",
-   "no": 307,
-   "chg": -3.28,
-   "total": 16,
-   "rise": 4,
-   "fall": 11,
-   "steady": 1,
-   "part": 0.69,
-   "spark": [
-    1.9,
-    7.59,
-    -10.33,
-    -3.28,
-    -3.28
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.03,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.78,
-   "hot": false
-  },
-  {
-   "name": "전기장비",
-   "no": 306,
-   "chg": -3.37,
-   "total": 35,
-   "rise": 7,
-   "fall": 24,
-   "steady": 4,
-   "part": 0.69,
-   "spark": [
-    1.43,
-    1.65,
-    -5.8,
-    -3.37,
-    -3.37
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -9.31,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -3.88,
-   "hot": false
-  },
-  {
-   "name": "전기유틸리티",
-   "no": 325,
-   "chg": -3.46,
-   "total": 5,
-   "rise": 1,
-   "fall": 4,
-   "steady": 0,
-   "part": 0.8,
-   "spark": [
-    0.19,
-    0.92,
-    -0.93,
-    -3.46,
-    -3.46
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -6.64,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -4.29,
-   "hot": false
-  },
-  {
-   "name": "조선",
-   "no": 291,
-   "chg": -3.6,
-   "total": 30,
-   "rise": 2,
-   "fall": 26,
-   "steady": 2,
-   "part": 0.87,
-   "spark": [
-    0.07,
-    -1.79,
-    -3.81,
-    -3.6,
-    -3.6
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -12.15,
-   "streak_sign": -1,
-   "streak": 4,
-   "flow": -4.67,
-   "hot": true
-  },
-  {
-   "name": "기계",
-   "no": 299,
-   "chg": -3.65,
-   "total": 105,
-   "rise": 26,
-   "fall": 72,
-   "steady": 7,
-   "part": 0.69,
-   "spark": [
-    0.42,
-    1.07,
-    -2.06,
-    -3.65,
-    -3.65
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -7.72,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -4.2,
-   "hot": false
-  },
-  {
-   "name": "인터넷과카탈로그소매",
-   "no": 308,
-   "chg": -3.77,
-   "total": 6,
-   "rise": 3,
-   "fall": 2,
-   "steady": 1,
-   "part": 0.33,
-   "spark": [
-    -2.24,
-    -0.87,
-    1.92,
-    -3.77,
-    -3.77
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.54,
-   "streak_sign": -1,
-   "streak": 2,
-   "flow": -3.26,
-   "hot": false
-  },
-  {
-   "name": "제약",
-   "no": 261,
-   "chg": -3.79,
-   "total": 175,
-   "rise": 43,
-   "fall": 117,
-   "steady": 15,
-   "part": 0.67,
-   "spark": [
-    -1.58,
-    0.39,
-    -0.57,
-    -3.79,
-    -3.79
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -9.06,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -4.31,
-   "hot": false
-  },
-  {
-   "name": "복합기업",
-   "no": 276,
-   "chg": -3.95,
-   "total": 24,
-   "rise": 3,
-   "fall": 21,
-   "steady": 0,
-   "part": 0.88,
-   "spark": [
-    -0.22,
-    1.77,
-    -2.81,
-    -3.95,
-    -3.95
-   ],
-   "spark_days": [
-    "금",
-    "화",
-    "수",
-    "목",
-    "금"
-   ],
-   "chg5": -8.95,
-   "streak_sign": -1,
-   "streak": 3,
-   "flow": -5.15,
-   "hot": true
-  },
-  {
    "name": "생명보험",
    "no": 330,
-   "chg": -4.09,
+   "chg": -2,
    "total": 3,
    "rise": 0,
    "fall": 3,
@@ -2028,6 +1016,586 @@
     -1.05,
     -0.71,
     -4.09,
+    -2
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -6.46,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -2.8,
+   "hot": false
+  },
+  {
+   "name": "디스플레이장비및부품",
+   "no": 269,
+   "chg": -2.03,
+   "total": 71,
+   "rise": 18,
+   "fall": 47,
+   "steady": 6,
+   "part": 0.66,
+   "spark": [
+    0.72,
+    0.55,
+    -1.75,
+    1.74,
+    -2.03
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.82,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -2.29,
+   "hot": false
+  },
+  {
+   "name": "기타",
+   "no": 25,
+   "chg": -2.08,
+   "total": 1541,
+   "rise": 554,
+   "fall": 892,
+   "steady": 95,
+   "part": 0.58,
+   "spark": [
+    -0.11,
+    0.35,
+    -1.17,
+    -1.25,
+    -2.08
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.21,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -2.21,
+   "hot": false
+  },
+  {
+   "name": "증권",
+   "no": 321,
+   "chg": -2.24,
+   "total": 39,
+   "rise": 1,
+   "fall": 37,
+   "steady": 1,
+   "part": 0.95,
+   "spark": [
+    0.08,
+    -0.23,
+    -1.42,
+    -3.18,
+    -2.24
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -6.83,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -3.05,
+   "hot": true
+  },
+  {
+   "name": "인터넷과카탈로그소매",
+   "no": 308,
+   "chg": -2.29,
+   "total": 6,
+   "rise": 2,
+   "fall": 4,
+   "steady": 0,
+   "part": 0.67,
+   "spark": [
+    -2.24,
+    -0.87,
+    1.92,
+    -3.77,
+    -2.29
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -7.13,
+   "streak_sign": -1,
+   "streak": 2,
+   "flow": -2.6,
+   "hot": false
+  },
+  {
+   "name": "제약",
+   "no": 261,
+   "chg": -2.36,
+   "total": 175,
+   "rise": 17,
+   "fall": 146,
+   "steady": 12,
+   "part": 0.83,
+   "spark": [
+    -1.58,
+    0.39,
+    -0.57,
+    -3.79,
+    -2.36
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -7.71,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -2.98,
+   "hot": false
+  },
+  {
+   "name": "비철금속",
+   "no": 322,
+   "chg": -2.46,
+   "total": 40,
+   "rise": 10,
+   "fall": 28,
+   "steady": 2,
+   "part": 0.7,
+   "spark": [
+    1.54,
+    2.41,
+    -4.2,
+    -1.74,
+    -2.46
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.52,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -2.85,
+   "hot": false
+  },
+  {
+   "name": "전기제품",
+   "no": 283,
+   "chg": -2.52,
+   "total": 68,
+   "rise": 9,
+   "fall": 56,
+   "steady": 3,
+   "part": 0.82,
+   "spark": [
+    2.53,
+    6.34,
+    -1.13,
+    2,
+    -2.52
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": 7.18,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -3.17,
+   "hot": false
+  },
+  {
+   "name": "IT서비스",
+   "no": 267,
+   "chg": -2.85,
+   "total": 119,
+   "rise": 13,
+   "fall": 102,
+   "steady": 4,
+   "part": 0.86,
+   "spark": [
+    0.28,
+    1.41,
+    -3.93,
+    -3.04,
+    -2.85
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -7.97,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -3.67,
+   "hot": true
+  },
+  {
+   "name": "자동차부품",
+   "no": 270,
+   "chg": -2.93,
+   "total": 153,
+   "rise": 26,
+   "fall": 118,
+   "steady": 9,
+   "part": 0.77,
+   "spark": [
+    1.43,
+    -0.16,
+    -1.38,
+    -1.31,
+    -2.93
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.33,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -3.56,
+   "hot": false
+  },
+  {
+   "name": "철강",
+   "no": 304,
+   "chg": -2.96,
+   "total": 55,
+   "rise": 9,
+   "fall": 43,
+   "steady": 3,
+   "part": 0.78,
+   "spark": [
+    1.14,
+    1.77,
+    -3.38,
+    -0.4,
+    -2.96
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -3.88,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -3.62,
+   "hot": false
+  },
+  {
+   "name": "무역회사와판매업체",
+   "no": 334,
+   "chg": -3.11,
+   "total": 8,
+   "rise": 1,
+   "fall": 6,
+   "steady": 1,
+   "part": 0.75,
+   "spark": [
+    2.13,
+    1.2,
+    -0.2,
+    -0.82,
+    -3.11
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.88,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -3.73,
+   "hot": false
+  },
+  {
+   "name": "복합기업",
+   "no": 276,
+   "chg": -3.29,
+   "total": 24,
+   "rise": 2,
+   "fall": 22,
+   "steady": 0,
+   "part": 0.92,
+   "spark": [
+    -0.22,
+    1.77,
+    -2.81,
+    -3.95,
+    -3.29
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -8.32,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -4.4,
+   "hot": true
+  },
+  {
+   "name": "가정용품",
+   "no": 297,
+   "chg": -3.38,
+   "total": 12,
+   "rise": 5,
+   "fall": 5,
+   "steady": 2,
+   "part": 0.42,
+   "spark": [
+    -1.73,
+    -2.79,
+    -1.11,
+    -5.94,
+    -3.38
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -14.15,
+   "streak_sign": -1,
+   "streak": 5,
+   "flow": -3.16,
+   "hot": false
+  },
+  {
+   "name": "방송과엔터테인먼트",
+   "no": 285,
+   "chg": -3.45,
+   "total": 57,
+   "rise": 14,
+   "fall": 35,
+   "steady": 8,
+   "part": 0.61,
+   "spark": [
+    -0.14,
+    0.43,
+    3.84,
+    -0.64,
+    -3.45
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.1,
+   "streak_sign": -1,
+   "streak": 2,
+   "flow": -3.75,
+   "hot": false
+  },
+  {
+   "name": "창업투자",
+   "no": 277,
+   "chg": -3.56,
+   "total": 88,
+   "rise": 15,
+   "fall": 53,
+   "steady": 20,
+   "part": 0.6,
+   "spark": [
+    1.34,
+    0.57,
+    -2.98,
+    -0.36,
+    -3.56
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.98,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -3.84,
+   "hot": false
+  },
+  {
+   "name": "컴퓨터와주변기기",
+   "no": 293,
+   "chg": -3.71,
+   "total": 21,
+   "rise": 3,
+   "fall": 15,
+   "steady": 3,
+   "part": 0.71,
+   "spark": [
+    3.28,
+    1.1,
+    -1.62,
+    0.89,
+    -3.71
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.21,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -4.33,
+   "hot": false
+  },
+  {
+   "name": "출판",
+   "no": 314,
+   "chg": -3.73,
+   "total": 7,
+   "rise": 1,
+   "fall": 6,
+   "steady": 0,
+   "part": 0.86,
+   "spark": [
+    0.33,
+    0.13,
+    -0.3,
+    -0.01,
+    -3.73
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -3.59,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -4.8,
+   "hot": true
+  },
+  {
+   "name": "전기유틸리티",
+   "no": 325,
+   "chg": -3.77,
+   "total": 5,
+   "rise": 0,
+   "fall": 5,
+   "steady": 0,
+   "part": 1,
+   "spark": [
+    0.19,
+    0.92,
+    -0.93,
+    -3.46,
+    -3.77
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -6.94,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -5.28,
+   "hot": true
+  },
+  {
+   "name": "무선통신서비스",
+   "no": 333,
+   "chg": -4.07,
+   "total": 4,
+   "rise": 1,
+   "fall": 3,
+   "steady": 0,
+   "part": 0.75,
+   "spark": [
+    2.11,
+    0.02,
+    -0.96,
+    -2.86,
+    -4.07
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -5.74,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -4.88,
+   "hot": false
+  },
+  {
+   "name": "건강관리업체및서비스",
+   "no": 316,
+   "chg": -4.09,
+   "total": 30,
+   "rise": 4,
+   "fall": 25,
+   "steady": 1,
+   "part": 0.83,
+   "spark": [
+    -0.3,
+    0.88,
+    1.46,
+    -4.45,
     -4.09
    ],
    "spark_days": [
@@ -2035,157 +1603,592 @@
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -8.46,
+   "chg5": -6.48,
    "streak_sign": -1,
-   "streak": 4,
-   "flow": -5.73,
+   "streak": 2,
+   "flow": -5.17,
    "hot": false
   },
   {
-   "name": "건강관리업체및서비스",
-   "no": 316,
-   "chg": -4.45,
-   "total": 30,
-   "rise": 8,
-   "fall": 21,
-   "steady": 1,
-   "part": 0.7,
+   "name": "석유와가스",
+   "no": 313,
+   "chg": -4.22,
+   "total": 19,
+   "rise": 1,
+   "fall": 15,
+   "steady": 3,
+   "part": 0.79,
    "spark": [
-    -0.3,
-    0.88,
-    1.46,
-    -4.45,
-    -4.45
+    3.9,
+    0.65,
+    1,
+    -1.7,
+    -4.22
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -6.83,
+   "chg5": -0.56,
    "streak_sign": -1,
    "streak": 2,
-   "flow": -5.16,
+   "flow": -5.2,
    "hot": false
   },
   {
    "name": "우주항공과국방",
    "no": 284,
-   "chg": -4.62,
+   "chg": -4.23,
    "total": 35,
    "rise": 4,
-   "fall": 29,
-   "steady": 2,
-   "part": 0.83,
+   "fall": 31,
+   "steady": 0,
+   "part": 0.89,
    "spark": [
     3.87,
     -3.74,
     -5.05,
     -4.62,
-    -4.62
+    -4.23
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -13.63,
+   "chg5": -13.28,
    "streak_sign": -1,
    "streak": 4,
-   "flow": -5.84,
-   "hot": false
+   "flow": -5.55,
+   "hot": true
   },
   {
-   "name": "게임엔터테인먼트",
-   "no": 263,
-   "chg": -4.72,
-   "total": 34,
-   "rise": 8,
-   "fall": 23,
-   "steady": 3,
-   "part": 0.68,
+   "name": "디스플레이패널",
+   "no": 327,
+   "chg": -4.24,
+   "total": 6,
+   "rise": 1,
+   "fall": 3,
+   "steady": 2,
+   "part": 0.5,
    "spark": [
-    1.19,
-    -1.51,
-    1.59,
-    -4.72,
-    -4.72
+    -0.06,
+    0.01,
+    -3.27,
+    -0.93,
+    -4.24
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -8.09,
+   "chg5": -8.28,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -4.24,
+   "hot": false
+  },
+  {
+   "name": "반도체와반도체장비",
+   "no": 278,
+   "chg": -4.48,
+   "total": 172,
+   "rise": 15,
+   "fall": 155,
+   "steady": 2,
+   "part": 0.9,
+   "spark": [
+    0.1,
+    -1.95,
+    -1.99,
+    -2.1,
+    -4.48
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -10.04,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -5.91,
+   "hot": true
+  },
+  {
+   "name": "화장품",
+   "no": 266,
+   "chg": -4.54,
+   "total": 64,
+   "rise": 8,
+   "fall": 55,
+   "steady": 1,
+   "part": 0.86,
+   "spark": [
+    -1.3,
+    0.4,
+    3.86,
+    -3,
+    -4.54
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -4.7,
    "streak_sign": -1,
    "streak": 2,
-   "flow": -5.4,
-   "hot": false
+   "flow": -5.85,
+   "hot": true
   },
   {
-   "name": "가정용품",
-   "no": 297,
-   "chg": -5.94,
-   "total": 12,
-   "rise": 2,
-   "fall": 9,
-   "steady": 1,
-   "part": 0.75,
+   "name": "다각화된통신서비스",
+   "no": 336,
+   "chg": -4.79,
+   "total": 3,
+   "rise": 0,
+   "fall": 3,
+   "steady": 0,
+   "part": 1,
    "spark": [
-    -1.73,
-    -2.79,
-    -1.11,
-    -5.94,
-    -5.94
+    0.4,
+    -0.76,
+    -0.38,
+    0,
+    -4.79
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -16.42,
+   "chg5": -5.5,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -6.71,
+   "hot": false
+  },
+  {
+   "name": "핸드셋",
+   "no": 292,
+   "chg": -4.87,
+   "total": 57,
+   "rise": 8,
+   "fall": 47,
+   "steady": 2,
+   "part": 0.82,
+   "spark": [
+    1.44,
+    2.19,
+    0.12,
+    1.14,
+    -4.87
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.14,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -6.12,
+   "hot": false
+  },
+  {
+   "name": "건설",
+   "no": 279,
+   "chg": -4.89,
+   "total": 78,
+   "rise": 14,
+   "fall": 56,
+   "steady": 8,
+   "part": 0.72,
+   "spark": [
+    -0.31,
+    -0.17,
+    -1.14,
+    -2.76,
+    -4.89
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -9.01,
    "streak_sign": -1,
    "streak": 5,
-   "flow": -7.13,
+   "flow": -5.75,
+   "hot": false
+  },
+  {
+   "name": "전자장비와기기",
+   "no": 282,
+   "chg": -4.91,
+   "total": 105,
+   "rise": 11,
+   "fall": 88,
+   "steady": 6,
+   "part": 0.84,
+   "spark": [
+    1.49,
+    6.14,
+    -4.01,
+    -1.84,
+    -4.91
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -3.48,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -6.25,
    "hot": false
   },
   {
    "name": "생물공학",
    "no": 286,
-   "chg": -6.3,
+   "chg": -4.95,
    "total": 59,
-   "rise": 15,
-   "fall": 39,
+   "rise": 3,
+   "fall": 51,
    "steady": 5,
-   "part": 0.66,
+   "part": 0.86,
    "spark": [
     -2.23,
     1.75,
     -1.21,
     -6.3,
-    -6.3
+    -4.95
    ],
    "spark_days": [
     "금",
     "화",
     "수",
     "목",
-    "금"
+    "월"
    ],
-   "chg5": -13.72,
+   "chg5": -12.47,
    "streak_sign": -1,
    "streak": 3,
-   "flow": -7.11,
+   "flow": -6.38,
+   "hot": true
+  },
+  {
+   "name": "에너지장비및서비스",
+   "no": 295,
+   "chg": -5.23,
+   "total": 34,
+   "rise": 1,
+   "fall": 30,
+   "steady": 3,
+   "part": 0.88,
+   "spark": [
+    2.78,
+    2.52,
+    -2.37,
+    -2.63,
+    -5.23
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -5.07,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -6.82,
+   "hot": true
+  },
+  {
+   "name": "판매업체",
+   "no": 265,
+   "chg": -5.28,
+   "total": 13,
+   "rise": 2,
+   "fall": 8,
+   "steady": 3,
+   "part": 0.62,
+   "spark": [
+    -0.14,
+    3.18,
+    -1.33,
+    3.25,
+    -5.28
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -0.57,
+   "streak_sign": -1,
+   "streak": 1,
+   "flow": -5.79,
+   "hot": false
+  },
+  {
+   "name": "건강관리기술",
+   "no": 288,
+   "chg": -5.35,
+   "total": 13,
+   "rise": 0,
+   "fall": 13,
+   "steady": 0,
+   "part": 1,
+   "spark": [
+    -0.64,
+    1.55,
+    -2.96,
+    -1.04,
+    -5.35
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -8.29,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -7.49,
+   "hot": true
+  },
+  {
+   "name": "조선",
+   "no": 291,
+   "chg": -5.43,
+   "total": 30,
+   "rise": 0,
+   "fall": 28,
+   "steady": 2,
+   "part": 0.93,
+   "spark": [
+    0.07,
+    -1.79,
+    -3.81,
+    -3.6,
+    -5.43
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -13.82,
+   "streak_sign": -1,
+   "streak": 4,
+   "flow": -7.3,
+   "hot": true
+  },
+  {
+   "name": "통신장비",
+   "no": 294,
+   "chg": -5.63,
+   "total": 55,
+   "rise": 3,
+   "fall": 44,
+   "steady": 8,
+   "part": 0.8,
+   "spark": [
+    4.06,
+    2.02,
+    -3.58,
+    -2.85,
+    -5.63
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -6.15,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -6.98,
+   "hot": false
+  },
+  {
+   "name": "생명과학도구및서비스",
+   "no": 262,
+   "chg": -5.63,
+   "total": 41,
+   "rise": 7,
+   "fall": 29,
+   "steady": 5,
+   "part": 0.71,
+   "spark": [
+    -1.48,
+    3.59,
+    0.19,
+    -2.18,
+    -5.63
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -5.61,
+   "streak_sign": -1,
+   "streak": 2,
+   "flow": -6.58,
+   "hot": false
+  },
+  {
+   "name": "화학",
+   "no": 272,
+   "chg": -5.95,
+   "total": 122,
+   "rise": 22,
+   "fall": 91,
+   "steady": 9,
+   "part": 0.75,
+   "spark": [
+    2.42,
+    4.72,
+    -2.54,
+    -0.03,
+    -5.95
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -1.72,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -7.14,
+   "hot": false
+  },
+  {
+   "name": "전기장비",
+   "no": 306,
+   "chg": -7.34,
+   "total": 35,
+   "rise": 0,
+   "fall": 32,
+   "steady": 3,
+   "part": 0.91,
+   "spark": [
+    1.43,
+    1.65,
+    -5.8,
+    -3.37,
+    -7.34
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -13.04,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -9.75,
+   "hot": true
+  },
+  {
+   "name": "전자제품",
+   "no": 307,
+   "chg": -7.4,
+   "total": 16,
+   "rise": 3,
+   "fall": 12,
+   "steady": 1,
+   "part": 0.75,
+   "spark": [
+    1.9,
+    7.59,
+    -10.33,
+    -3.28,
+    -7.4
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -11.95,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -8.88,
+   "hot": false
+  },
+  {
+   "name": "기계",
+   "no": 299,
+   "chg": -7.45,
+   "total": 105,
+   "rise": 11,
+   "fall": 88,
+   "steady": 6,
+   "part": 0.84,
+   "spark": [
+    0.42,
+    1.07,
+    -2.06,
+    -3.65,
+    -7.45
+   ],
+   "spark_days": [
+    "금",
+    "화",
+    "수",
+    "목",
+    "월"
+   ],
+   "chg5": -11.36,
+   "streak_sign": -1,
+   "streak": 3,
+   "flow": -9.48,
    "hot": false
   }
  ],
@@ -2195,75 +2198,75 @@
    "kind": "kr",
    "ticker": "KOSPI",
    "unit": "",
-   "last": 6625.93,
-   "chg": -2.62,
-   "at": "2026-10-08T20:15:00+09:00"
+   "last": 6384.24,
+   "chg": -3.65,
+   "at": "2026-10-12T20:15:00+09:00"
   },
   {
    "name": "코스닥",
    "kind": "kr",
    "ticker": "KOSDAQ",
    "unit": "",
-   "last": 892.27,
-   "chg": -0.69,
-   "at": "2026-10-08T20:15:00+09:00"
+   "last": 849.19,
+   "chg": -4.83,
+   "at": "2026-10-12T20:15:00+09:00"
   },
   {
    "name": "코스피200",
    "kind": "kr",
    "ticker": "KPI200",
    "unit": "",
-   "last": 1044.52,
-   "chg": -2.71,
-   "at": "2026-10-08T20:15:00+09:00"
+   "last": 1004.92,
+   "chg": -3.79,
+   "at": "2026-10-12T20:15:00+09:00"
   },
   {
    "name": "다우",
    "kind": "us",
    "ticker": "^DJI",
    "unit": "",
-   "last": 51518.95,
-   "chg": 0.56
+   "last": 51869.48,
+   "chg": 0.42
   },
   {
    "name": "S&P500",
    "kind": "us",
    "ticker": "^GSPC",
    "unit": "",
-   "last": 7803.47,
-   "chg": 0.49
+   "last": 7805.23,
+   "chg": -0.08
   },
   {
    "name": "나스닥",
    "kind": "us",
    "ticker": "^IXIC",
    "unit": "",
-   "last": 27327.02,
-   "chg": 0.49
+   "last": 27251.12,
+   "chg": -0.42
   },
   {
    "name": "필라델피아 반도체",
    "kind": "us",
    "ticker": "^SOX",
    "unit": "",
-   "last": 12576.28,
-   "chg": -0.38
+   "last": 12249.8,
+   "chg": -2.57
   },
   {
    "name": "나스닥 선물",
    "kind": "fut",
    "ticker": "NQ=F",
    "unit": "",
-   "last": 31038,
-   "chg": 0.22
+   "last": 30882,
+   "chg": -0.73
   },
   {
    "name": "S&P500 선물",
    "kind": "fut",
    "ticker": "ES=F",
    "unit": "",
-   "last": 7843,
-   "chg": 0.35
+   "last": 7853,
+   "chg": -0.09
   },
   {
    "name": "닛케이",
@@ -2278,80 +2281,80 @@
    "kind": "asia",
    "ticker": "000001.SS",
    "unit": "",
-   "last": 3813.79,
-   "chg": 0.05
+   "last": 3797.24,
+   "chg": -0.43
   },
   {
    "name": "항셍",
    "kind": "asia",
    "ticker": "^HSI",
    "unit": "",
-   "last": 24211.35,
-   "chg": 1.79
+   "last": 24271.2,
+   "chg": 0.25
   },
   {
    "name": "대만 가권",
    "kind": "asia",
    "ticker": "^TWII",
    "unit": "",
-   "last": 49313.44,
-   "chg": -0.99
+   "last": 49301.96,
+   "chg": -0.02
   },
   {
    "name": "원달러",
    "kind": "fx",
    "ticker": "KRW=X",
    "unit": "원",
-   "last": 1341,
-   "chg": -0.11
+   "last": 1335,
+   "chg": -0.39
   },
   {
    "name": "달러인덱스",
    "kind": "fx",
    "ticker": "DX-Y.NYB",
    "unit": "",
-   "last": 102.3,
-   "chg": 0.16
+   "last": 102.56,
+   "chg": 0.34
   },
   {
    "name": "유가(WTI)",
    "kind": "cmd",
    "ticker": "CL=F",
    "unit": "$",
-   "last": 92.08,
-   "chg": 0.65
+   "last": 93.84,
+   "chg": 2.17
   },
   {
    "name": "금",
    "kind": "cmd",
    "ticker": "GC=F",
    "unit": "$",
-   "last": 4207,
-   "chg": 1.2
+   "last": 4193,
+   "chg": -0.55
   },
   {
    "name": "미국 10년 금리",
    "kind": "rate",
    "ticker": "^TNX",
    "unit": "%",
-   "last": 5.27,
-   "chg": 0.82
+   "last": 5.24,
+   "chg": -0.08
   },
   {
    "name": "공포지수(VIX)",
    "kind": "risk",
    "ticker": "^VIX",
    "unit": "",
-   "last": 14.95,
-   "chg": -2.98
+   "last": 15.21,
+   "chg": 2.49
   },
   {
    "name": "비트코인",
    "kind": "crypto",
    "ticker": "BTC-USD",
    "unit": "$",
-   "last": 82824,
-   "chg": 2.3
+   "last": 82392,
+   "chg": -1.61
   }
  ],
  "errors": [],
@@ -2361,60 +2364,60 @@
    "kind": "us",
    "title": "미국 9월 CPI",
    "note": "한국시간 밤 9시 30분",
-   "dday": 4,
+   "dday": 1,
    "label": "10월 14일 (수)",
-   "dtext": "D-4"
+   "dtext": "내일"
   },
   {
    "date": "2026-10-16",
    "kind": "expiry",
    "title": "미국 옵션 만기",
    "note": "",
-   "dday": 6,
+   "dday": 3,
    "label": "10월 16일 (금)",
-   "dtext": "D-6"
+   "dtext": "D-3"
   },
   {
    "date": "2026-10-22",
    "kind": "kr",
    "title": "한국은행 금통위",
    "note": "기준금리 결정",
-   "dday": 12,
+   "dday": 9,
    "label": "10월 22일 (목)",
-   "dtext": "D-12"
+   "dtext": "D-9"
   },
   {
    "date": "2026-10-28",
    "kind": "fomc",
    "title": "FOMC 결정",
    "note": "결과는 한국시간 29일 새벽",
-   "dday": 18,
+   "dday": 15,
    "label": "10월 28일 (수)",
-   "dtext": "D-18"
+   "dtext": "D-15"
   },
   {
    "date": "2026-11-06",
    "kind": "us",
    "title": "미국 10월 고용보고서",
    "note": "",
-   "dday": 27,
+   "dday": 24,
    "label": "11월 6일 (금)",
-   "dtext": "D-27"
+   "dtext": "D-24"
   },
   {
    "date": "2026-11-10",
    "kind": "us",
    "title": "미국 10월 CPI",
    "note": "",
-   "dday": 31,
+   "dday": 28,
    "label": "11월 10일 (화)",
-   "dtext": "D-31"
+   "dtext": "D-28"
   }
  ],
  "history": {
   "src": "kv",
-  "days": 10,
-  "last": "2026-10-08"
+  "days": 11,
+  "last": "2026-10-12"
  },
- "archived_at": "2026-10-10 00:18"
+ "archived_at": "2026-10-13 02:54"
 }
