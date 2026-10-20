@@ -4,7 +4,8 @@
  *   /api/flow            마지막으로 다 받은 날 (또는 오늘 받는 중인 것)
  *   /api/flow?day=2026-10-07
  *
- * 예약 실행기가 마감 뒤 네이버 '투자자별 매매동향'을 업종마다 시가총액 큰 종목 4~8개씩 받아 합친 것(worker/flow.js).
+ * 예약 실행기가 네이버 '투자자별 매매동향'을 업종마다 시가총액 큰 종목 4~8개씩 받아 합친 것(worker/flow.js).
+ * 네이버가 그날 것을 저녁 8시 안팎에 내므로, 낮과 저녁에는 지난 거래일 것이 보이고 밤 10시 안팎에 그날 것으로 바뀐다.
  * 금액은 순매수 수량 × 종가라서 추정치다. 응답의 note 에 그 말을 넣어 두고 화면이 그대로 보여 준다.
  */
 
@@ -40,7 +41,7 @@ export async function onRequestGet(context) {
       flow = day ? await kv.get('flow:' + day, 'json') : null;
     }
   }
-  if (!flow) return J({ day: null, items: null, note: '아직 받은 수급이 없습니다. 평일 마감 뒤 16시부터 쌓입니다.' }, 200, 'no-store');
+  if (!flow) return J({ day: null, items: null, note: '아직 받은 수급이 없습니다. 네이버가 저녁 8시 안팎에 그날 수급을 내면 받기 시작해 밤 10시 안팎에 다 찹니다.' }, 200, 'no-store');
 
   const sectors = {};
   for (const [no, s] of Object.entries(flow.sectors || {})) {
@@ -58,7 +59,7 @@ export async function onRequestGet(context) {
     i: rankFlow(flow, 'i', 8),
     p: rankFlow(flow, 'p', 8),
     sectors,
-    note: '업종마다 시가총액 큰 종목 4~8개(시총 70% 안팎)를 합친 값입니다. 금액은 순매수 수량 × 종가라 추정치입니다. 네이버 증권 투자자별 매매동향.',
+    note: '업종마다 시가총액 큰 종목 4~8개(시총 70% 안팎)를 합친 값입니다. 금액은 순매수 수량 × 종가라 추정치입니다. 네이버 증권 투자자별 매매동향. 네이버가 저녁 8시 안팎에 그날 것을 내서, 밤 10시 안팎에 그날 것으로 바뀝니다.',
   };
   const res = J(body, 200, partial ? 'public, max-age=60' : 'public, max-age=300');
   context.waitUntil(cache.put(key, res.clone()));
