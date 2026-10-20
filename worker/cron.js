@@ -12,7 +12,9 @@
  *   5. 평일 07:00 ~ 21:59 10분마다 DART 에서 '큰손' 공시를 모은다(whale.js).
  *      5% 대량보유 보고와 임원 · 주요주주 매매 보고. 화면 '큰손 움직임'이 여기서 나온다.
  *   6. 휴대폰 알림(push.js, 웹 푸시). 사이트에서 '알림 받기'를 누른 기기로 간다.
- *   7. 마감 뒤 15:50부터 업종별 수급(flow.js)을 조금씩 받는다. 외국인 · 기관 · 개인이 오늘 어느 업종을 샀나. 18시쯤 다 찬다.
+ *   7. 업종별 수급(flow.js). 외국인 · 기관 · 개인이 오늘 어느 업종을 샀나.
+ *      네이버가 저녁 8시 안팎에 그날 것을 내면 받기 시작해 밤 10시 안팎에 다 찬다. 다 차면 다음날 08:37 알림에 넣는다.
+ *      다 찰 때까지는 밤 11시 59분까지 돈다(그 시간에는 DART 는 건너뛴다).
  *      08:37 개장 전 · 15:40 마감 · 18:33 그날 큰손 요약 · 아주 큰 공시는 들어오는 즉시
  *
  * 예약 (UTC. 한국시간 = UTC + 9. Cloudflare 는 요일을 이름으로 적는다)
@@ -168,7 +170,7 @@ function dayLabel(now) {
 }
 
 /** 개장 전: 어젯밤 미국이 어떻게 끝났고, 지금 분위기가 어떤가 */
-function textAM(d, now, news) {
+function textAM(d, now, news, flow) {
   const L = [`[섹터 흐름판] ${dayLabel(now)} 개장 전`];
   const us = [['다우', '다우'], ['나스닥', '나스닥'], ['필라델피아 반도체', '반도체']]
     .map(([n, s]) => [G(d, n), s])
@@ -181,6 +183,8 @@ function textAM(d, now, news) {
   if (nq && typeof nq.chg === 'number') L.push(`나스닥 선물 ${pct(nq.chg)}`);
   const m = d.mood || {};
   if (m.mood) L.push(`분위기 ${m.mood}` + ((m.why || []).length ? ' · ' + m.why.slice(0, 2).join(' · ') : ''));
+  // 지난 거래일 외국인 수급 두 줄(산 곳 · 판 곳)
+  for (const l of flow || []) L.push(l);
   // 헤드라인은 제목만, 앞쪽 두 개. 글자 한도를 넘기면 fit 이 통째로 뺀다.
   for (const x of (news || []).slice(0, 2)) L.push('· ' + cut(x.t, 30));
   return fit(L);
@@ -293,7 +297,19 @@ async function run(env, why) {
     } else if (slot === 'pm' && td && td !== today) {
       log.steps.push('오늘 장 숫자가 아니라 알림 안 함');
     } else {
-      const text = slot === 'am' ? textAM(d, now, news) : textPM(d);
+      let fl = [];
+      if (slot === 'am') {
+        // 지난 거래일 수급(밤사이 다 찬 것). 닷새 넘은 것은 넣지 않는다
+        try {
+          const last = await env.FLOW.get('flow:latest');
+          if (last && Date.parse(today) - Date.parse(last) <= 5 * 86400 * 1000) {
+            const f = await readFlow(env, last);
+            const md = `${Number(last.slice(5, 7))}/${Number(last.slice(8, 10))}`;
+            if (f) fl = [flowLine(f, 'f', `${md} 외국인 산 곳`), flowLine(f, 'f', `${md} 외국인 판 곳`, 'bottom')].filter(Boolean);
+          }
+        } catch (e) {}
+      }
+      const text = slot === 'am' ? textAM(d, now, news, fl) : textPM(d);
       log.steps.push(await pushOnce(env, `push:${today}:${slot}`, slot, () => {
         const [head, ...rest] = text.split('\n');
         return { title: head.replace(/^\[섹터 흐름판\]\s*/, ''), body: rest.join('\n'), url: SITE + '/', tag: slot };
@@ -362,13 +378,32 @@ async function whaleRun(env, force) {
   return log;
 }
 
+/** 오늘 바로 앞 거래일. 주말 · 휴장일을 건너뛴다 */
+function prevTradingDay(today) {
+  let t = Date.parse(today);
+  for (let k = 0; k < 10; k++) {
+    t -= 86400 * 1000;
+    const d = new Date(t);
+    const s = d.toISOString().slice(0, 10);
+    const w = d.getUTCDay();
+    if (w !== 0 && w !== 6 && !HOLIDAYS.has(s)) return s;
+  }
+  return null;
+}
+
 async function whaleRunInner(env, force) {
   const now = kstNow();
   const today = ymd(now);
   const h = now.getUTCHours(), dow = now.getUTCDay();
   const mins = h * 60 + now.getUTCMinutes();
   const tradingDay = dow !== 0 && dow !== 6 && !HOLIDAYS.has(today);
-  if (!force && (!tradingDay || h < 7 || h > 21)) return null;
+  if (!force && (!tradingDay || h < 7)) return null;
+  // 22시 넘어서는 그날 수급이 덜 찼을 때만 돈다
+  const late = !force && h >= 22;
+  if (late) {
+    const f = await readFlow(env, today);
+    if (f && f.complete) return null;
+  }
 
   // 바깥 요청은 한 번 돌 때 50개까지. 알림 몫(구독자 수 × 2)을 먼저 떼고 나머지를 DART 와 수급이 나눠 쓴다
   let subs = [];
@@ -378,23 +413,40 @@ async function whaleRunInner(env, force) {
   const pool = { n: Math.max(12, 44 - subs.length * 2) };
   const log = { at: now.toISOString().slice(0, 16).replace('T', ' '), subs: subs.length };
 
-  // 수급. 15:50부터 그날 치를 다 받을 때까지, 한 번에 28개씩(376개 → 14번, 18시쯤). 그동안 DART 는 나머지로 본다
-  let flowToday = null;
+  // 수급. 15:50부터 그날 치를 다 받을 때까지. 네이버가 내기 전에는 '나왔나'만 묻는다(요청 1개).
+  // 나온 뒤에는 한 번에 34개씩(370개 → 11번, 1시간 50분). 그동안 DART 는 나머지로 본다
   if (tradingDay && mins >= 15 * 60 + 50) {
     try {
-      flowToday = await readFlow(env, today);
-      if (!flowToday || !flowToday.complete) {
-        const want = Math.min(28, pool.n - 10);
+      const cur = await readFlow(env, today);
+      if (!cur || !cur.complete) {
+        const want = Math.min(late ? 40 : 34, pool.n - (late ? 0 : 8));
         const fb = { n: want };
-        const fr = await fetchFlow(env, today, fb, { giveUp: mins >= 17 * 60 + 30 });
+        const fr = await fetchFlow(env, today, fb);
         pool.n -= want - fb.n;
-        log.flow = fr.why ? fr.why : `${fr.done}/${fr.need}` + (fr.miss ? ` · 아직 ${fr.miss}` : '') + (fr.gone ? ` · 뺌 ${fr.gone}` : '') + (fr.err ? ` · 실패 ${fr.err}` : '') + (fr.complete ? ' · 완료' : '');
-        if (fr.complete) flowToday = await readFlow(env, today);
+        log.flow = fr.why ? fr.why
+          : fr.wait ? `네이버 아직 · ${fr.done}/${fr.need}`
+          : `${fr.done}/${fr.need}` + (fr.pub ? ` · ${fr.pub}에 나옴` : '') + (fr.miss ? ` · 없음 ${fr.miss}` : '') + (fr.gone ? ` · 뺌 ${fr.gone}` : '') + (fr.err ? ` · 실패 ${fr.err}` : '') + (fr.complete ? ' · 완료' : '');
       }
     } catch (e) {
       log.flow = '실패 · ' + String(e.message || e).slice(0, 80);
     }
-  } else if (mins < 9 * 60) {
+  } else {
+    // 지난 거래일 수급이 덜 찼으면(네이버가 늦었거나 실행기가 멈췄으면) 다음날 아침 · 낮에 마저 받는다
+    try {
+      const prev = prevTradingDay(today);
+      const pc = prev && (await readFlow(env, prev));
+      if (pc && !pc.complete) {
+        const want = Math.min(34, pool.n - 8);
+        const fb = { n: want };
+        const fr = await fetchFlow(env, prev, fb);
+        pool.n -= want - fb.n;
+        log.flowPrev = `${prev} ${fr.done}/${fr.need}` + (fr.wait ? ' · 네이버 아직' : '') + (fr.complete ? ' · 완료' : '');
+      }
+    } catch (e) {
+      log.flowPrev = '실패 · ' + String(e.message || e).slice(0, 80);
+    }
+  }
+  if (!(tradingDay && mins >= 15 * 60 + 50) && mins < 9 * 60) {
     // 아침 한가할 때 종목 목록을 손본다. 7일마다 한 번
     try {
       const mem = await env.FLOW.get('flow:members', 'json');
@@ -411,6 +463,8 @@ async function whaleRunInner(env, force) {
       log.members = '실패 · ' + String(e.message || e).slice(0, 80);
     }
   }
+
+  if (late) return log;
 
   let r;
   try {
@@ -461,12 +515,9 @@ async function whaleRunInner(env, force) {
 
   // 저녁 요약. 18:30 이 지나고 처음 도는 차례에 한 번
   if (mins >= 18 * 60 + 30) {
+    // 수급은 이 시간에 아직 안 나온다(네이버가 20시 안팎에 낸다). 다음날 아침 알림에 넣는다
     const dg = digest(r.out.items || [], today);
-    // 수급이 다 받아졌으면 외국인 · 기관이 산 업종을 두 줄 덧붙인다
-    const fl = flowToday && flowToday.complete ? [flowLine(flowToday, 'f', '외국인'), flowLine(flowToday, 'i', '기관')].filter(Boolean) : [];
-    const msg = dg ? { title: dg.title, body: fl.length ? fl.join('\n') + '\n' + dg.body : dg.body }
-      : fl.length ? { title: `오늘 수급 ${today.slice(5).replace('-', '/')}`, body: fl.join('\n') } : null;
-    if (msg) log.digest = await pushOnce(env, `push:${today}:wh`, 'wh', () => Object.assign(msg, { url: SITE + '/#flow', tag: 'wh' }), subs);
+    if (dg) log.digest = await pushOnce(env, `push:${today}:wh`, 'wh', () => ({ title: dg.title, body: dg.body, url: SITE + '/#whale', tag: 'wh' }), subs);
   }
   return log;
 }
@@ -502,7 +553,11 @@ export default {
       return json({
         days: hist && hist.days ? hist.days.map((x) => x.d) : [],
         whale: ws ? { checked: ws.at || null, last: ws.log || null } : null,
-        flow: { latest: await env.FLOW.get('flow:latest') },
+        flow: await (async () => {
+          const t = ymd(kstNow());
+          const c = await env.FLOW.get('flow:' + t, 'json');
+          return { latest: await env.FLOW.get('flow:latest'), today: c ? { done: c.done, need: c.need, pub: c.pub || null, wait: c.wait || 0, complete: !!c.complete, at: c.at } : null };
+        })(),
         push: { devices: (await env.FLOW.list({ prefix: 'sub:' })).keys.length },
         runs: runs.slice(0, 10),
         wruns: wruns.slice(0, 12),
