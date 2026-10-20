@@ -5,8 +5,13 @@
  * 그래서 업종마다 시가총액 큰 종목 몇 개(시총 70% 를 덮을 때까지, 4~8개)를 받아 합친다.
  *   금액 = 순매수 수량 × 그날 종가.  평균 체결가가 아니라 종가라서 '추정'이다. 화면에 그렇게 적는다.
  *
- * 하루 376개 안팎의 종목을 받아야 한다. 무료 요금제는 한 번 돌 때 바깥 요청 50개까지라
- * 마감 뒤 10분마다 조금씩(fetchFlow 의 budget 만큼) 받아 나간다. 17시 반쯤 다 찬다.
+ * 하루 370개 안팎의 종목을 받아야 한다. 무료 요금제는 한 번 돌 때 바깥 요청 50개까지라
+ * 10분마다 조금씩(fetchFlow 의 budget 만큼) 받아 나간다.
+ *
+ * 네이버는 그날 수급을 저녁 8시 안팎에 낸다(시간외 거래가 18시에 끝나고 집계가 끝난 뒤).
+ * 그래서 먼저 삼성전자 한 종목으로 '나왔나'만 묻고, 안 나왔으면 요청 하나만 쓰고 끝낸다.
+ * 나온 뒤에야 나머지를 받는다. 밤 10시 안팎에 다 찬다.
+ *   (10/8~10/19 에는 이걸 몰라 17:30부터 '안 나오는 종목은 뺀다'를 걸었다가 앞쪽 업종 25개를 매일 빼먹었다.)
  *
  * 저장소(KV)
  *   flow:members   업종 → 받을 종목 목록. 7일마다 refreshMembers 가 새로 짠다
@@ -109,66 +114,153 @@ export async function refreshMembers(env, sectors, budget) {
 
 /* ── 그날 수급 받기 ── */
 
-/**
- * day(YYYY-MM-DD)의 수급을 budget 만큼 더 받는다. 종목마다 네이버 '투자자별 매매동향' 한 번.
- * 그 종목의 맨 앞 줄 날짜가 day 가 아니면(아직 안 나왔으면) 건너뛰고 다음 차례에 다시 본다.
- * opts.giveUp 이 켜진 뒤(17:30 지나서) 세 번(30분) 봐도 안 나오는 종목은 거래정지 같은 것이라 치고 빼고 간다.
- * 그래야 그날 결과가 '다 받음'이 된다. 그 전에는 네이버가 아직 그날 것을 안 내놨을 수 있어 세지 않는다.
- */
-const GIVE_UP = 3;
-export async function fetchFlow(env, day, budget, opts = {}) {
-  const mem = await env.FLOW.get('flow:members', 'json');
-  if (!mem || !mem.sectors || !Object.keys(mem.sectors).length) return { why: '종목 목록 없음' };
-  const key = 'flow:' + day;
-  const cur = (await env.FLOW.get(key, 'json')) || { day, done: 0, need: 0, got: {}, miss: {}, sectors: {} };
-  cur.miss = cur.miss || {};
-  const bz = day.replace(/-/g, '');
+const trendUrl = (code, size = 1) => `${NAVER}/api/stock/${code}/trend?page=1&pageSize=${size}`;
+const kstHM = () => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
+
+/** 받을 종목 전부 [{ no, s }]. '기타'(ETF 꾸러미)는 뺀다 */
+export function memberList(mem) {
   const all = [];
-  for (const no of Object.keys(mem.sectors)) {
+  for (const no of Object.keys(mem.sectors || {})) {
     if (skipSector(mem.sectors[no].name)) continue;
     for (const s of mem.sectors[no].top) all.push({ no, s });
   }
+  return all;
+}
+
+/** 빈 하루 기록 */
+export const emptyDay = (day) => ({ day, done: 0, need: 0, got: {}, miss: {}, sectors: {} });
+
+/** 네이버 한 줄(그날 그 종목)을 하루 기록에 더한다. 억원 = 순매수 수량 × 그날 종가 */
+export function addRow(cur, no, s, row) {
+  if (cur.got[s.code]) return;
+  const px = num(row.closePrice);
+  const f = (num(row.foreignerPureBuyQuant) * px) / 1e8;
+  const i = (num(row.organPureBuyQuant) * px) / 1e8;
+  const p = (num(row.individualPureBuyQuant) * px) / 1e8;
+  cur.got[s.code] = 1;
+  const sec = cur.sectors[no] || (cur.sectors[no] = { f: 0, i: 0, p: 0, n: 0, top: [] });
+  sec.f = Math.round((sec.f + f) * 10) / 10;
+  sec.i = Math.round((sec.i + i) * 10) / 10;
+  sec.p = Math.round((sec.p + p) * 10) / 10;
+  sec.n++;
+  sec.top.push({ code: s.code, name: s.name, f: Math.round(f * 10) / 10, i: Math.round(i * 10) / 10 });
+}
+
+/** 받은 수 · 다 받았나 · 업종 이름표를 다시 적는다 */
+export function closeDay(cur, mem, gone = 0) {
+  cur.done = Object.keys(cur.got).length;
+  cur.meta = Object.fromEntries(Object.entries(mem.sectors).map(([no, m]) => [no, { name: m.name, cov: m.cov, k: m.top.length }]));
+  cur.complete = cur.done + gone >= cur.need;
+  return cur;
+}
+
+/**
+ * day(YYYY-MM-DD)의 수급을 budget 만큼 더 받는다. 종목마다 네이버 '투자자별 매매동향' 한 번.
+ *  1. 아직 '나왔다'를 못 봤으면 삼성전자(PROBE) 하나만 묻는다. 그날 줄이 없으면 거기서 끝(요청 1개).
+ *  2. 나온 뒤에는 차례로 받는다. 나온 뒤에도 그날 줄이 없는 종목은 네 번(40분) 보고 뺀다(거래정지 같은 것).
+ *     나오기 전의 '없음'은 세지 않는다. 이게 10/8~10/19 버그의 원인이었다.
+ */
+const GIVE_UP = 4;
+const PROBE = '005930';
+export async function fetchFlow(env, day, budget) {
+  const mem = await env.FLOW.get('flow:members', 'json');
+  if (!mem || !mem.sectors || !Object.keys(mem.sectors).length) return { why: '종목 목록 없음' };
+  const key = 'flow:' + day;
+  const cur = (await env.FLOW.get(key, 'json')) || emptyDay(day);
+  cur.miss = cur.miss || {};
+  const bz = day.replace(/-/g, '');
+  const all = memberList(mem);
   cur.need = all.length;
+  const pre = {};
+
+  if (!cur.pub) {
+    if (budget.n < 1) return { wait: true, done: cur.done, need: cur.need };
+    budget.n--;
+    let row = null;
+    try {
+      const j = await getJSON(trendUrl(PROBE));
+      row = Array.isArray(j) ? j[0] : null;
+    } catch (e) {}
+    if (!row || String(row.bizdate) !== bz) {
+      // 아직 안 나왔다. 몇 번 기다렸는지만 적어 둔다
+      cur.wait = (cur.wait || 0) + 1;
+      cur.at = kstHM();
+      await env.FLOW.put(key, JSON.stringify(cur), { expirationTtl: 45 * 86400 });
+      return { wait: true, done: cur.done, need: cur.need };
+    }
+    cur.pub = kstHM().slice(11);
+    pre[PROBE] = row;
+  }
+
   let n = 0, miss = 0, err = 0;
   for (const { no, s } of all) {
-    if (budget.n < 1) break;
     if (cur.got[s.code] || (cur.miss[s.code] || 0) >= GIVE_UP) continue;
-    budget.n--;
-    try {
-      const j = await getJSON(`${NAVER}/api/stock/${s.code}/trend?page=1&pageSize=1`);
-      const row = Array.isArray(j) ? j[0] : null;
-      if (!row || String(row.bizdate) !== bz) {
-        miss++;
-        if (opts.giveUp) cur.miss[s.code] = (cur.miss[s.code] || 0) + 1;
+    let row = pre[s.code];
+    if (!row) {
+      if (budget.n < 1) break;
+      budget.n--;
+      try {
+        const j = await getJSON(trendUrl(s.code));
+        row = Array.isArray(j) ? j[0] : null;
+      } catch (e) {
+        // 계속 실패하는 종목(상장폐지 · 주소 바뀜)도 네 번이면 뺀다. 안 그러면 그날이 영영 '다 받음'이 안 된다
+        err++;
+        cur.miss[s.code] = (cur.miss[s.code] || 0) + 1;
         continue;
       }
-      const px = num(row.closePrice);
-      // 억원. 수량 × 종가
-      const f = (num(row.foreignerPureBuyQuant) * px) / 1e8;
-      const i = (num(row.organPureBuyQuant) * px) / 1e8;
-      const p = (num(row.individualPureBuyQuant) * px) / 1e8;
-      cur.got[s.code] = 1;
-      const sec = cur.sectors[no] || (cur.sectors[no] = { f: 0, i: 0, p: 0, n: 0, top: [] });
-      sec.f = Math.round((sec.f + f) * 10) / 10;
-      sec.i = Math.round((sec.i + i) * 10) / 10;
-      sec.p = Math.round((sec.p + p) * 10) / 10;
-      sec.n++;
-      sec.top.push({ code: s.code, name: s.name, f: Math.round(f * 10) / 10, i: Math.round(i * 10) / 10 });
-      n++;
+    }
+    if (!row || String(row.bizdate) !== bz) {
+      miss++;
+      cur.miss[s.code] = (cur.miss[s.code] || 0) + 1;
+      continue;
+    }
+    addRow(cur, no, s, row);
+    n++;
+  }
+  const gone = Object.values(cur.miss).filter((c) => c >= GIVE_UP).length;
+  closeDay(cur, mem, gone);
+  cur.at = kstHM();
+  await env.FLOW.put(key, JSON.stringify(cur), { expirationTtl: 45 * 86400 });
+  if (cur.complete) {
+    const last = await env.FLOW.get('flow:latest');
+    if (!last || last <= day) await env.FLOW.put('flow:latest', day);
+  }
+  return { got: n, done: cur.done, need: cur.need, miss, gone, err, complete: cur.complete, pub: cur.pub };
+}
+
+/**
+ * 지난 며칠을 한꺼번에 채운다. 종목마다 최근 size 거래일을 한 번에 받아 날짜별로 나눈다.
+ * 예약 실행기는 쓰지 않는다(요청이 370개라 한 번에 못 돈다). 빠진 날을 손으로 메울 때 쓴다.
+ */
+export async function backfillDays(mem, days, size = 10, onErr) {
+  const want = new Set(days.map((d) => d.replace(/-/g, '')));
+  const out = Object.fromEntries(days.map((d) => [d, emptyDay(d)]));
+  const all = memberList(mem);
+  for (const d of days) out[d].need = all.length;
+  for (const { no, s } of all) {
+    let rows;
+    try {
+      rows = await getJSON(trendUrl(s.code, size));
     } catch (e) {
-      err++;
+      if (onErr) onErr(s, e);
+      continue;
+    }
+    for (const row of Array.isArray(rows) ? rows : []) {
+      const bz = String(row.bizdate);
+      if (!want.has(bz)) continue;
+      const d = `${bz.slice(0, 4)}-${bz.slice(4, 6)}-${bz.slice(6, 8)}`;
+      addRow(out[d], no, s, row);
     }
   }
-  cur.done = Object.keys(cur.got).length;
-  cur.at = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
-  // 종목 목록이 바뀌었을 때 쓰라고 업종 이름 · 덮는 비율도 같이 둔다
-  cur.meta = Object.fromEntries(Object.entries(mem.sectors).map(([no, m]) => [no, { name: m.name, cov: m.cov, k: m.top.length }]));
-  const gone = Object.values(cur.miss).filter((c) => c >= GIVE_UP).length;
-  const complete = cur.done + gone >= cur.need;
-  cur.complete = complete;
-  await env.FLOW.put(key, JSON.stringify(cur), { expirationTtl: 45 * 86400 });
-  if (complete) await env.FLOW.put('flow:latest', day);
-  return { got: n, done: cur.done, need: cur.need, miss, gone, err, complete };
+  for (const d of days) {
+    const cur = out[d];
+    // 그날 줄이 없는 종목(거래정지 · 신규상장 전)은 뺀 것으로 친다
+    for (const { s } of all) if (!cur.got[s.code]) cur.miss[s.code] = GIVE_UP;
+    closeDay(cur, mem, Object.keys(cur.miss).length);
+    cur.pub = 'backfill';
+    cur.at = kstHM();
+  }
+  return out;
 }
 
 /** 어느 날의 결과. 없으면 null */
@@ -185,9 +277,10 @@ export function rankFlow(flow, who, n = 5) {
 
 const eok = (v) => (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US') + '억';
 
-/** 알림 한 줄. '외국인 돈: 반도체 +1,230억 · 화장품 +310억' */
-export function flowLine(flow, who, label) {
+/** 알림 한 줄. flowLine(f, 'f', '외국인 산 곳') → '외국인 산 곳 반도체 +1,230억 · 화장품 +310억'. side 'bottom' 이면 판 곳 */
+export function flowLine(flow, who, label, side = 'top') {
   const r = rankFlow(flow, who, 2);
-  if (!r.top.length) return null;
-  return `${label} 돈 ${r.top.map((x) => `${x.name} ${eok(x.v)}`).join(' · ')}`;
+  const list = side === 'bottom' ? r.bottom : r.top;
+  if (!list.length) return null;
+  return `${label} ${list.map((x) => `${x.name} ${eok(x.v)}`).join(' · ')}`;
 }
